@@ -23,8 +23,10 @@
   --body:'General Sans',sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;width:100%;max-width:100%;overflow-x:hidden}
 body{
+  width:100%;
+  max-width:100%;
   min-height:100vh;
   font-family:var(--body);
   color:var(--text);
@@ -58,7 +60,7 @@ body::after{
 button,a,input,select{font:inherit}
 button{border:0;background:none;color:inherit;cursor:pointer}
 img{max-width:100%;display:block}
-.app{min-height:100vh}
+.app{min-height:100vh;width:100%;max-width:100%;overflow-x:hidden}
 .topbar{
   position:sticky;
   top:0;
@@ -72,7 +74,7 @@ img{max-width:100%;display:block}
   backdrop-filter:blur(22px);
   border-bottom:1px solid rgba(46,232,77,.18);
 }
-.brand{display:flex;align-items:center;gap:13px;min-width:max-content}
+.brand{display:flex;align-items:center;gap:13px;min-width:0}
 .brand img{width:44px;height:44px;border-radius:12px;border:1px solid rgba(46,232,77,.5);box-shadow:0 0 22px rgba(46,232,77,.26)}
 .brand strong{font-family:var(--display);font-size:25px;letter-spacing:.16em}
 .brand span{display:block;margin-top:1px;color:var(--muted);font-size:12px}
@@ -88,7 +90,7 @@ img{max-width:100%;display:block}
   transition:.18s;
 }
 .nav-btn.active{background:var(--green-hot);color:#051006;box-shadow:0 0 20px rgba(116,255,58,.36)}
-.actions{display:flex;align-items:center;gap:10px;min-width:max-content}
+.actions{display:flex;align-items:center;gap:10px;min-width:0}
 .icon-btn,.primary-btn,.ghost-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:15px;font-weight:800;transition:.18s}
 .icon-btn{width:43px;height:43px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
 .icon-btn svg,.primary-btn svg,.ghost-btn svg,.bottom-nav svg{width:20px;height:20px}
@@ -106,8 +108,8 @@ img{max-width:100%;display:block}
   border:1px solid rgba(116,255,58,.54);
   background:rgba(46,232,77,.08);
 }
-.main{width:min(1440px,100%);margin:0 auto;padding:30px clamp(18px,4vw,54px) 96px}
-.view{display:none}
+.main{width:min(1440px,100%);max-width:100%;margin:0 auto;padding:30px clamp(18px,4vw,54px) 96px;overflow-x:hidden}
+.view{display:none;min-width:0;max-width:100%}
 .view.active{display:block;animation:fade .28s ease}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .grid{display:grid;gap:18px}
@@ -118,6 +120,7 @@ img{max-width:100%;display:block}
 .section-head h2,.section-head h3{font-size:14px;letter-spacing:.18em;text-transform:uppercase}
 .section-head a,.section-head button{color:var(--green-hot);font-weight:800}
 .panel,.card,.spot-card,.product-card,.feed-card{
+  min-width:0;
   position:relative;
   overflow:hidden;
   border:1px solid rgba(46,232,77,.26);
@@ -131,6 +134,7 @@ img{max-width:100%;display:block}
 .h1 .green,.green{color:var(--green-hot);text-shadow:0 0 22px rgba(116,255,58,.38)}
 .lead{color:rgba(245,247,244,.72);font-size:17px;line-height:1.55;margin-top:15px;max-width:720px}
 .dashboard-hero{
+  min-width:0;
   min-height:360px;
   display:grid;
   grid-template-columns:1fr 330px;
@@ -138,6 +142,7 @@ img{max-width:100%;display:block}
   gap:18px;
 }
 .hero-copy{
+  min-width:0;
   min-height:360px;
   border-radius:28px;
   padding:34px;
@@ -152,6 +157,7 @@ img{max-width:100%;display:block}
 }
 .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
 .id-card{
+  min-width:0;
   border-radius:28px;
   padding:24px;
   border:1px solid rgba(116,255,58,.46);
@@ -252,16 +258,62 @@ img{max-width:100%;display:block}
 .profile-card h2{font-family:var(--display);font-size:34px;margin-top:18px}
 .gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .gallery div{aspect-ratio:1;border-radius:18px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.1)}
-.signup-layout{display:grid;grid-template-columns:420px 1fr;gap:20px}
-.signup-visual{min-height:720px;border-radius:30px;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.88)),url('assets/banners/banner-skatepark.webp') center/cover;border:1px solid rgba(46,232,77,.32);display:flex;flex-direction:column;justify-content:flex-end;padding:28px}
+.signup-layout{width:min(1180px,100%);min-height:100vh;min-height:100dvh;margin:0 auto;padding:28px clamp(16px,3vw,34px);display:grid;grid-template-columns:410px minmax(0,1fr);gap:20px;align-items:stretch}
+.signup-visual{position:relative;overflow:hidden;min-height:720px;border-radius:30px;background:radial-gradient(circle at 72% 10%,rgba(116,255,58,.17),transparent 28%),linear-gradient(150deg,rgba(12,19,14,.94),rgba(4,7,5,.98));border:1px solid rgba(46,232,77,.32);display:flex;flex-direction:column;justify-content:space-between;padding:24px;box-shadow:0 28px 72px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.05)}
+.signup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(46,232,77,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(46,232,77,.035) 1px,transparent 1px),url('assets/banners/login-hero.webp') 42% bottom/780px auto no-repeat;opacity:.34;mask-image:linear-gradient(180deg,#000,transparent 92%);pointer-events:none}
+.signup-visual>*{position:relative;z-index:1}
+.signup-mark{display:flex;align-items:center;gap:12px}
+.signup-mark img{width:52px;height:52px;border-radius:15px;border:1px solid rgba(116,255,58,.56);box-shadow:0 0 24px rgba(46,232,77,.24)}
+.signup-mark b{font-family:var(--display);font-size:24px;letter-spacing:.16em}
+.signup-avatar{width:84px;height:84px;border-radius:24px;background:url('assets/eventos/skater-2.webp') center/cover;border:1px solid rgba(116,255,58,.5);box-shadow:0 0 34px rgba(46,232,77,.24)}
+.signup-preview-head{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.signup-score{width:126px;height:126px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--green-hot) 0 92%,rgba(116,255,58,.16) 92% 100%);box-shadow:0 0 38px rgba(116,255,58,.34)}
+.signup-score div{width:101px;height:101px;border-radius:50%;display:grid;place-items:center;background:#061007;border:1px solid rgba(116,255,58,.28)}
+.signup-score b{font-family:var(--display);font-size:40px;color:var(--green-hot)}
+.signup-score span{display:block;margin-top:-18px;font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:900}
+.signup-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:22px}
+.signup-proof .mini-stat{min-height:96px;display:flex;flex-direction:column;justify-content:center}
+.signup-panel{padding:28px;border-radius:30px;background:radial-gradient(circle at 92% 0,rgba(116,255,58,.12),transparent 24%),linear-gradient(145deg,rgba(18,25,20,.92),rgba(6,9,7,.98))}
+.signup-panel .lead{font-size:15px;margin-top:9px}
+.signup-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.signup-chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid rgba(116,255,58,.36);padding:8px 11px;color:var(--green-hot);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;background:rgba(46,232,77,.07);white-space:nowrap}
 .type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:18px}
-.type-card{height:116px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.035);color:var(--muted);font-weight:900;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.type-card{position:relative;isolation:isolate;overflow:hidden;height:124px;border-radius:22px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.015));color:var(--muted);font-weight:900;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:10px;text-align:left;padding:14px}
 .type-card svg{width:34px;height:34px}
 .type-card.active{color:var(--green-hot);border-color:var(--green-hot);background:rgba(46,232,77,.1);box-shadow:0 0 24px rgba(46,232,77,.16)}
+.type-card::before,.discipline-card::before{content:'';position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(3,6,4,.12),rgba(3,6,4,.2) 38%,rgba(3,6,4,.92) 100%);pointer-events:none}
+.type-card::after,.discipline-card::after{content:'';position:absolute;left:14px;right:14px;bottom:10px;height:2px;border-radius:999px;background:var(--green-hot);opacity:0;box-shadow:0 0 12px rgba(116,255,58,.7);z-index:2}
+.type-card.active::after,.discipline-card.active::after{opacity:1}
+.card-photo{position:absolute;inset:0;z-index:0;overflow:hidden}
+.card-photo img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(.95) brightness(.62);transform:scale(1.04);transition:transform .24s ease,filter .24s ease}
+.type-card.active .card-photo img,.discipline-card.active .card-photo img{filter:saturate(1.06) brightness(.78);transform:scale(1.01)}
+.card-label{position:relative;z-index:3;text-shadow:0 2px 16px rgba(0,0,0,.9);line-height:1.1}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}
 .field{height:60px;border-radius:18px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.035);display:flex;align-items:center;gap:12px;padding:0 16px;color:var(--muted)}
 .field svg{width:22px;height:22px;color:var(--green-hot)}
 .field.full{grid-column:1/-1}
+.signup-section-title{display:flex;align-items:center;gap:10px;margin:18px 0 10px;color:var(--green-hot);font-weight:900;letter-spacing:.15em;text-transform:uppercase;font-size:12px}
+.signup-section-title::after{content:'';height:1px;flex:1;background:linear-gradient(90deg,rgba(116,255,58,.5),transparent)}
+.country-picker{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.country-chip,.discipline-card{border-radius:17px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.035);min-height:72px;color:var(--muted);font-weight:900;display:flex;align-items:center;justify-content:center;gap:10px}
+.country-chip.active,.discipline-card.active{color:var(--green-hot);border-color:var(--green-hot);background:rgba(46,232,77,.1);box-shadow:0 0 22px rgba(46,232,77,.16)}
+.country-chip{justify-content:flex-start;min-height:92px;padding:12px;overflow:hidden;text-align:left}
+.flag-img{width:98px;height:64px;border-radius:14px;background-size:168% auto;background-position:center;background-repeat:no-repeat;border:1px solid rgba(255,255,255,.18);box-shadow:0 0 18px rgba(46,232,77,.18);flex-shrink:0}
+.flag-img.uy-real{background-image:url('assets/flags/uruguay.png')}
+.flag-img.ar-real{background-image:url('assets/flags/argentina.png')}
+.flag-img.br-real{background-image:url('assets/flags/brasil.png')}
+.flag{width:38px;height:26px;border-radius:7px;border:1px solid rgba(255,255,255,.18);position:relative;overflow:hidden;box-shadow:0 0 16px rgba(46,232,77,.12)}
+.flag.uy{background:repeating-linear-gradient(180deg,#fff 0 3px,#5bbcff 3px 6px)}
+.flag.uy::before{content:'';position:absolute;left:4px;top:4px;width:9px;height:9px;border-radius:50%;background:#ffd33d;box-shadow:0 0 0 2px rgba(255,211,61,.18)}
+.flag.ar{background:linear-gradient(180deg,#73c9ff 0 33%,#fff 33% 66%,#73c9ff 66% 100%)}
+.flag.ar::before{content:'';position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;transform:translate(-50%,-50%);background:#ffd33d}
+.flag.br{background:#15924a}
+.flag.br::before{content:'';position:absolute;left:50%;top:50%;width:22px;height:16px;background:#ffd33d;transform:translate(-50%,-50%) rotate(45deg);border-radius:2px}
+.flag.br::after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;border-radius:50%;transform:translate(-50%,-50%);background:#1d4fa3}
+.discipline-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.discipline-card{position:relative;isolation:isolate;overflow:hidden;min-height:124px;flex-direction:column;align-items:flex-start;justify-content:flex-end;text-align:left;padding:14px}
+.discipline-card svg{width:36px;height:36px;color:currentColor}
+.signup-cta{width:100%;height:60px;margin-top:18px;border-radius:18px;font-family:var(--display);font-size:17px;letter-spacing:.08em}
 .bottom-nav{display:none}
 @media(max-width:1080px){
   .grid-2,.dashboard-hero,.map-layout,.feed-grid,.profile-layout,.signup-layout{grid-template-columns:1fr}
@@ -270,11 +322,20 @@ img{max-width:100%;display:block}
   .map-stage{min-height:560px}
 }
 @media(max-width:760px){
-  .topbar{padding:13px 16px}
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;padding:12px 12px 10px;align-items:center}
+  .brand{min-width:0;overflow:hidden}
+  .brand img{width:42px;height:42px;flex-shrink:0}
+  .brand strong{font-size:22px;letter-spacing:.12em;white-space:nowrap}
   .brand span,.nav{display:none}
-  .actions .ghost-btn{display:none}
-  .main{padding:18px 14px 92px}
-  .h1{font-size:40px}
+  .actions{display:contents}
+  .actions .ghost-btn{display:none!important}
+  .notif-wrap{grid-column:2;grid-row:1}
+  .actions>.primary-btn{grid-column:3;grid-row:1;min-width:0;max-width:180px;height:48px;padding:0 14px;white-space:nowrap}
+  .actions>.primary-btn svg{flex-shrink:0}
+  .main{padding:16px 14px 92px;width:100%;max-width:100%}
+  .h1{font-size:38px;line-height:1.02}
+  .hero-actions{flex-direction:column}
+  .hero-actions .primary-btn,.hero-actions .ghost-btn{width:100%;min-height:52px}
   .panel{padding:17px;border-radius:23px}
   .hero-copy{min-height:330px;padding:22px;border-radius:24px}
   .grid-3,.grid-4,.spot-list,.product-grid,.gallery,.type-grid,.form-grid{grid-template-columns:1fr}
@@ -362,7 +423,9 @@ body:not([data-role="rider"]) .actions .primary-btn{display:none}
   .approve-row{grid-template-columns:72px 1fr}
   .approve-row .col{grid-column:1/-1;flex-direction:row}
   .approve-row .col button{flex:1;justify-content:center}
-  .role-switch button{padding:7px 9px;font-size:11.5px}
+  .role-switch{grid-column:1/-1;grid-row:2;width:100%;max-width:100%;overflow-x:auto;justify-content:flex-start}
+  .role-switch::-webkit-scrollbar{display:none}
+  .role-switch button{flex:1;min-width:0;padding:8px 9px;font-size:11.5px}
   .bottom-nav.cols-4{grid-template-columns:repeat(4,1fr)}
   body[data-role="rider"] .bottom-nav[data-role-nav="rider"],
   body[data-role="brand"] .bottom-nav[data-role-nav="brand"],
@@ -514,7 +577,7 @@ body[data-role="rider"] .fab{display:grid}
 /* ============ PANTALLA DE LOGIN (entrada) ============ */
 body.auth-mode .topbar,body.auth-mode .bottom-nav,body.auth-mode .fab{display:none!important}
 body.auth-mode .main{padding:0;width:100%;max-width:none}
-.auth{position:relative;min-height:100vh;overflow:hidden;display:flex;flex-direction:column;align-items:center}
+.auth{position:relative;min-height:100vh;min-height:100dvh;overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column;align-items:center}
 .auth-bg{position:absolute;inset:0;z-index:0;background:
   linear-gradient(180deg,rgba(4,6,4,.25) 0%,rgba(4,6,4,.55) 38%,rgba(4,6,4,.96) 62%,#040604 78%),
   url('assets/banners/banner-skatepark-3.webp') center top/cover no-repeat #040604}
@@ -523,14 +586,14 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   radial-gradient(420px 200px at 8% 96%,rgba(46,232,77,.2),transparent 60%),
   radial-gradient(380px 180px at 95% 80%,rgba(46,232,77,.16),transparent 60%),
   radial-gradient(300px 160px at 92% 4%,rgba(46,232,77,.12),transparent 60%)}
-.auth-inner{position:relative;z-index:2;width:min(560px,100%);padding:18px 22px 46px;display:flex;flex-direction:column}
+.auth-inner{position:relative;z-index:2;width:min(560px,100%);min-height:100vh;min-height:100dvh;padding:18px 22px 46px;display:flex;flex-direction:column}
 .auth-top{display:flex;justify-content:space-between;align-items:flex-start}
 .auth-coords{margin:8px auto 0;text-align:left;font-size:12px;letter-spacing:.06em;color:rgba(245,247,244,.85);display:flex;gap:10px;align-items:flex-start}
 .auth-coords svg{width:26px;height:26px;color:var(--green-hot);flex-shrink:0;filter:drop-shadow(0 0 8px rgba(116,255,58,.7))}
 .auth-coords span{display:block;line-height:1.5}
 .auth-coords .c-country{color:var(--muted);letter-spacing:.22em;font-weight:700;font-size:11px}
 .auth-stats{display:flex;gap:24px;margin-top:64px;z-index:3}
-.auth-stat{text-align:center}
+.auth-stat{min-width:88px;text-align:center;border:1px solid rgba(116,255,58,.14);border-radius:16px;background:linear-gradient(180deg,rgba(6,12,8,.32),rgba(6,10,7,.08));padding:10px 8px;backdrop-filter:blur(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .auth-stat svg{width:22px;height:22px;color:var(--green-hot);margin:0 auto 7px;display:block;filter:drop-shadow(0 0 10px rgba(116,255,58,.6))}
 .auth-stat b{display:block;font-family:var(--display);font-size:15px;letter-spacing:.02em}
 .auth-stat span{display:block;font-size:9.5px;letter-spacing:.18em;color:var(--muted);font-weight:800;margin-top:2px}
@@ -541,7 +604,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 .auth-logo .tm{position:absolute;top:6px;margin-left:6px;font-size:13px;color:rgba(245,247,244,.65);font-weight:700}
 .auth-tag{text-align:center;font-weight:800;letter-spacing:.06em;font-size:clamp(13.5px,3.6vw,16px);margin:6px 0 26px;text-transform:uppercase}
 .auth-tag .g{color:var(--green-hot);text-shadow:0 0 16px rgba(116,255,58,.45)}
-.auth .field{height:62px;border-radius:16px;background:rgba(14,18,15,.86);backdrop-filter:blur(8px);margin-top:13px}
+.auth .field{height:62px;border-radius:16px;background:linear-gradient(145deg,rgba(16,21,17,.9),rgba(7,10,8,.88));backdrop-filter:blur(10px);margin-top:13px;border-color:rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 12px 28px rgba(0,0,0,.28)}
+.auth .field svg{filter:drop-shadow(0 0 8px rgba(116,255,58,.35))}
 .auth-row{display:flex;align-items:center;justify-content:space-between;margin:16px 2px 6px;font-size:14.5px}
 .check{display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600}
 .check input{display:none}
@@ -560,15 +624,136 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 .social-btn svg{width:21px;height:21px;flex-shrink:0}
 .auth-create{width:100%;height:60px;margin-top:15px;border-radius:16px;border:1.5px solid var(--green-hot);color:var(--green-hot);font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:.1em;background:rgba(46,232,77,.05)}
 .auth-create:hover{background:rgba(46,232,77,.13);box-shadow:0 0 24px rgba(46,232,77,.2)}
-.auth-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-radius:20px;border:1px solid rgba(255,255,255,.1);background:rgba(12,16,13,.8);padding:17px 10px}
+.auth-feats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:18px;border-radius:20px;border:1px solid rgba(116,255,58,.18);background:linear-gradient(145deg,rgba(12,18,13,.86),rgba(5,8,6,.86));padding:17px 10px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 16px 40px rgba(0,0,0,.32)}
 .auth-feat{text-align:center}
 .auth-feat svg{width:24px;height:24px;color:var(--green-hot);margin:0 auto 8px;display:block}
 .auth-feat span{display:block;font-size:10px;letter-spacing:.1em;font-weight:800;color:var(--text);line-height:1.45;text-transform:uppercase}
 @media(max-width:560px){
-  .auth-stats{gap:16px;margin-top:48px}
+  .auth{min-height:100svh;min-height:100dvh}
+  .auth-bg{
+    filter:brightness(1.12) contrast(1.04);
+    background-size:100% 100%,clamp(640px,154vw,680px) auto;
+    background-position:center top,45% 10px;
+    background-repeat:no-repeat,no-repeat;
+  }
+  .auth-bg::after{background:
+    linear-gradient(180deg,rgba(4,6,4,.02) 0%,rgba(4,6,4,.07) 22%,rgba(4,6,4,.52) 47%,rgba(4,6,4,.94) 72%,#040604 100%),
+    radial-gradient(360px 190px at 14% 34%,rgba(46,232,77,.16),transparent 64%),
+    radial-gradient(300px 170px at 86% 30%,rgba(46,232,77,.12),transparent 66%);
+  }
+  .auth-inner{min-height:100svh;min-height:100dvh;padding:max(14px,env(safe-area-inset-top)) 22px max(26px,env(safe-area-inset-bottom))}
+  .auth-coords{margin-top:4px}
+  .auth-stats{gap:16px;margin-top:28px}
+  .auth-stat svg{width:21px;height:21px;margin-bottom:6px}
   .auth-stat b{font-size:13.5px}
+  .auth-stat span{font-size:9px}
+  .auth-logo{margin:34px auto 8px}
+  .auth-logo img{max-width:min(360px,88vw)}
+  .auth-tag{font-size:14px;line-height:1.32;margin:4px 0 20px}
+  .auth .field{height:58px;margin-top:11px}
+  #loginForm .field:first-child{margin-top:0}
+  .auth-row{gap:10px;margin:13px 2px 5px;font-size:13px}
+  .auth-forgot{font-size:13px;white-space:nowrap}
+  .auth-enter{height:60px;margin-top:14px;font-size:17px}
+  .auth-div{margin:19px 0 13px}
   .social-btn span{display:none}
-  .social-btn{gap:0}
+  .social-btn{height:54px;gap:0}
+  .auth-create{height:56px;margin-top:13px;font-size:16px}
+  .auth-feats{margin-top:15px;padding:14px 8px}
+  .auth-feat svg{width:22px;height:22px;margin-bottom:7px}
+  .auth-feat span{font-size:9px}
+}
+@media(max-width:390px){
+  .auth-bg{background-size:100% 100%,620px auto;background-position:center top,44% 10px}
+  .auth-inner{padding-left:18px;padding-right:18px}
+  .auth-coords{font-size:11px}
+  .auth-coords svg{width:23px;height:23px}
+  .auth-stats{gap:12px;margin-top:18px}
+  .auth-stat svg{width:19px;height:19px;margin-bottom:5px}
+  .auth-stat b{font-size:12.5px}
+  .auth-stat span{font-size:8.4px}
+  .auth-logo{margin-top:20px}
+  .auth-logo img{max-width:84vw}
+  .auth-tag{font-size:13px;margin-bottom:16px}
+  .auth .field{height:54px;margin-top:9px}
+  .auth-row{font-size:12.5px;margin-top:10px}
+  .auth-forgot{font-size:12.5px}
+  .auth-enter{height:56px;margin-top:12px;font-size:16px}
+  .auth-div{margin:16px 0 11px}
+  .social-row{gap:9px}
+  .social-btn{height:50px}
+  .auth-create{height:52px;margin-top:11px}
+  .auth-feats{margin-top:13px}
+  .auth-feats{gap:6px;padding-left:6px;padding-right:6px}
+  .auth-feat svg{width:20px;height:20px;margin-bottom:6px}
+  .auth-feat span{font-size:8px}
+}
+@media(max-width:760px){
+  .signup-layout{min-height:100svh;min-height:100dvh;padding:10px 14px 16px;grid-template-columns:1fr;gap:0}
+  .signup-visual{display:none}
+  .signup-visual{min-height:96px;border-radius:20px;padding:12px;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px}
+  .signup-visual::before{background-size:cover,cover,430px auto;background-position:0 0,0 0,48% center;opacity:.28;mask-image:none}
+  .signup-visual>div:last-child{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+  .signup-mark{gap:9px}
+  .signup-mark img{width:38px;height:38px;border-radius:12px}
+  .signup-mark b{font-size:17px;letter-spacing:.14em}
+  .signup-mark .meta{font-size:10px}
+  .signup-preview-head{display:block;min-width:0}
+  .signup-preview-head .kicker{font-size:9px;letter-spacing:.18em}
+  .signup-preview-head .h1{font-size:24px;line-height:.96;margin-top:4px;white-space:nowrap}
+  .signup-preview-head .lead,.signup-avatar,.signup-proof{display:none}
+  .signup-score{position:static;width:58px;height:58px}
+  .signup-score div{width:46px;height:46px}
+  .signup-score b{font-size:20px}
+  .signup-score span{margin-top:-8px;font-size:6.5px;letter-spacing:.12em}
+  .signup-panel{padding:14px;border-radius:22px}
+  .signup-header{display:block}
+  .signup-chip{display:none}
+  .signup-panel .kicker{font-size:10px}
+  .signup-panel .id-title{font-size:27px;line-height:1;margin-top:8px}
+  .signup-panel .lead{display:none}
+  .type-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:12px}
+  .type-card{height:76px;border-radius:14px;font-size:10.5px;padding:8px 5px;align-items:center;text-align:center}
+  .type-card::after{left:24%;right:24%;bottom:6px}
+  .type-card .card-label{margin-bottom:8px}
+  .type-card svg{width:29px;height:29px}
+  .form-grid{grid-template-columns:1fr;gap:8px;margin-top:10px}
+  .signup-panel .field{height:52px;border-radius:16px;padding:0 14px}
+  .signup-panel .field svg{width:20px;height:20px}
+  .country-field{display:none}
+  .country-picker{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .discipline-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .country-chip{min-height:64px;border-radius:15px;font-size:10.5px;padding:6px 5px;flex-direction:column;justify-content:center;text-align:center;gap:5px}
+  .country-chip .card-label{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .flag-img{width:50px;height:31px;border-radius:9px}
+  .signup-section-title{font-size:10px;margin:12px 0 8px}
+  .discipline-card{min-height:68px;border-radius:14px;font-size:10px;padding:7px 5px;align-items:center;text-align:center}
+  .discipline-card .card-label{margin-bottom:8px}
+  .discipline-card::after{left:24%;right:24%;bottom:6px}
+  .discipline-card svg{width:31px;height:31px}
+  .signup-cta{height:52px;margin-top:14px;border-radius:16px;font-size:14px}
+}
+@media(max-width:390px){
+  .signup-layout{padding-left:10px;padding-right:10px}
+  .signup-visual{min-height:90px}
+  .signup-mark img{width:34px;height:34px}
+  .signup-mark b{font-size:15px}
+  .signup-mark .meta{display:none}
+  .signup-preview-head .h1{font-size:21px}
+  .signup-score{width:52px;height:52px}
+  .signup-score div{width:42px;height:42px}
+  .signup-score b{font-size:18px}
+  .signup-panel{padding:12px}
+  .signup-panel .id-title{font-size:25px}
+  .type-grid{gap:5px}
+  .type-card{height:70px;border-radius:13px;font-size:9.5px;padding:7px 4px}
+  .signup-panel .field{height:49px}
+  .country-picker{gap:6px}
+  .country-chip{min-height:60px;font-size:10px;padding:5px 4px;border-radius:14px}
+  .flag-img{width:46px;height:28px;border-radius:8px}
+  .discipline-grid{gap:5px}
+  .discipline-card{min-height:64px;border-radius:13px;font-size:9.5px;padding:6px 4px}
+  .discipline-card .card-label{margin-bottom:7px}
 }
 </style>
 </head>
@@ -879,28 +1064,63 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <section class="view" data-view="signup">
       <div class="signup-layout">
         <aside class="signup-visual">
-          <div class="kicker">SPOTRA ID</div>
-          <h1 class="h1">Creá tu cuenta rider</h1>
-          <p class="lead">Armá tu perfil competitivo, validá spots y abrí postulaciones con marcas.</p>
+          <div class="signup-mark">
+            <img src="assets/logo/logo-principal.webp" alt="SPOTRA">
+            <div><b>SPOTRA</b><div class="meta">Rider identity</div></div>
+          </div>
+          <div>
+            <div class="signup-preview-head">
+              <div>
+                <div class="kicker">SPOTRA ID</div>
+                <h1 class="h1">Sponsor ready</h1>
+                <p class="lead">Tu perfil competitivo listo para marcas, spots aprobados y próximas competencias.</p>
+              </div>
+              <div class="signup-avatar" aria-hidden="true"></div>
+            </div>
+            <div class="signup-score"><div><b>92</b><span>SCORE</span></div></div>
+            <div class="signup-proof">
+              <div class="mini-stat"><b>84%</b><span>perfil completo</span></div>
+              <div class="mini-stat"><b>3</b><span>spots aprobados</span></div>
+              <div class="mini-stat"><b>5</b><span>matches abiertos</span></div>
+            </div>
+          </div>
         </aside>
-        <div class="panel">
-          <div class="kicker">Crear cuenta</div>
-          <h2 class="id-title">Elegí el tipo de cuenta</h2>
+        <div class="panel signup-panel">
+          <div class="signup-header">
+            <div>
+              <div class="kicker">Crear cuenta</div>
+              <h2 class="id-title"><span class="green">Creá</span> tu cuenta</h2>
+              <p class="lead">Elegí el tipo de cuenta que mejor te representa y armá tu acceso al ecosistema SPOTRA.</p>
+            </div>
+            <span class="signup-chip">SPOTRA ID</span>
+          </div>
           <div class="type-grid">
-            <button class="type-card active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="4.5" r="1.8"/><path d="M6 20l3-5 3 1 2-4M4 17l3-3M9 16l5 1"/><ellipse cx="6" cy="20" rx="2.5" ry="1"/><ellipse cx="16" cy="20" rx="2.5" ry="1"/></svg>Rider</button>
-            <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9l1-4h14l1 4M5 9v10h14V9"/></svg>Tienda</button>
-            <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 18l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg>Marca</button>
-            <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg>Organizador</button>
+            <button class="type-card active"><span class="card-photo"><img src="assets/eventos/skater-2.webp" alt=""></span><span class="card-label">Rider</span></button>
+            <button class="type-card"><span class="card-photo"><img src="assets/tiendas/interior-tienda.webp" alt=""></span><span class="card-label">Tienda</span></button>
+            <button class="type-card"><span class="card-photo"><img src="assets/banners/banner-marca.webp" alt=""></span><span class="card-label">Marca / Sponsor</span></button>
+            <button class="type-card"><span class="card-photo"><img src="assets/banners/banner-skatepark-4.webp" alt=""></span><span class="card-label">Organizador</span></button>
           </div>
           <div class="form-grid" id="signupForm">
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required placeholder="Nombre completo" autocomplete="name"></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input required type="email" placeholder="Email" autocomplete="email"></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input required type="tel" placeholder="Celular" autocomplete="tel"></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña (mín. 8)" minlength="8" autocomplete="new-password"></div>
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg><select required><option value="">País</option><option>Uruguay</option><option>Argentina</option><option>Brasil</option></select></div>
+            <div class="field country-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg><select required id="signupCountry"><option>Uruguay</option><option>Argentina</option><option>Brasil</option></select></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Ciudad"></div>
+            <div class="country-picker" aria-label="País de inicio">
+              <button type="button" class="country-chip active" data-country="Uruguay"><span class="flag-img uy-real" aria-hidden="true"></span><span class="card-label">Uruguay</span></button>
+              <button type="button" class="country-chip" data-country="Argentina"><span class="flag-img ar-real" aria-hidden="true"></span><span class="card-label">Argentina</span></button>
+              <button type="button" class="country-chip" data-country="Brasil"><span class="flag-img br-real" aria-hidden="true"></span><span class="card-label">Brasil</span></button>
+            </div>
           </div>
-          <button class="primary-btn" style="width:100%;margin-top:18px;height:58px" data-validate="signupForm" data-route="home">Continuar</button>
+          <div class="signup-section-title">Disciplina</div>
+          <div class="discipline-grid">
+            <button type="button" class="discipline-card active"><span class="card-photo"><img src="assets/marketplace/skate-completo.webp" alt=""></span><span class="card-label">Skate</span></button>
+            <button type="button" class="discipline-card"><span class="card-photo"><img src="assets/marketplace/bmx-usada.webp" alt=""></span><span class="card-label">BMX</span></button>
+            <button type="button" class="discipline-card"><span class="card-photo"><img src="assets/tiendas/championes-vans-negros.webp" alt=""></span><span class="card-label">Roller</span></button>
+            <button type="button" class="discipline-card"><span class="card-photo"><img src="assets/spots/spot-10.webp" alt=""></span><span class="card-label">Scooter</span></button>
+          </div>
+          <button class="primary-btn signup-cta" data-validate="signupForm" data-route="home">Crear mi SPOTRA ID</button>
         </div>
       </div>
     </section>
@@ -1202,7 +1422,7 @@ function setRole(role, route){
 
 function setRoute(route, push = true){
   const target = routes.includes(route) ? route : 'login';
-  document.body.classList.toggle('auth-mode', target === 'login');
+  document.body.classList.toggle('auth-mode', target === 'login' || target === 'signup');
   const role = roleOf(target);
   document.body.dataset.role = role;
   document.querySelectorAll('.role-switch button').forEach(b => b.classList.toggle('active', b.dataset.roleSet === role));
@@ -1399,12 +1619,16 @@ document.addEventListener('input', e => {
 });
 
 /* ===== Tabs locales + filtros ===== */
-document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs button').forEach(button => {
+document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs button,.country-chip,.discipline-card').forEach(button => {
   if(button.dataset.route) return;
   button.addEventListener('click', () => {
     const parent = button.parentElement;
     parent.querySelectorAll('button').forEach(item => item.classList.remove('active'));
     button.classList.add('active');
+    if(button.classList.contains('country-chip')){
+      const country = document.getElementById('signupCountry');
+      if(country) country.value = button.dataset.country;
+    }
     const group = button.closest('[data-filter-target]');
     if(group && button.dataset.f) applyFilter(group.dataset.filterTarget, button.dataset.f);
   });
