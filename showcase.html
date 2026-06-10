@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPOTRA — Prototipo Premium</title>
+<link rel="preconnect" href="https://api.fontshare.com">
+<link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700,500&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080908;
+  --bg-2:#0d0f0d;
+  --surface:rgba(20, 22, 20, 0.85);
+  --surface-2:rgba(26, 29, 26, 0.9);
+  --surface-3:#212521;
+  --border:rgba(46, 232, 77, 0.15);
+  --border-soft:rgba(255,255,255,0.05);
+  --green:#2ee84d;
+  --green-deep:#22c93f;
+  --green-dim:#1c8a30;
+  --green-ghost:rgba(46,232,77,.12);
+  --green-glow: 0 0 15px rgba(46,232,77,0.3);
+  --txt:#f4f6f4;
+  --txt-2:#9aa39a;
+  --txt-3:#5f675f;
+  --white:#ffffff;
+  --r:18px;
+  --r-sm:12px;
+  --r-lg:24px;
+  --display:'Clash Display',sans-serif;
+  --body:'General Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  background-color: var(--bg);
+  color:var(--txt);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:32px 16px 80px;
+  overflow-x:hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow-main {
+  position: fixed;
+  top: 10%; left: 50%;
+  width: 80vw; height: 80vh;
+  transform: translateX(-50%);
+  background: radial-gradient(circle, rgba(46,232,77,0.03) 0%, transparent 60%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+img{display:block;max-width:100%}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+::-webkit-scrollbar{width:0;height:0}
+
+/* ====== Brand header (page) ====== */
+.page-head{width:100%;max-width:1180px;display:flex;align-items:center;justify-content:space-between;margin-bottom:26px;flex-wrap:wrap;gap:18px;position:relative;z-index:10}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:38px;height:38px;filter:drop-shadow(0 0 8px rgba(46,232,77,0.6)); border-radius: 8px;}
+.brand h1{font-family:var(--display);font-weight:700;letter-spacing:.14em;font-size:24px}
+.tagline{color:var(--txt-2);font-size:13.5px;max-width:520px;line-height:1.5}
+.tagline b{color:var(--green);font-weight:600;text-shadow: 0 0 8px rgba(46,232,77,0.4)}
+
+.flows{display:flex;gap:8px;background:var(--surface);backdrop-filter:blur(10px);border:1px solid var(--border);padding:6px;border-radius:14px}
+.flow-tab{padding:9px 16px;border-radius:9px;font-weight:600;font-size:13px;color:var(--txt-2);transition:.18s;white-space:nowrap}
+.flow-tab.active{background:var(--green);color:#06140a;box-shadow:var(--green-glow)}
+.flow-tab:not(.active):hover{color:var(--txt);background:var(--surface-2)}
+
+.stage{width:100%;max-width:1180px;display:grid;grid-template-columns:248px 1fr;gap:30px;align-items:start;position:relative;z-index:10}
+@media(max-width:880px){
+  body{padding-top:22px}
+  .stage{grid-template-columns:1fr}
+  .phone-wrap{order:-1}
+  .rail{position:relative;top:auto}
+  .flows{width:100%;overflow-x:auto}
+}
+
+.rail{position:sticky;top:24px}
+.rail h2{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--txt-3);margin:0 0 12px 4px;font-weight:600}
+.rail .grp{display:none;flex-direction:column;gap:6px;margin-bottom:22px}
+.rail .grp.active{display:flex}
+.rail-item{text-align:left;padding:11px 14px;border-radius:11px;color:var(--txt-2);font-size:13.5px;font-weight:500;border:1px solid transparent;display:flex;align-items:center;gap:10px;transition:.15s}
+.rail-item:hover{background:var(--surface);color:var(--txt)}
+.rail-item.active{background:var(--green-ghost);color:var(--green);border-color:rgba(46,232,77,.3);text-shadow:0 0 10px rgba(46,232,77,0.2)}
+.rail-item .n{font-family:var(--display);font-weight:600;font-size:12px;opacity:.6;width:16px}
+.rail-note{font-size:12px;color:var(--txt-3);line-height:1.6;padding:14px;border:1px dashed var(--border-soft);background:rgba(255,255,255,0.02);border-radius:12px}
+.rail-note b{color:var(--txt-2)}
+
+.phone-wrap{display:flex;justify-content:center}
+.phone{
+  width:392px;max-width:100%;height:812px;
+  background:#000;border-radius:54px;
+  padding:13px;position:relative;
+  box-shadow:0 0 0 2px #222,0 0 0 8px #0c0c0c,0 40px 120px rgba(0,0,0,.8),0 0 90px rgba(46,232,77,.1);
+}
+.notch{position:absolute;top:13px;left:50%;transform:translateX(-50%);width:122px;height:32px;background:#000;border-radius:0 0 20px 20px;z-index:60}
+.screen{position:relative;width:100%;height:100%;border-radius:42px;overflow:hidden;background:#0a0b0a;}
+.screen::before {
+  content: ''; position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.8;
+}
+.viewport{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden}
+.scr{display:none;min-height:100%;position:relative;z-index:1}
+.scr.active{display:block;animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.statusbar{position:relative;z-index:50;display:flex;justify-content:space-between;align-items:center;padding:16px 26px 4px;font-size:14px;font-weight:600; text-shadow: 0 1px 3px rgba(0,0,0,0.8)}
+.statusbar .icns{display:flex;gap:6px;align-items:center; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8))}
+
+.topbar{position:relative;z-index:50;display:flex;align-items:center;justify-content:space-between;padding:14px 22px 8px}
+.topbar .brand-sm{display:flex;align-items:center;gap:9px}
+.topbar .brand-sm img{filter:drop-shadow(0 0 6px rgba(46,232,77,0.5)); border-radius: 6px;}
+.topbar .brand-sm span{font-family:var(--display);font-weight:700;letter-spacing:.12em;font-size:17px; text-shadow:0 0 10px rgba(0,0,0,0.8)}
+.icon-btn{width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:11px;color:var(--txt); background:rgba(255,255,255,0.05); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.05); transition:.2s}
+.icon-btn:hover { background:rgba(255,255,255,0.1); }
+.bell{position:relative}
+.bell .dot{position:absolute;top:4px;right:4px;min-width:16px;height:16px;padding:0 3px;border-radius:8px;background:var(--green);color:#06140a;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center; box-shadow: 0 0 8px var(--green)}
+
+.pad{position:relative;z-index:5;padding:6px 22px 26px}
+.pad-b{padding-bottom:100px}
+
+.h-xl{font-family:var(--display);font-weight:700;font-size:40px;line-height:1.02;letter-spacing:-.01em}
+.h-l{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05}
+.h-m{font-family:var(--display);font-weight:600;font-size:21px}
+.sub{color:var(--txt-2);font-size:15px;line-height:1.5;margin-top:8px}
+.green{color:var(--green); text-shadow: 0 0 12px rgba(46,232,77,0.3)}
+.sect-head{display:flex;align-items:center;justify-content:space-between;margin:28px 0 14px}
+.sect-head h3{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt);font-weight:600}
+.sect-head a{color:var(--green);font-size:13px;font-weight:600}
+
+.btn{width:100%;height:60px;border-radius:24px;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:0 20px;transition:.18s;position:relative;overflow:hidden;letter-spacing:-.01em}
+.btn::before{content:'';position:absolute;inset:1px;border-radius:23px;background:linear-gradient(180deg,rgba(255,255,255,.24),transparent 46%,rgba(0,0,0,.12));pointer-events:none;opacity:.62}
+.btn::after{content:'';position:absolute;left:18px;right:18px;top:8px;height:14px;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.22),transparent 70%);filter:blur(10px);pointer-events:none}
+.btn-primary{background:linear-gradient(135deg,#2bff55 0%,#2ee84d 48%,#1fc43b 100%);color:#06140a;box-shadow:0 12px 32px rgba(46,232,77,.28),0 0 30px rgba(46,232,77,.3),inset 0 -3px 0 rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.32)}
+.btn-primary:hover{background:linear-gradient(135deg,#45ff68 0%,var(--green) 52%,var(--green-deep) 100%); box-shadow:0 14px 38px rgba(46,232,77,.38),0 0 34px rgba(46,232,77,.46),inset 0 -3px 0 rgba(0,0,0,.18)}
+.btn-ghost{border:1.5px solid rgba(46,232,77,.72);color:var(--green); background:linear-gradient(135deg,rgba(46,232,77,.12),rgba(6,20,10,.2) 54%,rgba(46,232,77,.04)); backdrop-filter:blur(8px);box-shadow:0 10px 26px rgba(0,0,0,.28),inset 0 0 0 1px rgba(46,232,77,.16),inset 0 -18px 38px rgba(46,232,77,.05)}
+.btn-ghost:hover{background:linear-gradient(135deg,rgba(46,232,77,.18),rgba(6,20,10,.28) 52%,rgba(46,232,77,.08)); border-color:var(--green);box-shadow:0 10px 28px rgba(46,232,77,.12),inset 0 0 0 1px rgba(46,232,77,.2)}
+.btn .arr{margin-left:auto;width:24px;height:24px;filter:drop-shadow(0 0 8px rgba(0,0,0,.28))}
+.btn-sm{height:44px;font-size:14px;border-radius:12px}
+.link-c{display:block;text-align:center;color:var(--green);font-weight:600;font-size:15px;padding:16px}
+.auth-actions{display:flex;flex-direction:column;gap:14px;margin-top:22px}
+.auth-card{width:100%;min-height:86px;border-radius:22px;display:grid;grid-template-columns:72px 1fr 48px;align-items:center;gap:10px;padding:14px 16px;position:relative;overflow:hidden;text-align:left;transition:.18s}
+.auth-card::before{content:'';position:absolute;inset:1px;border-radius:21px;background:linear-gradient(180deg,rgba(255,255,255,.24),transparent 52%,rgba(0,0,0,.18));pointer-events:none}
+.auth-card::after{content:'';position:absolute;left:20px;right:20px;top:8px;height:18px;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.25),transparent 74%);filter:blur(12px);pointer-events:none}
+.auth-card-primary{background:linear-gradient(135deg,#7cff3c 0%,#43ea46 42%,#2cc83b 100%);color:#06140a;border:1px solid rgba(126,255,91,.7);box-shadow:0 14px 32px rgba(46,232,77,.32),0 0 26px rgba(46,232,77,.34),inset 0 -3px 0 rgba(0,0,0,.14)}
+.auth-card-dark{background:linear-gradient(135deg,rgba(4,12,6,.94),rgba(7,18,10,.78));color:var(--green);border:1px solid rgba(46,232,77,.58);box-shadow:0 13px 30px rgba(0,0,0,.35),inset 0 0 0 1px rgba(46,232,77,.08),0 0 20px rgba(46,232,77,.08)}
+.auth-icon{width:54px;height:54px;border-radius:18px;display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.auth-card-primary .auth-icon{background:linear-gradient(135deg,rgba(255,255,255,.26),rgba(255,255,255,.08));box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 8px 20px rgba(0,0,0,.13)}
+.auth-card-dark .auth-icon{background:rgba(4,12,6,.86);border:1px solid rgba(46,232,77,.5);box-shadow:0 0 18px rgba(46,232,77,.3),inset 0 0 18px rgba(46,232,77,.08)}
+.auth-icon svg{width:28px;height:28px;stroke-width:2.1}
+.auth-copy{display:flex;flex-direction:column;gap:5px;position:relative;z-index:1;min-width:0}
+.auth-copy b{font-size:20px;line-height:1;font-weight:800;letter-spacing:-.015em}
+.auth-copy small{font-size:12.5px;line-height:1.2;color:rgba(6,20,10,.72)}
+.auth-card-dark .auth-copy small{color:rgba(155,218,157,.74)}
+.auth-arrow{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;justify-self:end}
+.auth-card-primary .auth-arrow{background:#050905;color:var(--green);box-shadow:0 8px 18px rgba(0,0,0,.34)}
+.auth-card-dark .auth-arrow{background:rgba(5,12,6,.7);border:1px solid rgba(46,232,77,.7);color:var(--green);box-shadow:0 0 16px rgba(46,232,77,.28)}
+.auth-arrow svg{width:22px;height:22px}
+
+.card{background:var(--surface);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:var(--r)}
+.card-soft{background:linear-gradient(160deg,var(--surface),var(--bg-2));border:1px solid var(--border-soft);border-radius:var(--r)}
+
+.chips{display:flex;gap:9px;overflow-x:auto;padding-bottom:4px}
+.chips::-webkit-scrollbar {display: none;}
+.chip{padding:9px 16px;border-radius:11px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(4px);font-size:13.5px;font-weight:500;color:var(--txt-2);white-space:nowrap;transition:.15s}
+.chip.active{background:var(--green-ghost);border-color:var(--green);color:var(--green);font-weight:600; box-shadow: 0 0 10px rgba(46,232,77,0.15)}
+.chip:hover:not(.active){color:var(--txt); border-color:rgba(255,255,255,0.2)}
+
+.tabbar{position:absolute;bottom:0;left:0;right:0;z-index:100;height:84px;background:linear-gradient(180deg,rgba(8,9,8,0.7) 0%, rgba(5,6,5,0.95) 100%);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.05);display:flex;align-items:flex-start;justify-content:space-around;padding:12px 8px 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--txt-3);font-size:11px;font-weight:500;flex:1;transition:.15s}
+.tab svg{width:24px;height:24px}
+.tab.active{color:var(--green); text-shadow:0 0 10px rgba(46,232,77,0.4)}
+.tab.active svg { filter: drop-shadow(0 0 6px rgba(46,232,77,0.4)); }
+.tab .center{width:48px;height:48px;border-radius:14px;background:var(--green);color:#06140a;display:flex;align-items:center;justify-content:center;margin-top:-8px;box-shadow:var(--green-glow)}
+.tab .center svg{width:26px;height:26px; filter:none}
+
+.bg-img { background-size: cover; background-position: center; background-repeat: no-repeat; }
+
+/* hero */
+.hero-flag{display:inline-block;width:46px;height:3px;background:var(--green);border-radius:2px;margin:18px 0 6px;box-shadow:0 0 14px var(--green)}
+.feature-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.feat{height:118px;border-radius:17px;overflow:hidden;border:1px solid rgba(255,255,255,.1);background:var(--surface);backdrop-filter:blur(6px);position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:12px 7px 13px;transition:.18s;box-shadow:inset 0 0 0 1px rgba(255,255,255,.02)}
+.feat:hover{border-color:var(--green); box-shadow:0 0 18px rgba(46,232,77,0.16),inset 0 0 0 1px rgba(46,232,77,.16)}
+.feat .ph{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0.54; mix-blend-mode:normal;filter:saturate(.75) contrast(1.08);}
+.feat::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.18),rgba(0,0,0,.72));pointer-events:none}
+.feat .mini-map{position:absolute;inset:0;background-image:linear-gradient(rgba(46,232,77,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(46,232,77,.08) 1px,transparent 1px);background-size:13px 13px}
+.feat > svg:not(.pin){width:28px;height:28px;color:var(--green);position:absolute;z-index:2;left:50%;top:48%;transform:translate(-50%,-50%);filter:drop-shadow(0 0 8px rgba(46,232,77,0.75))}
+.feat span{position:relative;z-index:2;font-size:11px;font-weight:800;color:var(--txt);display:flex;flex-direction:column;align-items:center;gap:6px;text-shadow:0 1px 6px rgba(0,0,0,.75);max-width:100%}
+.feat span::after{content:'';width:20px;height:2px;border-radius:2px;background:var(--green);box-shadow:0 0 8px rgba(46,232,77,.8)}
+.feat .pin{position:absolute;z-index:2;color:var(--green)}
+.unity{margin-top:20px;border-radius:22px;border:1px solid rgba(255,255,255,0.08);background:linear-gradient(150deg,rgba(19,23,20,.82),rgba(9,11,9,.72));backdrop-filter:blur(12px);padding:20px 16px 18px;position:relative;overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 16px 40px rgba(0,0,0,.34)}
+.unity .skyline{position:absolute;left:0;right:0;bottom:0;height:72px;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.025) 0 8px,rgba(255,255,255,0.055) 8px 14px,transparent 14px 26px);opacity:.7;mask-image:linear-gradient(180deg,transparent,#000)}
+.unity-t{text-align:center;font-size:11px;letter-spacing:.28em;color:var(--green);font-weight:800;margin-bottom:16px; text-shadow:0 0 12px rgba(46,232,77,0.42)}
+.flags{display:flex;justify-content:space-around;position:relative;z-index:2}
+.flagx{display:flex;flex-direction:column;align-items:center;gap:10px;font-size:11.5px;font-weight:800;letter-spacing:.1em}
+.flag-card{width:68px;height:46px;border-radius:8px;border:1px solid rgba(46,232,77,.48);background:rgba(3,8,4,.72);display:flex;align-items:center;justify-content:center;padding:5px;box-shadow:0 0 16px rgba(46,232,77,.1),inset 0 0 0 1px rgba(255,255,255,.035)}
+.flag-card svg{width:58px;height:36px;border-radius:4px;overflow:hidden;filter:drop-shadow(0 2px 6px rgba(0,0,0,.42))}
+.flagx span{color:var(--txt);text-shadow:0 1px 6px rgba(0,0,0,.7)}
+
+.type-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin:8px 0 4px}
+.type-card{aspect-ratio:.92;border-radius:14px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(6px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:var(--txt-2);font-size:11.5px;font-weight:600;text-align:center;line-height:1.2;transition:.15s;padding:6px}
+.type-card svg{width:26px;height:26px}
+.type-card.active{border-color:var(--green);background:var(--green-ghost);color:var(--green); box-shadow:0 0 15px rgba(46,232,77,0.15)}
+.field{display:flex;align-items:center;gap:12px;height:54px;padding:0 16px;border-radius:13px;border:1px solid var(--border-soft);background:rgba(255,255,255,0.02);backdrop-filter:blur(5px);margin-top:11px}
+.field svg{width:19px;height:19px;color:var(--txt-3);flex-shrink:0}
+.field input,.field .ph-in{flex:1;background:none;border:none;outline:none;color:var(--txt);font-size:15px;font-family:inherit}
+.field .ph-in{color:var(--txt-3)}
+.field .suffix{display:flex;align-items:center;gap:6px;color:var(--txt-2);font-size:14px;border-left:1px solid var(--border-soft);padding-left:12px}
+.field-lbl{font-family:var(--display);font-weight:600;font-size:15px;margin:20px 0 4px}
+
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{padding:15px 14px;border-radius:16px;background:var(--surface);backdrop-filter:blur(8px);border:1px solid var(--border-soft);position:relative; overflow:hidden}
+.stat::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(46,232,77,0.05),transparent);pointer-events:none}
+.stat .top{display:flex;justify-content:space-between;align-items:flex-start;color:var(--green)}
+.stat .top svg.ic{width:22px;height:22px; filter:drop-shadow(0 0 5px rgba(46,232,77,0.4))}
+.stat .top svg.ch{width:14px;height:14px;color:var(--txt-3)}
+.stat .lbl{font-size:10px;letter-spacing:.08em;color:var(--txt-2);margin-top:14px;line-height:1.3;font-weight:600;text-transform:uppercase}
+.stat .num{font-family:var(--display);font-weight:700;font-size:30px;color:var(--green);margin-top:6px; text-shadow:0 0 15px rgba(46,232,77,0.3)}
+.stat .meta{font-size:11px;color:var(--txt-3);margin-top:2px}
+.identity-card{margin-top:18px;padding:16px;border-radius:17px;border:1px solid rgba(46,232,77,.24);background:linear-gradient(135deg,rgba(46,232,77,.12),rgba(255,255,255,.03));backdrop-filter:blur(10px);position:relative;overflow:hidden}
+.identity-card::after{content:'';position:absolute;right:-34px;top:-46px;width:150px;height:150px;border-radius:50%;border:1px solid rgba(46,232,77,.12)}
+.identity-card .id-top{display:flex;align-items:center;justify-content:space-between;gap:12px;position:relative;z-index:1}
+.identity-card .id-label{font-size:10.5px;letter-spacing:.16em;color:var(--green);font-weight:700;text-transform:uppercase}
+.identity-card .id-title{font-family:var(--display);font-weight:700;font-size:22px;margin-top:4px}
+.identity-card .id-score{width:60px;height:60px;border-radius:16px;background:#06140a;color:var(--green);display:flex;align-items:center;justify-content:center;flex-direction:column;border:1px solid rgba(46,232,77,.32);box-shadow:inset 0 0 18px rgba(46,232,77,.12)}
+.identity-card .id-score b{font-family:var(--display);font-size:23px;line-height:1}
+.identity-card .id-score span{font-size:8px;letter-spacing:.12em;color:var(--txt-2);margin-top:3px}
+.identity-card.landing-id{padding:19px 16px 20px;border-radius:20px;border-color:rgba(46,232,77,.46);background:radial-gradient(circle at 87% 22%,rgba(104,255,54,.16),transparent 24%),linear-gradient(145deg,rgba(22,26,23,.94),rgba(8,10,9,.96));box-shadow:0 16px 34px rgba(0,0,0,.36),0 0 22px rgba(46,232,77,.12),inset 0 0 0 1px rgba(255,255,255,.025)}
+.identity-card.landing-id::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='240' height='160' viewBox='0 0 240 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232ee84d' stroke-opacity='.08' stroke-width='1'%3E%3Cpath d='M174 8c20 14 20 36 0 52s-18 38 5 52 25 35 8 47'/%3E%3Cpath d='M196 4c18 19 15 39-6 57s-19 35 8 50 29 32 12 47'/%3E%3Cpath d='M151 14c21 17 24 34 8 52s-18 35 2 51 20 28 5 41'/%3E%3Ccircle cx='197' cy='53' r='13'/%3E%3Ccircle cx='197' cy='53' r='22'/%3E%3C/g%3E%3C/svg%3E") right top/220px 150px no-repeat;pointer-events:none}
+.identity-card.landing-id .id-label{font-size:10.5px;letter-spacing:.22em;font-weight:800}
+.identity-card.landing-id .id-title{font-size:34px;line-height:.98;letter-spacing:-.02em;margin-top:10px;max-width:210px}
+.identity-card.landing-id .id-title .green{display:inline;text-shadow:0 0 18px rgba(46,232,77,.42)}
+.bolt-mark{display:inline-flex;width:24px;height:32px;color:var(--green);vertical-align:-5px;margin-left:5px;filter:drop-shadow(0 0 12px rgba(46,232,77,.72))}
+.identity-card.landing-id .id-score{width:76px;height:76px;border-radius:50%;background:radial-gradient(circle,#14371a 0%,#06140a 58%,#020602 100%);border:3px solid #7cff3c;box-shadow:0 0 24px rgba(124,255,60,.65),inset 0 0 18px rgba(46,232,77,.35)}
+.identity-card.landing-id .id-score b{font-size:31px}
+.identity-card.landing-id .id-score span{color:rgba(255,255,255,.72);font-weight:800}
+.signal-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;position:relative;z-index:1}
+.signal{padding:9px;border-radius:11px;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06)}
+.signal .v{font-weight:700;font-size:13px;color:var(--txt)}
+.signal .l{font-size:9.5px;color:var(--txt-3);margin-top:2px;line-height:1.2}
+.landing-id .signal-row{gap:10px;margin-top:18px}
+.landing-id .signal{min-height:78px;padding:12px 8px;border-radius:14px;background:linear-gradient(145deg,rgba(255,255,255,.08),rgba(255,255,255,.03));display:grid;grid-template-columns:24px 1fr;align-items:center;column-gap:7px;border-color:rgba(255,255,255,.08);box-shadow:inset 0 1px 0 rgba(255,255,255,.04);min-width:0}
+.signal-ic{width:24px;height:24px;color:var(--green);filter:drop-shadow(0 0 7px rgba(46,232,77,.6))}
+.landing-id .signal .v{font-size:12.5px;white-space:nowrap}
+.landing-id .signal .l{font-size:9.5px;color:var(--txt-2)}
+.quick{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:11px}
+.quick-i{aspect-ratio:1;border-radius:13px;background:var(--surface);backdrop-filter:blur(6px);border:1px solid var(--border-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;font-size:10.5px;color:var(--txt-2);font-weight:500;transition:.15s}
+.quick-i svg{width:20px;height:20px;color:var(--green)}
+.quick-i:hover{border-color:var(--green); color:var(--txt); box-shadow:0 0 12px rgba(46,232,77,0.15)}
+
+.ev-row{display:flex;gap:11px;overflow-x:auto;padding-bottom:4px; margin:0 -22px; padding-left:22px; padding-right:22px}
+.ev-row::-webkit-scrollbar{display:none}
+.ev{flex:0 0 160px;border-radius:15px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);background:var(--surface); backdrop-filter:blur(8px)}
+.ev .img{height:108px;position:relative;background-size:cover;background-position:center;box-shadow:inset 0 -30px 40px rgba(0,0,0,0.5)}
+.ev .date{position:absolute;top:9px;left:9px;background:rgba(10,12,10,.8);border:1px solid rgba(46,232,77,0.3);border-radius:9px;padding:5px 9px;text-align:center;backdrop-filter:blur(6px); box-shadow: 0 4px 10px rgba(0,0,0,0.5)}
+.ev .date .d{font-family:var(--display);font-weight:700;font-size:18px;color:var(--green);line-height:1}
+.ev .date .m{font-size:9px;letter-spacing:.1em;color:var(--txt-2)}
+.ev .body{padding:11px 12px 13px}
+.ev .body .t{font-weight:600;font-size:15px}
+.ev .body .loc{display:flex;align-items:center;gap:5px;color:var(--txt-2);font-size:12px;margin-top:5px}
+.ev .body .loc svg{width:13px;height:13px;color:var(--green)}
+
+.spot{display:flex;gap:13px;padding:13px;border-radius:15px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(8px);margin-bottom:11px;align-items:center}
+.spot .th{width:64px;height:64px;border-radius:12px;flex-shrink:0;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.1)}
+.spot .info{flex:1;min-width:0}
+.spot .info .tr{display:flex;align-items:center;justify-content:space-between}
+.spot .info .nm{font-weight:600;font-size:16px}
+.spot .info .km{color:var(--green);font-size:13px;font-weight:600}
+.spot .info .ty{color:var(--txt-2);font-size:12.5px;margin-top:2px}
+.spot .tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.spot .tags span{font-size:10.5px;padding:4px 9px;border-radius:7px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.05);color:var(--txt-2)}
+
+.searchbar{display:flex;align-items:center;gap:11px;height:50px;padding:0 16px;border-radius:14px;background:rgba(20,22,20,0.8);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);margin:4px 22px 0}
+.searchbar svg{width:19px;height:19px;color:var(--txt-3)}
+.searchbar .ph-in{flex:1;color:var(--txt-3);font-size:14.5px}
+.map{position:relative;height:320px;margin-top:14px;background:
+  radial-gradient(circle at 50% 45%, rgba(46,232,77,.05), transparent 60%),
+  #080908;overflow:hidden; box-shadow:inset 0 0 30px rgba(0,0,0,0.8)}
+.map .lines{position:absolute;inset:0;background-image:
+  linear-gradient(rgba(46,232,77,.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(46,232,77,.03) 1px,transparent 1px);background-size:40px 40px;}
+.map .road{position:absolute;background:rgba(255,255,255,.03);border-radius:2px}
+.map .lbl{position:absolute;color:rgba(255,255,255,0.3);font-size:10px;letter-spacing:.14em;font-weight:600}
+.pin-m{position:absolute;color:var(--green);transform:translate(-50%,-100%); filter:drop-shadow(0 4px 6px rgba(0,0,0,0.8))}
+.pin-m svg{width:26px;height:26px;}
+.pin-m.big svg{width:42px;height:42px;filter:drop-shadow(0 0 16px rgba(46,232,77,.6))}
+.loc-btn{position:absolute;bottom:40px;right:16px;width:48px;height:48px;border-radius:50%;background:rgba(20,22,20,0.9);backdrop-filter:blur(8px);border:1px solid rgba(46,232,77,0.3);display:flex;align-items:center;justify-content:center;color:var(--green); box-shadow:0 4px 15px rgba(0,0,0,0.6)}
+.loc-btn svg{width:22px;height:22px}
+
+/* Enhanced Map Sheet */
+.sheet{background:var(--bg);border-radius:26px 26px 0 0;margin-top:-30px;position:relative;z-index:15;border-top:1px solid rgba(255,255,255,0.05); overflow:hidden; box-shadow: 0 -10px 40px rgba(0,0,0,0.8)}
+.sheet .cover-hero{position:relative; height: 180px; background-size:cover; background-position:center; display:flex; flex-direction:column; justify-content:flex-end; padding:20px; box-shadow:inset 0 -60px 60px -10px rgba(8,9,8,1)}
+.sheet .grab{position:absolute; top:12px; left:50%; transform:translateX(-50%); width:42px; height:4px; background:rgba(255,255,255,0.3); border-radius:3px; z-index:20}
+.verified{display:inline-flex;align-items:center;gap:6px; text-shadow:0 2px 4px rgba(0,0,0,0.8)}
+.verified svg{width:18px;height:18px;color:var(--green); filter:drop-shadow(0 0 4px rgba(46,232,77,0.5))}
+.sheet-content {padding: 0 20px;}
+.thumbs{display:flex;gap:8px;margin-top:16px}
+.thumbs .t{flex:1;height:54px;border-radius:10px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.1)}
+.meter-row{display:flex;align-items:center;justify-content:space-between;padding:16px 14px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);margin-top:16px}
+.meter .cap{font-size:10px;letter-spacing:.14em;color:var(--txt-3);font-weight:600}
+.meter .val{color:var(--txt);font-weight:600;font-size:15px;margin-top:3px}
+.bars{display:flex;gap:3px;margin-top:8px}
+.bars i{width:24px;height:5px;border-radius:2px;background:rgba(255,255,255,0.1)}
+.bars i.on{background:var(--green); box-shadow:0 0 8px rgba(46,232,77,0.4)}
+
+.mk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prod{border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);background:var(--surface);backdrop-filter:blur(8px);position:relative}
+.prod .img{height:140px;background-size:cover;background-position:center;position:relative}
+.prod .heart{position:absolute;top:9px;right:9px;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px); border:1px solid rgba(255,255,255,0.1)}
+.prod .heart svg{width:15px;height:15px;color:var(--white)}
+.prod .b{padding:12px}
+.prod .nm{font-weight:600;font-size:14px;line-height:1.3}
+.prod .pr{font-family:var(--display);font-weight:700;color:var(--green);font-size:19px;margin-top:7px; text-shadow:0 0 10px rgba(46,232,77,0.2)}
+.prod .cond{display:inline-block;font-size:10px;color:var(--txt-2);background:rgba(255,255,255,0.05);border-radius:6px;padding:3px 7px;margin-top:8px}
+.prod .loc{display:flex;align-items:center;gap:5px;color:var(--txt-3);font-size:11.5px;margin-top:8px}
+.prod .loc svg{width:12px;height:12px;color:var(--green)}
+.prod .contact{margin-top:11px;height:36px;width:100%;border-radius:10px;background:rgba(46,232,77,0.1);border:1px solid rgba(46,232,77,.3);color:var(--green);font-size:12.5px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px;transition:.2s}
+.prod .contact:hover {background:rgba(46,232,77,0.2); box-shadow:var(--green-glow)}
+.fab{position:absolute;bottom:100px;right:18px;z-index:25;width:58px;height:58px;border-radius:50%;background:var(--green);color:#06140a;display:flex;align-items:center;justify-content:center;box-shadow:var(--green-glow)}
+.fab svg{width:28px;height:28px}
+
+.fpost{padding:16px;border-radius:16px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(8px);margin-bottom:12px}
+.fpost .head{display:flex;align-items:center;gap:11px}
+.av{width:40px;height:40px;border-radius:50%;background-size:cover;background-position:center;flex-shrink:0;border:1px solid rgba(255,255,255,0.1)}
+.fpost .who{font-weight:600;font-size:14px}
+.fpost .who .disc{color:var(--green);font-weight:500;font-size:11px;margin-left:8px;background:rgba(46,232,77,0.1);border:1px solid rgba(46,232,77,.3);padding:2px 7px;border-radius:6px}
+.fpost .when{color:var(--txt-3);font-size:11.5px;margin-top:3px}
+.fpost .txt{font-size:14px;line-height:1.5;color:var(--txt);margin-top:12px}
+.fpost .media{height:180px;border-radius:12px;background-size:cover;background-position:center;margin-top:12px;position:relative;border:1px solid rgba(255,255,255,0.05)}
+.fpost .media .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.2)}
+.fpost .media .play div{width:54px;height:54px;border-radius:50%;background:rgba(46,232,77,.9);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(46,232,77,0.6);backdrop-filter:blur(4px)}
+.fpost .media .play svg{width:24px;height:24px;color:#06140a; margin-left:3px}
+.fpost .acts{display:flex;gap:22px;margin-top:14px;color:var(--txt-2);font-size:13px;font-weight:500}
+.fpost .acts span{display:flex;align-items:center;gap:7px}
+.fpost .acts svg{width:18px;height:18px}
+.fpost .acts .liked{color:var(--green); text-shadow:0 0 8px rgba(46,232,77,0.3)}
+.fpost .acts .liked svg {filter:drop-shadow(0 0 4px rgba(46,232,77,0.5))}
+
+.profile-hero{position:relative;padding:0}
+.cover-img{height:160px;background-size:cover;background-position:center;position:relative; box-shadow:inset 0 -40px 40px rgba(8,9,8,1)}
+.profile-av{width:96px;height:96px;border-radius:28px;border:4px solid var(--bg);background-size:cover;background-position:center;margin:-48px 0 0 22px;position:relative;z-index:5; box-shadow:0 10px 20px rgba(0,0,0,0.5)}
+.profile-av .vbadge{position:absolute;bottom:-4px;right:-4px;width:28px;height:28px;border-radius:50%;background:var(--green);border:3px solid var(--bg);display:flex;align-items:center;justify-content:center; box-shadow:var(--green-glow)}
+.profile-av .vbadge svg{width:14px;height:14px;color:#06140a}
+.pstats{display:flex;gap:0;margin-top:18px;border:1px solid var(--border-soft);border-radius:15px;background:var(--surface);backdrop-filter:blur(8px)}
+.pstats .p{flex:1;text-align:center;padding:14px 4px;border-right:1px solid rgba(255,255,255,0.05)}
+.pstats .p:last-child{border:none}
+.pstats .p .v{font-family:var(--display);font-weight:700;font-size:21px;color:var(--txt);text-shadow:0 0 10px rgba(255,255,255,0.2)}
+.pstats .p .l{font-size:10.5px;color:var(--txt-2);margin-top:3px;letter-spacing:.04em;text-transform:uppercase}
+.gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.gallery .g{aspect-ratio:1;border-radius:11px;background-size:cover;background-position:center;position:relative;overflow:hidden;border:1px solid rgba(255,255,255,0.05)}
+.gallery .g.vid::after{content:'';position:absolute;top:8px;right:8px;width:18px;height:18px;border-radius:5px;background:rgba(46,232,77,.9);clip-path:polygon(30% 20%,30% 80%,80% 50%);box-shadow:var(--green-glow)}
+.sponsor-row{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;margin:0 -22px;padding-left:22px;padding-right:22px}
+.sponsor-row::-webkit-scrollbar{display:none}
+.sp-card{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:13px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(6px)}
+.sp-card .lg{width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;color:var(--txt);font-family:var(--display);font-weight:700;font-size:14px}
+.sp-card .nm{font-size:13px;font-weight:600}
+.sp-card .st{font-size:10.5px;color:var(--green);margin-top:2px}
+
+.tag-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:6px 11px;border-radius:9px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);color:var(--txt-2);backdrop-filter:blur(4px)}
+
+.kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.kpi{padding:16px;border-radius:16px;background:var(--surface);border:1px solid var(--border-soft);backdrop-filter:blur(8px)}
+.kpi .ic{width:36px;height:36px;border-radius:10px;background:var(--green-ghost);display:flex;align-items:center;justify-content:center;color:var(--green);border:1px solid rgba(46,232,77,0.2)}
+.kpi .ic svg{width:18px;height:18px}
+.kpi .num{font-family:var(--display);font-weight:700;font-size:28px;margin-top:14px;color:var(--txt)}
+.kpi .lbl{font-size:12px;color:var(--txt-2);margin-top:2px}
+.kpi .trend{font-size:11px;color:var(--green);margin-top:8px;display:flex;align-items:center;gap:4px;font-weight:600}
+.kpi .trend svg{width:12px;height:12px}
+.store-hero{height:154px;border-radius:18px;background-size:cover;background-position:center;margin-top:18px;border:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;box-shadow:inset 0 -70px 60px rgba(8,9,8,.95)}
+.store-hero .store-copy{position:absolute;left:16px;right:16px;bottom:15px}
+.store-hero .eyebrow{font-size:10px;letter-spacing:.16em;color:var(--green);font-weight:700;text-transform:uppercase;text-shadow:0 1px 4px #000}
+.store-hero .title{font-family:var(--display);font-size:23px;font-weight:700;margin-top:4px;text-shadow:0 2px 8px #000}
+.lead-card{padding:14px;border-radius:15px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(8px);margin-bottom:11px}
+.lead-card .row{display:flex;align-items:center;gap:12px}
+.lead-card .meta{color:var(--txt-2);font-size:12px;margin-top:3px}
+.lead-card .status{margin-left:auto;font-size:10px;color:var(--green);border:1px solid rgba(46,232,77,.24);background:rgba(46,232,77,.08);padding:5px 8px;border-radius:8px;font-weight:700;letter-spacing:.04em}
+.rider-card{display:flex;gap:13px;padding:14px;border-radius:15px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(8px);margin-bottom:11px;align-items:center}
+.rider-card .av{width:54px;height:54px;border-radius:14px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.1)}
+.rider-card .info{flex:1;min-width:0}
+.rider-card .info .nm{font-weight:600;font-size:15px;display:flex;align-items:center;gap:6px}
+.rider-card .info .nm svg{width:14px;height:14px;color:var(--green);filter:drop-shadow(0 0 3px rgba(46,232,77,0.5))}
+.rider-card .info .meta{font-size:12px;color:var(--txt-2);margin-top:4px}
+.rider-card .score{text-align:center;background:rgba(0,0,0,0.3);padding:8px;border-radius:10px;border:1px solid rgba(255,255,255,0.05)}
+.rider-card .score .v{font-family:var(--display);font-weight:700;font-size:20px;color:var(--green);text-shadow:0 0 10px rgba(46,232,77,0.3)}
+.rider-card .score .l{font-size:8px;color:var(--txt-3);letter-spacing:.1em;margin-top:2px}
+.app-card{padding:16px;border-radius:16px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(8px);margin-bottom:12px}
+.app-card .row1{display:flex;align-items:center;gap:12px}
+.app-card .ttl{font-weight:600;font-size:15px}
+.app-card .stmeta{font-size:12px;color:var(--txt-2);margin-top:3px}
+.app-card .actions{display:flex;gap:9px;margin-top:16px}
+.app-card .actions .b{flex:1;height:44px;border-radius:11px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px}
+.b-accept{background:var(--green);color:#06140a;box-shadow:var(--green-glow)}
+.b-view{border:1px solid rgba(255,255,255,0.15);color:var(--txt);background:rgba(255,255,255,0.02)}
+.brand-tabs{display:flex;gap:7px;margin:18px 0 16px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.brand-tab{padding:0 4px 13px;font-size:14px;font-weight:600;color:var(--txt-3);position:relative;transition:.2s}
+.brand-tab.active{color:var(--green);text-shadow:0 0 10px rgba(46,232,77,0.3)}
+.brand-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--green);border-radius:2px;box-shadow:var(--green-glow)}
+
+.admin-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.akpi{padding:16px 8px;border-radius:14px;background:var(--surface);backdrop-filter:blur(8px);border:1px solid var(--border-soft);text-align:center}
+.akpi svg{width:22px;height:22px;color:var(--green);margin-bottom:10px;filter:drop-shadow(0 0 5px rgba(46,232,77,0.4))}
+.akpi .num{font-family:var(--display);font-weight:700;font-size:22px;color:var(--txt)}
+.akpi .lbl{font-size:9.5px;color:var(--txt-2);margin-top:4px;line-height:1.25}
+.admin-nav{display:flex;gap:6px;margin:24px 0 12px;border-bottom:1px solid rgba(255,255,255,0.05);overflow-x:auto}
+.admin-nav::-webkit-scrollbar{display:none}
+.anav{padding:0 4px 12px;font-size:13.5px;font-weight:600;color:var(--txt-3);position:relative;flex-shrink:0;transition:.2s}
+.anav.active{color:var(--txt);text-shadow:0 0 8px rgba(255,255,255,0.3)}
+.anav.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--txt)}
+.approve-card{display:flex;gap:12px;padding:14px;border-radius:15px;border:1px solid var(--border-soft);background:var(--surface);backdrop-filter:blur(8px);margin-bottom:11px}
+.approve-card .th{width:80px;height:80px;border-radius:12px;flex-shrink:0;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,0.1)}
+.approve-card .mid{flex:1;min-width:0}
+.approve-card .kind{font-size:10px;letter-spacing:.1em;color:var(--green);font-weight:700}
+.approve-card .nm{font-weight:600;font-size:15px;margin-top:4px}
+.approve-card .ln{display:flex;align-items:center;gap:6px;color:var(--txt-2);font-size:11.5px;margin-top:6px}
+.approve-card .ln svg{width:12px;height:12px;color:var(--txt-3)}
+.approve-card .col{display:flex;flex-direction:column;gap:8px;justify-content:center}
+.approve-card .ab{padding:10px 14px;border-radius:10px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:.2s}
+.approve-card .ab svg{width:14px;height:14px}
+.ab-ok{border:1px solid rgba(46,232,77,.3);color:var(--green);background:rgba(46,232,77,0.05)}
+.ab-ok:hover{background:rgba(46,232,77,0.15);box-shadow:var(--green-glow)}
+.ab-no{border:1px solid rgba(255,255,255,0.1);color:var(--txt-2);background:rgba(255,255,255,0.02)}
+.ab-no:hover{background:rgba(255,255,255,0.05);color:var(--txt)}
+.dd{display:flex;align-items:center;gap:7px;padding:9px 13px;border-radius:11px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.02);font-size:12.5px;color:var(--txt-2);font-weight:500;backdrop-filter:blur(4px)}
+.dd svg{width:14px;height:14px}
+
+.section-count{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:22px;padding:0 6px;border-radius:8px;background:var(--green);color:#06140a;font-size:12px;font-weight:700;margin-left:8px;box-shadow:0 0 10px rgba(46,232,77,0.4)}
+.shield{width:40px;height:40px;border-radius:11px;border:1px solid rgba(46,232,77,.4);display:flex;align-items:center;justify-content:center;color:var(--green);background:rgba(46,232,77,0.1);box-shadow:var(--green-glow)}
+.shield svg{width:20px;height:20px}
+
+/* ====== Premium reference upgrades ====== */
+.signup-screen{overflow:hidden;background:radial-gradient(circle at 86% 6%,rgba(46,232,77,.12),transparent 32%),radial-gradient(circle at 0 82%,rgba(46,232,77,.1),transparent 36%),#080908}
+.signup-screen::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='320' height='460' viewBox='0 0 320 460' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232ee84d' stroke-opacity='.09' stroke-width='1'%3E%3Cpath d='M198 4c38 24 40 62 3 91s-33 59 8 90 45 62 9 92'/%3E%3Cpath d='M222 8c34 28 30 68-12 101s-33 62 16 91 52 60 14 89'/%3E%3Cpath d='M174 18c33 27 38 59 9 95s-30 60 5 88 39 55 3 82'/%3E%3Cpath d='M252 31c26 32 23 62-9 91s-26 55 10 78 38 48 13 72'/%3E%3Ccircle cx='247' cy='72' r='20'/%3E%3Ccircle cx='247' cy='72' r='38'/%3E%3C/g%3E%3C/svg%3E") right top/290px 420px no-repeat;opacity:.9;pointer-events:none}
+.signup-screen::after{content:'';position:absolute;left:0;right:0;bottom:0;height:118px;background:linear-gradient(180deg,transparent,rgba(46,232,77,.08) 45%,rgba(2,7,3,.9)),repeating-linear-gradient(90deg,transparent 0 12px,rgba(46,232,77,.14) 12px 18px,transparent 18px 31px);mask-image:linear-gradient(180deg,transparent,#000 34%);pointer-events:none;opacity:.8}
+.signup-screen .topbar{padding:16px 28px 2px}
+.signup-screen .topbar .brand-sm{gap:16px}
+.signup-screen .topbar .brand-sm img{width:54px;height:54px;border-radius:17px;padding:6px;background:#020602;border:1px solid rgba(46,232,77,.56);box-shadow:0 0 28px rgba(46,232,77,.36),inset 0 0 18px rgba(46,232,77,.08)}
+.signup-screen .topbar .brand-sm span{font-size:24px;letter-spacing:.16em;text-shadow:0 0 18px rgba(255,255,255,.18)}
+.signup-pad{padding-top:22px!important}
+.signup-title{font-size:43px;line-height:1.03;letter-spacing:0}
+.signup-title .green{color:#74ff3a;text-shadow:0 0 24px rgba(116,255,58,.46)}
+.signup-screen .sub{font-size:17px;color:rgba(244,246,244,.72);line-height:1.35}
+.signup-screen .type-grid{gap:12px;margin-top:22px}
+.signup-screen .signup-types .type-card,.signup-screen .discipline-grid .type-card{height:108px;aspect-ratio:auto;min-width:0}
+.signup-screen .type-card{position:relative;aspect-ratio:.92;border-radius:21px;background:linear-gradient(145deg,rgba(18,23,19,.86),rgba(6,9,7,.88));border:1px solid rgba(255,255,255,.13);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 14px 30px rgba(0,0,0,.26);font-size:13px;font-weight:800;color:rgba(244,246,244,.68)}
+.signup-screen .type-card svg{width:34px;height:34px;stroke-width:1.9;color:rgba(244,246,244,.62)}
+.signup-screen .type-card::after{content:'';position:absolute;left:50%;bottom:13px;width:28px;height:3px;border-radius:999px;background:var(--green);box-shadow:0 0 13px rgba(46,232,77,.82);transform:translateX(-50%);opacity:0}
+.signup-screen .type-card.active{color:#74ff3a;border-color:#74ff3a;background:radial-gradient(circle at 50% 25%,rgba(116,255,58,.18),transparent 58%),linear-gradient(145deg,rgba(16,36,18,.96),rgba(7,12,8,.92));box-shadow:0 0 30px rgba(46,232,77,.23),inset 0 0 0 1px rgba(46,232,77,.16)}
+.signup-screen .type-card.active svg{color:#74ff3a;filter:drop-shadow(0 0 12px rgba(46,232,77,.78))}
+.signup-screen .type-card.active::after{opacity:1}
+.signup-screen .field{height:63px;border-radius:19px;margin-top:14px;padding:0 18px;background:linear-gradient(135deg,rgba(11,18,13,.86),rgba(5,9,7,.82));border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 0 0 1px rgba(46,232,77,.04),0 10px 22px rgba(0,0,0,.18)}
+.signup-screen .field svg{width:24px;height:24px;color:var(--green);filter:drop-shadow(0 0 8px rgba(46,232,77,.34))}
+.signup-screen .field .ph-in{font-size:17px;color:rgba(244,246,244,.48)}
+.signup-screen .field .suffix{height:34px;font-size:16px;color:rgba(244,246,244,.76);border-left:1px solid rgba(255,255,255,.12);padding-left:17px}
+.discipline-title{display:flex;align-items:center;gap:12px;margin-top:24px;color:#74ff3a;font-size:19px;text-shadow:0 0 13px rgba(46,232,77,.35)}
+.discipline-title::before{content:'';width:31px;height:18px;background:linear-gradient(125deg,var(--green) 0 38%,transparent 38% 52%,var(--green-deep) 52% 82%,transparent 82%);filter:drop-shadow(0 0 11px rgba(46,232,77,.65))}
+.discipline-title::after{content:'';height:1px;flex:1;background:linear-gradient(90deg,rgba(46,232,77,.75),transparent)}
+.signup-screen .discipline-grid{margin-top:16px!important}
+.signup-screen .btn-primary{border-radius:20px;min-height:58px}
+
+.home-screen .pad{padding-top:10px!important}
+.dashboard-id{padding:22px 18px 20px;border-radius:25px;border-color:rgba(116,255,58,.5);background:radial-gradient(circle at 87% 19%,rgba(116,255,58,.16),transparent 22%),linear-gradient(145deg,rgba(18,26,20,.95),rgba(7,10,8,.98));box-shadow:0 18px 42px rgba(0,0,0,.45),0 0 28px rgba(46,232,77,.16),inset 0 0 0 1px rgba(255,255,255,.03)}
+.dashboard-id::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='280' height='170' viewBox='0 0 280 170' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232ee84d' stroke-opacity='.1' stroke-width='1'%3E%3Cpath d='M0 122c39-25 72-19 99 15s67 35 116 0 77-29 65 16'/%3E%3Cpath d='M17 93c37-20 67-14 92 21s62 33 108 2 72-24 68 13'/%3E%3Cpath d='M36 64c34-15 63-8 84 26s54 32 101 5 68-17 68 16'/%3E%3C/g%3E%3C/svg%3E") right top/260px 160px no-repeat;pointer-events:none}
+.dashboard-id .id-label{font-size:12px;letter-spacing:.25em;font-weight:800}
+.dashboard-id .id-title{font-size:40px;line-height:1;margin-top:10px;letter-spacing:0}
+.dashboard-id .id-score{position:relative;width:94px;height:94px;border:0;border-radius:50%;background:conic-gradient(#74ff3a 0 82%,rgba(116,255,58,.18) 82% 100%);box-shadow:0 0 30px rgba(116,255,58,.42),0 0 0 7px rgba(46,232,77,.06)}
+.dashboard-id .id-score::before{content:'';position:absolute;inset:8px;border-radius:50%;background:radial-gradient(circle,#132116 0,#061008 68%,#020402 100%);border:1px solid rgba(116,255,58,.24)}
+.dashboard-id .id-score b,.dashboard-id .id-score span{position:relative;z-index:1}
+.dashboard-id .id-score b{font-size:38px;color:#74ff3a;text-shadow:0 0 18px rgba(116,255,58,.62)}
+.dashboard-id .id-score span{font-size:10px;color:rgba(255,255,255,.78);font-weight:800}
+.dashboard-id .signal-row{gap:12px;margin-top:22px}
+.dashboard-id .signal{min-height:72px;padding:13px 10px;border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025));border-color:rgba(255,255,255,.1)}
+.dashboard-id .signal .v{font-size:22px;color:#fff;font-family:var(--display)}
+.dashboard-id .signal .l{font-size:11.5px;color:rgba(244,246,244,.58)}
+.dashboard-stats{gap:13px!important;margin-top:22px!important}
+.dashboard-stats .stat{min-height:236px;padding:22px 10px 18px;border-radius:24px;text-align:center;display:flex;flex-direction:column;align-items:center;background:linear-gradient(180deg,rgba(8,13,9,.82),rgba(8,11,9,.96));border-color:rgba(46,232,77,.36);box-shadow:0 17px 35px rgba(0,0,0,.42),0 0 20px rgba(46,232,77,.1),inset 0 1px 0 rgba(255,255,255,.04)}
+.dashboard-stats .stat:nth-child(1){background-image:linear-gradient(180deg,rgba(7,12,8,.8),rgba(7,10,8,.96)),url('assets/eventos/bajando-rampa.webp');background-size:cover;background-position:center}
+.dashboard-stats .stat:nth-child(2){background-image:linear-gradient(180deg,rgba(7,12,8,.82),rgba(7,10,8,.97)),linear-gradient(rgba(46,232,77,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(46,232,77,.09) 1px,transparent 1px);background-size:cover,22px 22px,22px 22px}
+.dashboard-stats .stat:nth-child(3){background-image:linear-gradient(180deg,rgba(7,12,8,.82),rgba(7,10,8,.96)),url('assets/tiendas/interior-tienda.webp');background-size:cover;background-position:center}
+.dashboard-stats .stat>*{position:relative;z-index:1}
+.dashboard-stats .stat::after{background:radial-gradient(circle at 50% 28%,rgba(116,255,58,.16),transparent 32%),linear-gradient(180deg,transparent,rgba(46,232,77,.08))}
+.dashboard-stats .top{width:66px;height:66px;border-radius:50%;align-items:center;justify-content:center;margin:0 auto 18px;background:radial-gradient(circle,#102615 0,#050905 70%);border:1px solid rgba(116,255,58,.8);box-shadow:0 0 26px rgba(46,232,77,.42),inset 0 0 20px rgba(46,232,77,.12)}
+.dashboard-stats .top svg.ic{width:34px;height:34px;color:#74ff3a}
+.dashboard-stats .top svg.ch{position:absolute;left:50%;bottom:15px;width:34px;height:34px;padding:8px;border-radius:50%;transform:translateX(-50%);color:#74ff3a;border:1px solid rgba(116,255,58,.7);background:#050905;box-shadow:0 0 18px rgba(46,232,77,.32)}
+.dashboard-stats .lbl{min-height:44px;margin:0;color:#f4f6f4;font-size:10.4px;letter-spacing:0;font-weight:900;line-height:1.12;display:flex;align-items:center;justify-content:center;text-align:center;max-width:86px}
+.dashboard-stats .lbl::after{content:'';position:absolute;left:50%;top:130px;width:28px;height:3px;border-radius:999px;background:#74ff3a;box-shadow:0 0 12px rgba(116,255,58,.82);transform:translateX(-50%)}
+.dashboard-stats .num{font-size:56px;line-height:.9;color:#74ff3a;margin-top:22px;text-shadow:0 0 20px rgba(116,255,58,.62)}
+.dashboard-stats .meta{font-size:13px;color:rgba(244,246,244,.62);line-height:1.15;margin-top:7px;margin-bottom:40px}
+.home-screen .quick{display:none}
+.premium-tabbar{left:14px;right:14px;bottom:13px;height:88px;border-radius:25px;border:1px solid rgba(46,232,77,.36);background:linear-gradient(180deg,rgba(10,17,12,.88),rgba(3,6,4,.96));box-shadow:0 0 28px rgba(46,232,77,.12),0 -12px 32px rgba(0,0,0,.44),inset 0 1px 0 rgba(255,255,255,.04);padding:14px 8px 0}
+.premium-tabbar::after{content:'';position:absolute;left:50%;bottom:-1px;width:70px;height:4px;border-radius:999px;background:#74ff3a;box-shadow:0 0 18px rgba(116,255,58,.9);transform:translateX(-50%)}
+.premium-tabbar .tab{font-size:12px;color:rgba(244,246,244,.62)}
+.premium-tabbar .tab svg{width:28px;height:28px}
+
+.map-premium{height:392px;margin:14px 18px 0;border-radius:30px;border:1.5px solid rgba(116,255,58,.72);background:radial-gradient(circle at 47% 46%,rgba(116,255,58,.16),transparent 20%),radial-gradient(circle at 77% 24%,rgba(116,255,58,.09),transparent 19%),#050807;box-shadow:0 0 30px rgba(46,232,77,.18),inset 0 0 50px rgba(0,0,0,.88);isolation:isolate}
+.map-premium::before{content:'';position:absolute;inset:-20px;background:linear-gradient(28deg,transparent 0 46%,rgba(255,255,255,.07) 46% 47%,transparent 47% 100%),linear-gradient(113deg,transparent 0 50%,rgba(255,255,255,.06) 50% 51%,transparent 51% 100%),linear-gradient(0deg,transparent 0 62%,rgba(255,255,255,.045) 62% 63%,transparent 63% 100%),linear-gradient(90deg,transparent 0 43%,rgba(255,255,255,.055) 43% 44%,transparent 44% 100%);opacity:.9;pointer-events:none;z-index:1}
+.map-premium::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 48%,transparent 0 30%,rgba(1,3,2,.38) 60%,rgba(0,0,0,.78) 100%),linear-gradient(180deg,rgba(255,255,255,.03),transparent 18%,rgba(0,0,0,.28));pointer-events:none;z-index:9}
+.map-premium .lines{z-index:0;background-image:linear-gradient(rgba(116,255,58,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(116,255,58,.045) 1px,transparent 1px);background-size:32px 32px;opacity:.9}
+.map-premium .road{z-index:2;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent)!important;box-shadow:0 0 12px rgba(116,255,58,.08)}
+.map-premium .lbl{z-index:6;color:rgba(244,246,244,.7);font-size:12px;letter-spacing:.28em;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.9),0 0 12px rgba(255,255,255,.16)}
+.map-premium .lbl::after{content:'';position:absolute;left:50%;top:22px;width:34px;height:3px;border-radius:999px;background:#74ff3a;box-shadow:0 0 12px rgba(116,255,58,.8);transform:translateX(-50%)}
+.map-premium .pin-m{z-index:7;color:#74ff3a;filter:drop-shadow(0 0 18px rgba(116,255,58,.68)) drop-shadow(0 8px 8px rgba(0,0,0,.88))}
+.map-premium .pin-m::before{content:'';position:absolute;left:50%;bottom:3px;width:44px;height:15px;border-radius:50%;background:rgba(116,255,58,.18);border:1px solid rgba(116,255,58,.54);box-shadow:0 0 24px rgba(116,255,58,.38);transform:translateX(-50%) rotateX(58deg)}
+.map-premium .pin-m::after{content:'';position:absolute;left:50%;top:50%;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,rgba(116,255,58,.28),transparent 68%);transform:translate(-50%,-50%);z-index:-1}
+.map-premium .pin-m svg{width:34px;height:34px}
+.map-premium .pin-m.big svg{width:76px;height:76px;filter:drop-shadow(0 0 28px rgba(116,255,58,.9))}
+.map-premium .pin-m.big::before{width:76px;height:28px;bottom:1px}
+.map-premium .pin-m.big::after{width:118px;height:118px}
+.map-premium .loc-btn{z-index:10;right:23px;bottom:25px;width:76px;height:76px;border:2px solid rgba(116,255,58,.72);background:radial-gradient(circle,#0d1d10 0,#050805 68%);box-shadow:0 0 30px rgba(46,232,77,.28),inset 0 0 26px rgba(46,232,77,.12)}
+.map-premium .loc-btn::before{content:'';position:absolute;inset:-14px;border-radius:50%;border:1px solid rgba(116,255,58,.18);box-shadow:0 0 24px rgba(46,232,77,.12)}
+.map-premium .loc-btn svg{width:34px;height:34px}
+.map-scale{position:absolute;left:24px;bottom:30px;z-index:10;color:#74ff3a;font-size:13px;font-weight:800;text-shadow:0 0 10px rgba(116,255,58,.55)}
+.map-scale::after{content:'';display:block;width:88px;height:20px;margin-top:3px;border-left:2px solid #74ff3a;border-right:2px solid #74ff3a;border-bottom:2px solid #74ff3a;background:linear-gradient(90deg,transparent 48%,#74ff3a 48% 52%,transparent 52%);filter:drop-shadow(0 0 9px rgba(116,255,58,.65))}
+
+.sponsor-panel,.application-card-premium{position:relative;overflow:hidden;border:1px solid rgba(46,232,77,.4);background:linear-gradient(145deg,rgba(16,23,17,.92),rgba(6,8,7,.96));box-shadow:0 18px 42px rgba(0,0,0,.42),0 0 24px rgba(46,232,77,.11),inset 0 0 0 1px rgba(255,255,255,.03)}
+.sponsor-panel::before,.application-card-premium::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='260' height='150' viewBox='0 0 260 150' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%232ee84d' stroke-opacity='.08' stroke-width='1'%3E%3Cpath d='M4 108c34-22 65-18 93 11s61 30 102 2 66-22 57 17'/%3E%3Cpath d='M25 78c30-17 58-12 82 15s54 28 94 3 62-18 58 13'/%3E%3Cpath d='M47 48c30-13 54-8 73 18s47 24 87 3 55-12 55 12'/%3E%3C/g%3E%3C/svg%3E") right top/230px 132px no-repeat;pointer-events:none}
+.sponsor-panel{margin-top:16px;padding:17px;border-radius:25px}
+.sponsor-head{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
+.sponsor-icon{width:48px;height:48px;color:#74ff3a;filter:drop-shadow(0 0 15px rgba(116,255,58,.65))}
+.sponsor-title{font-family:var(--display);font-size:20px;font-weight:700;letter-spacing:.18em;flex:1}
+.benefit-link{display:flex;align-items:center;gap:6px;color:#74ff3a;font-weight:800;font-size:13px}
+.benefit-link svg{width:30px;height:30px;padding:7px;border-radius:50%;border:1px solid #74ff3a;box-shadow:0 0 15px rgba(116,255,58,.35)}
+.sponsor-list{display:flex;gap:12px;overflow-x:auto;margin-top:17px;padding-bottom:2px;position:relative;z-index:1}
+.sponsor-list::-webkit-scrollbar{display:none}
+.sponsor-card-premium{flex:0 0 260px;min-height:118px;display:grid;grid-template-columns:72px 1fr 34px;align-items:center;gap:10px;padding:13px;border-radius:22px;border:1px solid rgba(255,255,255,.11);background:linear-gradient(135deg,rgba(255,255,255,.06),rgba(255,255,255,.025));box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.sponsor-logo{width:70px;height:70px;border-radius:20px;background:radial-gradient(circle at 50% 52%,rgba(116,255,58,.16),transparent 56%),#040504;border:1px solid #74ff3a;display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(116,255,58,.34),inset 0 0 20px rgba(46,232,77,.08)}
+.sponsor-logo b{font-family:var(--display);font-size:35px;color:#fff;line-height:1;text-shadow:0 0 12px rgba(255,255,255,.24)}
+.sponsor-info .name{font-size:20px;font-weight:800;color:#fff;line-height:1.05}
+.sponsor-badge{display:inline-flex;align-items:center;gap:8px;margin-top:12px;padding:6px 9px;border-radius:10px;border:1px solid rgba(46,232,77,.32);background:rgba(46,232,77,.08);color:#74ff3a;font-size:12px;font-weight:700}
+.sponsor-badge::before{content:'';width:10px;height:10px;border-radius:50%;background:#74ff3a;box-shadow:0 0 11px rgba(116,255,58,.8)}
+.sponsor-arrow{width:34px;height:34px;border-radius:50%;border:1px solid rgba(116,255,58,.75);display:flex;align-items:center;justify-content:center;color:#74ff3a;box-shadow:0 0 14px rgba(46,232,77,.26)}
+.sponsor-arrow svg{width:18px;height:18px}
+.application-title{display:flex;align-items:center;gap:12px;margin-top:28px;margin-bottom:14px}
+.application-title svg{width:32px;height:32px;color:#74ff3a;filter:drop-shadow(0 0 12px rgba(116,255,58,.55))}
+.application-title h3{font-size:15px;letter-spacing:.22em;text-transform:uppercase;font-weight:900}
+.application-title h3 span{color:#74ff3a}
+.application-title::after{content:'';height:1px;flex:1;background:linear-gradient(90deg,rgba(116,255,58,.65),transparent)}
+.application-card-premium{border-radius:24px;padding:17px}
+.application-grid{position:relative;z-index:1;display:grid;grid-template-columns:78px 1fr;gap:15px;align-items:center}
+.application-logo{width:78px;height:78px;border-radius:21px;border:1px solid #74ff3a;background:linear-gradient(135deg,rgba(255,255,255,.04),rgba(255,255,255,.01));display:flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(116,255,58,.25)}
+.application-logo b{font-family:var(--display);font-size:48px;color:#fff;line-height:1}
+.application-copy .featured{display:flex;align-items:center;gap:8px;color:#74ff3a;letter-spacing:.22em;font-weight:900;font-size:11px}
+.application-copy .featured::before{content:'';width:11px;height:11px;border-radius:50%;background:#74ff3a;box-shadow:0 0 12px rgba(116,255,58,.82)}
+.application-copy .title{font-family:var(--display);font-size:25px;font-weight:700;line-height:1.05;margin-top:8px;color:#fff}
+.application-copy p{margin-top:9px;color:rgba(244,246,244,.72);font-size:15px;line-height:1.35}
+.application-copy p b{color:#74ff3a}
+.application-card-premium .btn{height:56px;border-radius:18px;margin-top:18px;justify-content:center;font-size:16px}
+@media(max-width:880px){
+  .page-head{margin-bottom:18px}
+  .brand{width:100%}
+  .phone-wrap{order:-1}
+  .rail{position:relative;top:auto}
+  .rail-note{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="page-head">
+  <div class="brand">
+    <img class="logo" src="assets/logo/logo-principal.webp" alt="Logo SPOTRA">
+    <div>
+      <h1>SPOTRA</h1>
+      <p class="tagline">Prototipo Premium — red social, mapa y motor comercial para riders de <b>Uruguay, Argentina y Brasil</b>.</p>
+    </div>
+  </div>
+  <div class="flows">
+    <button class="flow-tab active" data-flow="rider">Rider</button>
+    <button class="flow-tab" data-flow="shop">Tienda</button>
+    <button class="flow-tab" data-flow="brand">Marca / Sponsor</button>
+    <button class="flow-tab" data-flow="admin">Admin</button>
+  </div>
+</div>
+
+<div class="stage">
+  <div class="rail">
+    <h2>Pantallas</h2>
+    <div class="grp active" data-grp="rider">
+      <button class="rail-item active" data-scr="landing"><span class="n">01</span> Onboarding</button>
+      <button class="rail-item" data-scr="signup"><span class="n">02</span> Crear cuenta</button>
+      <button class="rail-item" data-scr="home"><span class="n">03</span> Dashboard</button>
+      <button class="rail-item" data-scr="map"><span class="n">04</span> Mapa + Spot</button>
+      <button class="rail-item" data-scr="forum"><span class="n">05</span> Foro</button>
+      <button class="rail-item" data-scr="market"><span class="n">06</span> Marketplace</button>
+      <button class="rail-item" data-scr="profile"><span class="n">07</span> Perfil competidor</button>
+    </div>
+    <div class="grp" data-grp="brand">
+      <button class="rail-item active" data-scr="b-dash"><span class="n">01</span> Dashboard marca</button>
+      <button class="rail-item" data-scr="b-scout"><span class="n">02</span> Descubrir riders</button>
+      <button class="rail-item" data-scr="b-apps"><span class="n">03</span> Postulaciones</button>
+    </div>
+    <div class="grp" data-grp="shop">
+      <button class="rail-item active" data-scr="s-dash"><span class="n">01</span> Dashboard tienda</button>
+      <button class="rail-item" data-scr="s-inventory"><span class="n">02</span> Inventario</button>
+      <button class="rail-item" data-scr="s-leads"><span class="n">03</span> Leads y comunidad</button>
+    </div>
+    <div class="grp" data-grp="admin">
+      <button class="rail-item active" data-scr="a-panel"><span class="n">01</span> Aprobaciones</button>
+      <button class="rail-item" data-scr="a-users"><span class="n">02</span> Usuarios</button>
+      <button class="rail-item" data-scr="a-safety"><span class="n">03</span> Seguridad</button>
+    </div>
+    <div class="rail-note">Tip: Los botones dentro del teléfono navegan la app.</div>
+  </div>
+
+  <div class="phone-wrap">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="screen">
+        <div class="viewport" id="viewport">
+
+<!-- ================= RIDER 01 — LANDING ================= -->
+<section class="scr active" data-screen="landing">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.3 0 4.4.9 6 2.4l1.3-1.4A11 11 0 0 0 8 .3 11 11 0 0 0 .7 3.5L2 4.9A8.7 8.7 0 0 1 8 2.5Z"/><path d="M8 6.4c1.3 0 2.4.5 3.3 1.3l1.3-1.4A7 7 0 0 0 8 4.4a7 7 0 0 0-4.6 1.9l1.3 1.4A4.8 4.8 0 0 1 8 6.4Z"/><circle cx="8" cy="10" r="1.6"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="1.5" height="4" rx="1" fill="currentColor" opacity=".5"/></svg></div></div>
+  <div class="topbar">
+    <div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <button class="icon-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+  <div class="pad" style="padding-top:18px">
+    <h2 class="h-xl"><span style="color:var(--white)">Encontrá spots.<br>Conectá riders.</span><br><span class="green">Competí.<br>Crecé.</span></h2>
+    <span class="hero-flag"></span>
+    <p class="sub">La red donde riders, tiendas y sponsors de <span class="green">UY, AR y BR</span> descubren spots, eventos y oportunidades reales.</p>
+    <div class="auth-actions">
+      <button class="auth-card auth-card-primary" data-go="signup">
+        <span class="auth-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="10" cy="8" r="3.4"/><path d="M3.8 20a6.2 6.2 0 0 1 12.4 0"/><path d="M18 7v6M15 10h6"/></svg></span>
+        <span class="auth-copy"><b>Crear cuenta</b><small>Únete y forma parte</small></span>
+        <span class="auth-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"><path d="M5 12h12M13 6l6 6-6 6"/></svg></span>
+      </button>
+      <button class="auth-card auth-card-dark" data-go="home">
+        <span class="auth-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 4h6v16h-6"/></svg></span>
+        <span class="auth-copy"><b>Iniciar sesión</b><small>Accede a tu cuenta</small></span>
+        <span class="auth-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"><path d="M5 12h12M13 6l6 6-6 6"/></svg></span>
+      </button>
+    </div>
+
+    <div class="feature-grid">
+      <button class="feat" data-go="map"><div class="ph" style="background-image:url('assets/spots/spot-1.webp');"></div><div class="mini-map"></div><svg class="pin" style="top:30%;left:35%" width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg><svg class="pin" style="top:55%;left:62%" width="11" height="11" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.5"/></svg><span>Mapa</span></button>
+      <button class="feat" data-go="forum"><div class="ph" style="background-image:url('assets/banners/banner-skatepark-2.webp');"></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/><path d="M15 20a5 5 0 0 1 6.5-4.8"/></svg><span>Comunidad</span></button>
+      <button class="feat" data-go="market"><div class="ph" style="background-image:url('assets/tiendas/interior-tienda.webp');"></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span>Market</span></button>
+      <button class="feat" data-go="profile"><div class="ph" style="background-image:url('assets/banners/banner-marca.webp');"></div><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.5 5 5.5.8-4 4 1 5.4L12 20l-5 2.6 1-5.4-4-4 5.5-.8L12 2Z"/></svg><span>Sponsors</span></button>
+    </div>
+
+    <div class="identity-card landing-id">
+      <div class="id-top">
+        <div>
+          <div class="id-label">SPOTRA ID</div>
+          <div class="id-title">Tu reputación <span class="green">rider</span><svg class="bolt-mark" viewBox="0 0 24 32" fill="currentColor"><path d="M14.8 1 4 17.8h7.6L8.8 31 20 12.8h-7.5L14.8 1Z"/></svg></div>
+        </div>
+        <div class="id-score"><b>92</b><span>SCORE</span></div>
+      </div>
+      <div class="signal-row">
+        <div class="signal"><svg class="signal-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v5c0 4.5-2.8 7.8-7 10-4.2-2.2-7-5.5-7-10V6l7-3Z"/><path d="M8.5 12l2.3 2.3 4.8-5"/></svg><div><div class="v">Clips</div><div class="l">Portafolio validado</div></div></div>
+        <div class="signal"><svg class="signal-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M7 4h10v3a5 5 0 0 1-10 0V4Z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3M10 14v3M14 14v3M8 20h8"/></svg><div><div class="v">Podios</div><div class="l">Historial competitivo</div></div></div>
+        <div class="signal"><svg class="signal-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8 12l3 3 5-5"/><path d="M7 8l-3 3 5 5 3-3"/><path d="M17 8l3 3-5 5-3-3"/></svg><div><div class="v">Trust</div><div class="l">Aportes aprobados</div></div></div>
+      </div>
+    </div>
+
+    <div class="unity">
+      <div class="skyline"></div>
+      <div class="unity-t">UNIDOS POR LA MISMA PASIÓN</div>
+      <div class="flags">
+        <div class="flagx">
+          <div class="flag-card">
+            <svg viewBox="0 0 60 40" aria-label="Bandera de Uruguay">
+              <rect width="60" height="40" fill="#fff"/>
+              <path d="M0 4.44h60v4.44H0zm0 8.89h60v4.44H0zm0 8.89h60v4.44H0zm0 8.89h60v4.44H0" fill="#0038a8"/>
+              <rect width="26.7" height="22.2" fill="#fff"/>
+              <circle cx="13.3" cy="11.1" r="4.2" fill="#fcd116"/>
+              <g stroke="#fcd116" stroke-width="1.2" stroke-linecap="round">
+                <path d="M13.3 3.2v3M13.3 16v3M5.5 11.1h3M18.1 11.1h3M7.8 5.6l2.1 2.1M16.7 14.5l2.1 2.1M18.8 5.6l-2.1 2.1M9.9 14.5l-2.1 2.1"/>
+              </g>
+            </svg>
+          </div>
+          <span>URUGUAY</span>
+        </div>
+        <div class="flagx">
+          <div class="flag-card">
+            <svg viewBox="0 0 60 40" aria-label="Bandera de Argentina">
+              <rect width="60" height="40" fill="#74acdf"/>
+              <rect y="13.33" width="60" height="13.34" fill="#fff"/>
+              <circle cx="30" cy="20" r="4.1" fill="#f6b40e"/>
+              <g stroke="#f6b40e" stroke-width="1" stroke-linecap="round">
+                <path d="M30 13.8v2.1M30 24.1v2.1M23.8 20h2.1M34.1 20h2.1M25.6 15.6l1.5 1.5M32.9 22.9l1.5 1.5M34.4 15.6l-1.5 1.5M27.1 22.9l-1.5 1.5"/>
+              </g>
+            </svg>
+          </div>
+          <span>ARGENTINA</span>
+        </div>
+        <div class="flagx">
+          <div class="flag-card">
+            <svg viewBox="0 0 60 40" aria-label="Bandera de Brasil">
+              <rect width="60" height="40" fill="#009b3a"/>
+              <path d="M30 5.5 54 20 30 34.5 6 20Z" fill="#ffdf00"/>
+              <circle cx="30" cy="20" r="8.3" fill="#002776"/>
+              <path d="M21.9 17.5c5.2-1.2 10.8-.2 16.2 3.1" fill="none" stroke="#fff" stroke-width="2"/>
+            </svg>
+          </div>
+          <span>BRASIL</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RIDER 02 — SIGNUP ================= -->
+<section class="scr signup-screen" data-screen="signup">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div></div>
+  <div class="pad pad-b signup-pad">
+    <h2 class="h-l signup-title"><span class="green">Creá</span> tu cuenta</h2>
+    <p class="sub" style="margin-top:4px">Elegí el tipo de cuenta que mejor te represente.</p>
+    <div class="type-grid signup-types">
+      <button class="type-card active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13" cy="4.5" r="1.8"/><path d="M6 20l3-5 3 1 2-4M4 17l3-3M9 16l5 1"/><ellipse cx="6" cy="20" rx="2.5" ry="1"/><ellipse cx="16" cy="20" rx="2.5" ry="1"/></svg>Rider</button>
+      <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9l1-4h14l1 4M5 9v10h14V9M4 9h16"/></svg>Tienda</button>
+      <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 18l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg>Marca /<br>Sponsor</button>
+      <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/><path d="M15 19a5 5 0 0 1 6-4.6"/></svg>Organizador</button>
+    </div>
+    <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span class="ph-in">Nombre completo</span></div>
+    <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span class="ph-in">Email</span></div>
+    <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span class="ph-in">Celular</span><span class="suffix">+54 <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></span></div>
+    <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><span class="ph-in">Contraseña</span><svg width="19" height="19" fill="none" stroke="var(--txt-3)" stroke-width="1.8"><path d="M2 9.5S5 4 9.5 4 17 9.5 17 9.5 14 15 9.5 15 2 9.5 2 9.5Z"/><circle cx="9.5" cy="9.5" r="2.2"/></svg></div>
+    <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg><span class="ph-in">País</span><svg width="12" height="12" style="margin-left:auto" fill="none" stroke="var(--txt-3)" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></div>
+    <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><span class="ph-in">Ciudad</span><svg width="12" height="12" style="margin-left:auto" fill="none" stroke="var(--txt-3)" stroke-width="2"><path d="M2 4l4 4 4-4"/></svg></div>
+    <div class="field-lbl discipline-title">Disciplina</div>
+    <div class="type-grid discipline-grid">
+      <button class="type-card active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="9" width="18" height="3.5" rx="1.7" transform="rotate(-12 12 11)"/><circle cx="7" cy="16" r="1.6"/><circle cx="16" cy="14" r="1.6"/></svg>Skate</button>
+      <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="6" cy="16" r="3.5"/><circle cx="18" cy="16" r="3.5"/><path d="M6 16l4-6h5l3 6M9 10l1.5-3h2"/></svg>BMX</button>
+      <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 4l1 9h6M9 13l-1 5M15 13l1 5"/><circle cx="7" cy="20" r="1.4"/><circle cx="11" cy="20" r="1.4"/><circle cx="15" cy="20" r="1.4"/></svg>Roller</button>
+      <button class="type-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="5" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M5 18L13 6h3M13 6v12"/></svg>Scooter</button>
+    </div>
+    <button class="btn btn-primary" style="margin-top:24px" data-go="home">Continuar <svg class="arr" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 10h11M11 5l5 5-5 5"/></svg></button>
+    <a class="link-c" data-go="home">Ya tengo cuenta</a>
+  </div>
+</section>
+
+<!-- ================= RIDER 03 — DASHBOARD ================= -->
+<section class="scr home-screen" data-screen="home">
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <button class="icon-btn bell"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="dot">3</span></button>
+  </div>
+  <div class="pad pad-b" style="padding-top:14px">
+    <h2 class="h-l">Hola, <span class="green">Santi</span></h2>
+    <p class="sub" style="margin-top:2px">¿Listo para tu próxima sesión?</p>
+    <div class="identity-card dashboard-id" data-go="profile">
+      <div class="id-top">
+        <div>
+          <div class="id-label">SPOTRA ID</div>
+          <div class="id-title">Sponsor ready</div>
+        </div>
+        <div class="id-score"><b>92</b><span>SCORE</span></div>
+      </div>
+      <div class="signal-row">
+        <div class="signal"><div class="v">84%</div><div class="l">perfil completo</div></div>
+        <div class="signal"><div class="v">3</div><div class="l">spots aprobados</div></div>
+        <div class="signal"><div class="v">5</div><div class="l">matches abiertos</div></div>
+      </div>
+    </div>
+    <div class="stat-row dashboard-stats">
+      <div class="stat"><div class="top"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3M9 14v3M15 14v3M8 20h8"/></svg><svg class="ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></div><div class="lbl">PRÓXIMAS COMPETENCIAS</div><div class="num">2</div><div class="meta">inscripciones activas</div></div>
+      <div class="stat"><div class="top"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><svg class="ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></div><div class="lbl">SPOTS CERCANOS</div><div class="num">12</div><div class="meta">spots en tu área</div></div>
+      <div class="stat"><div class="top"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg><svg class="ch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg></div><div class="lbl">SPONSORS ACTIVOS</div><div class="num">5</div><div class="meta">beneficios disponibles</div></div>
+    </div>
+    <div class="quick">
+      <button class="quick-i" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+      <button class="quick-i" data-go="forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Foro</button>
+      <button class="quick-i" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
+      <button class="quick-i"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>Eventos</button>
+      <button class="quick-i" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+    </div>
+    <div class="sect-head"><h3>EVENTOS CERCA DE TI</h3><a>Ver todos</a></div>
+    <div class="ev-row">
+      <div class="ev"><div class="img" style="background-image:url('assets/eventos/bajando-rampa.webp')"><div class="date"><div class="d">24</div><div class="m">MAY</div></div></div><div class="body"><div class="t">Skate Jam</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Buenos Aires</div></div></div>
+      <div class="ev"><div class="img" style="background-image:url('assets/eventos/biker-1.webp')"><div class="date"><div class="d">31</div><div class="m">MAY</div></div></div><div class="body"><div class="t">BMX Street</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Córdoba</div></div></div>
+      <div class="ev"><div class="img" style="background-image:url('assets/eventos/skater-cajon.webp')"><div class="date"><div class="d">07</div><div class="m">JUN</div></div></div><div class="body"><div class="t">Best Trick</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Rosario</div></div></div>
+    </div>
+    <div class="sect-head"><h3>SPOTS RECOMENDADOS</h3><a data-go="map">Ver todos</a></div>
+    <div class="spot" data-go="map"><div class="th" style="background-image:url('assets/spots/spot-5.webp')"></div><div class="info"><div class="tr"><div class="nm">Plaza Italia</div><div class="km">1.2 km</div></div><div class="ty">Plaza pública</div><div class="tags"><span>Street</span><span>Bowl</span><span>Manual</span><span>Gap</span></div></div></div>
+    <div class="spot" data-go="map"><div class="th" style="background-image:url('assets/spots/spot-6.webp')"></div><div class="info"><div class="tr"><div class="nm">Parque Sarmiento</div><div class="km">2.8 km</div></div><div class="ty">Skatepark</div><div class="tags"><span>Bowl</span><span>Vert</span><span>Ledges</span></div></div></div>
+  </div>
+  <div class="tabbar premium-tabbar">
+    <button class="tab active" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>Inicio</button>
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+    <button class="tab" data-go="forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Foro</button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
+    <button class="tab" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= RIDER 04 — MAP ================= -->
+<section class="scr" data-screen="map">
+  <div class="statusbar" style="z-index:40"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar" style="z-index:40"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <div style="display:flex;gap:6px;align-items:center"><button class="icon-btn bell"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button><div class="av" style="width:34px;height:34px;background-image:url('assets/eventos/skater.webp')" data-go="profile"></div></div>
+  </div>
+  <div class="searchbar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span class="ph-in">Buscar spots, skateparks, tiendas…</span><svg width="19" height="19" fill="none" stroke="var(--txt-2)" stroke-width="2"><path d="M3 6h12M3 12h8M3 18h5"/><circle cx="16" cy="6" r="1.6"/><circle cx="13" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/></svg></div>
+  <div class="chips" style="padding:14px 22px 0">
+    <button class="chip active"><svg width="14" height="14" style="vertical-align:-2px;margin-right:5px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 4l1 9h6M9 13l-1 5"/></svg>Skateparks</button>
+    <button class="chip">Spots</button>
+    <button class="chip">Tiendas</button>
+    <button class="chip">Eventos</button>
+  </div>
+  <div class="map map-premium">
+    <div class="lines"></div>
+    <div class="road" style="top:30%;left:0;right:0;height:2px;transform:rotate(-4deg)"></div>
+    <div class="road" style="top:0;bottom:0;left:46%;width:2px;transform:rotate(6deg)"></div>
+    <div class="road" style="top:60%;left:10%;right:20%;height:2px;transform:rotate(8deg)"></div>
+    <div class="lbl" style="top:18%;left:55%">PALERMO</div>
+    <div class="lbl" style="top:30%;left:18%">VILLA CRESPO</div>
+    <div class="lbl" style="top:46%;left:42%">ALMAGRO</div>
+    <div class="lbl" style="top:60%;left:8%">CABALLITO</div>
+    <div class="lbl" style="top:70%;left:55%">BOEDO</div>
+    <div class="pin-m" style="top:30%;left:22%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+    <div class="pin-m" style="top:25%;left:70%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+    <div class="pin-m" style="top:50%;left:62%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+    <div class="pin-m" style="top:58%;left:30%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+    <div class="pin-m" style="top:62%;left:78%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+    <div class="pin-m big" style="top:46%;left:46%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.8" fill="#06140a"/></svg></div>
+    <div class="map-scale">500 m</div>
+    <button class="loc-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
+  </div>
+  <div class="sheet pad-b">
+    
+    <!-- IMMERSIVE COVER HEADER -->
+    <div class="cover-hero" style="background-image: linear-gradient(to top, #080908 10%, transparent), url('assets/banners/banner-skatepark-3.webp')">
+      <div class="grab"></div>
+      <div style="position:relative; z-index:2; display:flex; justify-content:space-between; align-items:flex-end">
+        <div>
+          <div class="h-m verified" style="color:var(--white)">Parque Rivadavia <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2 2 3-.5 1 3 2.5 1.5L23 12l-1.5 2.5.5 3-3 1-1 3-3-.5L12 24l-2-2-3 .5-1-3-3-1 .5-3L1 12l2-2.5-.5-3 3-1 1-3 3 .5L12 2Z" opacity=".25"/><path d="M8 12l3 3 5-6" stroke="#06140a" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <div class="green" style="font-size:13px;font-weight:600;margin-top:4px">Skatepark</div>
+          <div style="display:flex;align-items:center;gap:5px;color:rgba(255,255,255,0.7);font-size:12.5px;margin-top:6px;text-shadow:0 1px 2px #000"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--green)"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Caballito, CABA</div>
+        </div>
+        <button class="icon-btn" style="border:1px solid rgba(255,255,255,0.2);border-radius:11px"><svg width="20" height="20" fill="none" stroke="var(--white)" stroke-width="2"><path d="M10 2l2.5 5 5.5.8-4 4 1 5.4L10 20l-5 2.2 1-5.4-4-4 5.5-.8L10 2Z"/></svg></button>
+      </div>
+    </div>
+    
+    <div class="sheet-content">
+      <div class="thumbs">
+        <div class="t" style="background-image:url('assets/spots/spot-1.webp')"></div>
+        <div class="t" style="background-image:url('assets/spots/spot-2.webp')"></div>
+        <div class="t" style="background-image:url('assets/spots/spot-3.webp')"></div>
+        <div class="t" style="background-image:url('assets/spots/spot-4.webp')"></div>
+      </div>
+      <div class="meter-row">
+        <div class="meter"><div class="cap">DIFICULTAD</div><div class="val">Intermedio</div><div class="bars"><i class="on"></i><i class="on"></i><i class="on" style="background:rgba(46,232,77,0.4)"></i><i></i><i></i></div></div>
+        <div class="meter" style="text-align:right"><div class="cap">SUPERFICIE</div><div class="val">Concreto Pulido</div></div>
+      </div>
+      <div class="identity-card" style="margin-top:14px">
+        <div class="id-top">
+          <div>
+            <div class="id-label">SPOTRA PULSE</div>
+            <div class="id-title">Spot vivo</div>
+          </div>
+          <div class="id-score"><b>86</b><span>LIVE</span></div>
+        </div>
+        <div class="signal-row">
+          <div class="signal"><div class="v">18</div><div class="l">riders ahora</div></div>
+          <div class="signal"><div class="v">Alto</div><div class="l">nivel de sesion</div></div>
+          <div class="signal"><div class="v">Ok</div><div class="l">seguridad local</div></div>
+        </div>
+      </div>
+      <div class="sect-head" style="margin-top:22px"><h3>PRÓXIMOS EVENTOS</h3><a>Ver todos</a></div>
+      <div class="card" style="padding:13px;display:flex;gap:13px;align-items:center">
+        <div style="text-align:center;flex-shrink:0"><div style="font-family:var(--display);font-weight:700;font-size:22px;color:var(--green)">24</div><div style="font-size:10px;letter-spacing:.1em;color:var(--txt-2)">MAY</div></div>
+        <div style="flex:1"><div style="font-weight:600;font-size:15px">Best Trick Sábado</div><div style="display:flex;gap:14px;color:var(--txt-2);font-size:12px;margin-top:6px"><span style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" fill="none" stroke="var(--green)" stroke-width="2"><circle cx="6.5" cy="6.5" r="5.5"/><path d="M6.5 3v4l2.5 1.5"/></svg>16:00 hs</span><span>Competencia</span></div></div>
+        <div style="width:50px;height:50px;border-radius:11px;background-size:cover;background-image:url('assets/eventos/skater-bowl.webp')"></div>
+      </div>
+      <div style="display:flex;gap:9px;margin-top:20px">
+        <button class="btn-sm" style="flex:1;border:1px solid rgba(255,255,255,0.1);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:7px;background:rgba(255,255,255,0.02);backdrop-filter:blur(4px)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 1l2 5 5 .5-3.7 3.5 1 5L8 12.5 3.7 15l1-5L1 6.5 6 6 8 1Z"/></svg>Fav</button>
+        <button class="btn-sm" style="flex:1;border:1px solid rgba(255,255,255,0.1);color:var(--txt);display:flex;align-items:center;justify-content:center;gap:7px;background:rgba(255,255,255,0.02);backdrop-filter:blur(4px)"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v14M3 3h10l-1.5 3L13 9H3"/></svg>Report</button>
+        <button class="btn-sm btn-primary" style="flex:1.4;box-shadow:var(--green-glow)">Añadir +</button>
+      </div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="map"><svg viewBox="0 0 40 40" fill="none"><path d="M27 7H14a6 6 0 0 0-6 6v1a6 6 0 0 0 6 6h7M13 33h13a6 6 0 0 0 6-6v-1a6 6 0 0 0-6-6h-7" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>Explorar</button>
+    <button class="tab" data-go="forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/><path d="M15 19a5 5 0 0 1 6-4.6"/></svg>Comunidad</button>
+    <button class="tab"><span class="center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></span></button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
+    <button class="tab" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= RIDER 05 — FORUM ================= -->
+<section class="scr" data-screen="forum">
+  <div class="bg-glow-main" style="top: -20%;"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <button class="icon-btn bell"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button>
+  </div>
+  <div class="pad pad-b" style="padding-top:10px">
+    <h2 class="h-l">Foro</h2>
+    <div class="chips" style="margin-top:16px">
+      <button class="chip active">Todos</button>
+      <button class="chip">Skate</button>
+      <button class="chip">BMX</button>
+      <button class="chip">Spots</button>
+      <button class="chip">Compra/Venta</button>
+    </div>
+    <div style="margin-top:18px">
+      <div class="fpost">
+        <div class="head"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div><div class="who">@lucas.flips <span class="disc">Skate</span></div><div class="when">Hace 2 h · Buenos Aires</div></div></div>
+        <div class="txt">Por fin clavé el 360 flip en Plaza Italia. Tres meses de intentos. ¿Quién se prende a una sesión el finde?</div>
+        <div class="media" style="background-image:url('assets/eventos/skater-bowl.webp')"><div class="play"><div><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7L8 5Z"/></svg></div></div></div>
+        <div class="acts"><span class="liked"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg>248</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>32</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg></span></div>
+      </div>
+      <div class="fpost">
+        <div class="head"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><div class="who">@maru.bmx <span class="disc">BMX</span></div><div class="when">Hace 5 h · Córdoba</div></div></div>
+        <div class="txt">Reporto spot nuevo: hay un set de escaleras buenísimo atrás del Buen Pastor. Lo cargué al mapa, queda esperando aprobación. Pásenme tricks.</div>
+        <div class="acts"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg>91</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>14</span></div>
+      </div>
+      <div class="fpost">
+        <div class="head"><div class="av" style="background-image:url('assets/logo/logo-2.webp')"></div><div><div class="who">@underground.mv <span class="disc" style="border-color:rgba(46,232,77,.5);color:var(--green)">Tienda</span></div><div class="when">Hace 1 d · Montevideo</div></div></div>
+        <div class="txt">Llegaron tablas nuevas y ruedas Spitfire. Riders verificados de SPOTRA tienen 15% off mostrando el perfil. Pasen por el local.</div>
+        <div class="acts"><span class="liked"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg>176</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>22</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+  <div class="tabbar">
+    <button class="tab" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>Inicio</button>
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+    <button class="tab active" data-go="forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Foro</button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
+    <button class="tab" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= RIDER 06 — MARKETPLACE ================= -->
+<section class="scr" data-screen="market">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <button class="icon-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+  <div class="pad pad-b" style="padding-top:8px">
+    <h2 class="h-l">Marketplace</h2>
+    <div class="searchbar" style="margin:16px 0 0;padding:0 16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span class="ph-in">Buscar productos…</span><svg width="19" height="19" fill="none" stroke="var(--txt-2)" stroke-width="2"><path d="M3 6h12M3 12h8"/><circle cx="16" cy="6" r="1.6"/><circle cx="13" cy="12" r="1.6"/></svg></div>
+    <div class="chips" style="margin-top:16px">
+      <button class="chip active">Tablas</button>
+      <button class="chip">Bicicletas</button>
+      <button class="chip">Ropa</button>
+      <button class="chip">Accesorios</button>
+    </div>
+    <div class="mk-grid" style="margin-top:18px">
+      <div class="prod"><div class="img" style="background-image:url('assets/marketplace/skate-completo.webp')"><div class="heart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg></div></div><div class="b"><div class="nm">Tabla completa Spotra</div><div class="pr">$85.000</div><div class="cond">Muy buen estado</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Buenos Aires, ARG</div><button class="contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Contactar</button></div></div>
+      <div class="prod"><div class="img" style="background-image:url('assets/marketplace/bmx-usada.webp')"><div class="heart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg></div></div><div class="b"><div class="nm">BMX WTP Arcade 20.5"</div><div class="pr">$120.000</div><div class="cond">Buen estado</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Córdoba, ARG</div><button class="contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Contactar</button></div></div>
+      <div class="prod"><div class="img" style="background-image:url('assets/tiendas/championes-vans-negros.webp')"><div class="heart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg></div></div><div class="b"><div class="nm">Vans Sk8-Hi Pro Negros</div><div class="pr">$55.000</div><div class="cond">Muy buen estado</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Rosario, ARG</div><button class="contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Contactar</button></div></div>
+      <div class="prod"><div class="img" style="background-image:url('assets/marketplace/ruedas-skate.webp')"><div class="heart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg></div></div><div class="b"><div class="nm">Set Ruedas Skate</div><div class="pr">$35.000</div><div class="cond">Excelente estado</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Montevideo, UY</div><button class="contact"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Contactar</button></div></div>
+    </div>
+  </div>
+  <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+  <div class="tabbar">
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+    <button class="tab" data-go="forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/><path d="M15 19a5 5 0 0 1 6-4.6"/></svg>Comunidad</button>
+    <button class="tab active" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
+    <button class="tab" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= RIDER 07 — PROFILE ================= -->
+<section class="scr" data-screen="profile">
+  <div class="statusbar" style="z-index:40; text-shadow:none"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="profile-hero">
+    <div class="cover-img" style="background-image:url('assets/banners/banner-skatepark-4.webp')">
+      <button class="icon-btn" style="position:absolute;top:14px;right:14px;background:rgba(0,0,0,.4);border-radius:11px;backdrop-filter:blur(4px)"><svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2"><path d="M3 6h14M3 10h9"/><circle cx="15" cy="6" r="1.4"/><circle cx="12" cy="10" r="1.4"/></svg></button>
+    </div>
+    <div class="profile-av" style="background-image:url('assets/eventos/skater-2.webp')"><div class="vbadge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div></div>
+  </div>
+  <div class="pad pad-b" style="padding-top:12px">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between">
+      <div><h2 class="h-m">Santiago Varela</h2><div style="color:var(--txt-2);font-size:13.5px;margin-top:3px">@santi.sk8 · Skate · Canelones, UY</div></div>
+      <button class="btn-sm btn-primary" style="width:auto;padding:0 18px;box-shadow:none">Editar</button>
+    </div>
+    <div class="pstats">
+      <div class="p"><div class="v">8</div><div class="l">Eventos</div></div>
+      <div class="p"><div class="v">3</div><div class="l">Podios</div></div>
+      <div class="p"><div class="v">1.2k</div><div class="l">Segs</div></div>
+      <div class="p"><div class="v">5</div><div class="l">Sponsors</div></div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:16px;flex-wrap:wrap">
+      <span class="tag-pill"><svg width="13" height="13" fill="none" stroke="var(--green)" stroke-width="2"><path d="M2 7l3 3 7-7"/></svg>Verificado</span>
+      <span class="tag-pill">Street</span>
+      <span class="tag-pill">Bowl</span>
+      <span class="tag-pill">Tech</span>
+    </div>
+
+    <div class="identity-card">
+      <div class="id-top">
+        <div>
+          <div class="id-label">SPOTRA ID</div>
+          <div class="id-title">Prueba competitiva</div>
+        </div>
+        <div class="id-score"><b>92</b><span>SCORE</span></div>
+      </div>
+      <div class="signal-row">
+        <div class="signal"><div class="v">3</div><div class="l">podios verificados</div></div>
+        <div class="signal"><div class="v">6</div><div class="l">clips destacados</div></div>
+        <div class="signal"><div class="v">94%</div><div class="l">match sponsor</div></div>
+      </div>
+    </div>
+
+    <div class="sect-head"><h3>PORTAFOLIO</h3><a style="cursor:pointer">Subir video</a></div>
+    <div class="gallery">
+      <div class="g vid" style="background-image:url('assets/spots/spot-7.webp')"></div>
+      <div class="g" style="background-image:url('assets/spots/spot-8.webp')"></div>
+      <div class="g vid" style="background-image:url('assets/eventos/bajando-rampa.webp')"></div>
+      <div class="g" style="background-image:url('assets/eventos/skater.webp')"></div>
+      <div class="g vid" style="background-image:url('assets/spots/spot-9.webp')"></div>
+      <div class="g" style="background-image:url('assets/spots/spot-10.webp')"></div>
+    </div>
+
+    <div class="sponsor-panel">
+      <div class="sponsor-head">
+        <svg class="sponsor-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3">
+          <path d="M32 5 55 18v28L32 59 9 46V18L32 5Z"/>
+          <path d="m32 18 4 8 9 1.2-6.5 6.1 1.7 8.7L32 37.8 23.8 42l1.7-8.7L19 27.2 28 26l4-8Z" fill="currentColor" stroke="none"/>
+        </svg>
+        <div class="sponsor-title">SPONSORS ACTIVOS</div>
+        <button class="benefit-link">Beneficios <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg></button>
+      </div>
+      <div class="sponsor-list">
+        <div class="sponsor-card-premium">
+          <div class="sponsor-logo"><b>U</b></div>
+          <div class="sponsor-info"><div class="name">Underground</div><div class="sponsor-badge">Activo · 15% off</div></div>
+          <div class="sponsor-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+        <div class="sponsor-card-premium">
+          <div class="sponsor-logo"><b>RX</b></div>
+          <div class="sponsor-info"><div class="name">RideX Wheels</div><div class="sponsor-badge">Activo · Producto</div></div>
+          <div class="sponsor-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="application-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 11v2l4 1 8 5V5L7 10l-4 1Z"/><path d="M18 9l3-2M18 15l3 2M19 12h3"/></svg>
+      <h3><span>POSTULACIONES</span> ABIERTAS</h3>
+    </div>
+    <div class="application-card-premium">
+      <div class="application-grid">
+        <div class="application-logo"><b>N</b></div>
+        <div class="application-copy">
+          <div class="featured">DESTACADA</div>
+          <div class="title">Nómada Skate Co.</div>
+          <p>Busca <b>3 riders</b> de street para temporada <b>2026</b></p>
+        </div>
+      </div>
+      <button class="btn btn-primary">Postularme <svg class="arr" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.7" stroke-linecap="round"><path d="M4 10h11M11 5l5 5-5 5"/></svg></button>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>Inicio</button>
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+    <button class="tab" data-go="forum"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Foro</button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
+    <button class="tab active" data-go="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= SHOP 01 — DASHBOARD ================= -->
+<section class="scr" data-screen="s-dash">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <div style="display:flex;gap:8px;align-items:center"><div class="tag-pill" style="color:var(--green);border-color:rgba(46,232,77,.4); background:rgba(46,232,77,0.05)">Tienda</div><button class="icon-btn bell"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span class="dot">8</span></button></div>
+  </div>
+  <div class="pad pad-b" style="padding-top:14px">
+    <h2 class="h-l">Underground <span class="green">Shop</span></h2>
+    <p class="sub" style="margin-top:2px">Ventas, mapa y comunidad desde Montevideo.</p>
+    <div class="store-hero" style="background-image:url('assets/tiendas/exterior-tienda.webp')">
+      <div class="store-copy">
+        <div class="eyebrow">Local verificado</div>
+        <div class="title">Tu tienda dentro del mapa rider</div>
+      </div>
+    </div>
+    <div class="kpi-grid" style="margin-top:16px">
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg></div><div class="num">48</div><div class="lbl">Consultas</div><div class="trend">+12 esta semana</div></div>
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div><div class="num">1.8k</div><div class="lbl">Vistas mapa</div><div class="trend">Montevideo top</div></div>
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div><div class="num">23</div><div class="lbl">Productos</div></div>
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg></div><div class="num">15%</div><div class="lbl">Promo riders</div></div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:16px">
+      <button class="btn-sm btn-primary" style="flex:1;box-shadow:var(--green-glow)" data-go="s-inventory">Publicar producto</button>
+      <button class="btn-sm" style="flex:1;border:1px solid rgba(255,255,255,0.2);color:var(--txt);background:rgba(255,255,255,0.02)" data-go="s-leads">Ver leads</button>
+    </div>
+    <div class="sect-head"><h3>PRODUCTOS DESTACADOS</h3><a data-go="s-inventory">Inventario</a></div>
+    <div class="spot" data-go="s-inventory"><div class="th" style="background-image:url('assets/tiendas/tabla-skate.webp')"></div><div class="info"><div class="tr"><div class="nm">Deck SPOTRA Street</div><div class="km">$62.000</div></div><div class="ty">Stock alto · Montevideo</div><div class="tags"><span>Nuevo</span><span>Promo riders</span></div></div></div>
+    <div class="spot" data-go="s-inventory"><div class="th" style="background-image:url('assets/tiendas/cuadro-bmx.webp')"></div><div class="info"><div class="tr"><div class="nm">Cuadro BMX cromoly</div><div class="km">$140.000</div></div><div class="ty">Stock bajo · 3 consultas hoy</div><div class="tags"><span>BMX</span><span>Premium</span></div></div></div>
+  </div>
+  <div class="tabbar">
+    <button class="tab active" data-go="s-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
+    <button class="tab" data-go="s-inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Stock</button>
+    <button class="tab" data-go="s-leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Leads</button>
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+  </div>
+</section>
+
+<!-- ================= SHOP 02 — INVENTORY ================= -->
+<section class="scr" data-screen="s-inventory">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <button class="icon-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+  <div class="pad pad-b" style="padding-top:8px">
+    <h2 class="h-l">Inventario</h2>
+    <p class="sub" style="margin-top:2px">Productos publicados en tienda y marketplace.</p>
+    <div class="searchbar" style="margin:16px 0 0;padding:0 16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span class="ph-in">Buscar por producto o categoria</span></div>
+    <div class="chips" style="margin-top:14px"><button class="chip active">Activos</button><button class="chip">Skate</button><button class="chip">BMX</button><button class="chip">Stock bajo</button><button class="chip">Promos</button></div>
+    <div class="mk-grid" style="margin-top:18px">
+      <div class="prod"><div class="img" style="background-image:url('assets/tiendas/tabla-skate.webp')"></div><div class="b"><div class="nm">Deck SPOTRA Street</div><div class="pr">$62.000</div><div class="cond">Stock: 18</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>UY · AR envío</div><button class="contact">Editar</button></div></div>
+      <div class="prod"><div class="img" style="background-image:url('assets/tiendas/truks-skate.webp')"></div><div class="b"><div class="nm">Trucks 149mm</div><div class="pr">$46.000</div><div class="cond">Stock: 7</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Montevideo</div><button class="contact">Editar</button></div></div>
+      <div class="prod"><div class="img" style="background-image:url('assets/tiendas/cuadro-bmx.webp')"></div><div class="b"><div class="nm">Cuadro BMX cromoly</div><div class="pr">$140.000</div><div class="cond">Stock: 3</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>UY · BR envío</div><button class="contact">Editar</button></div></div>
+      <div class="prod"><div class="img" style="background-image:url('assets/tiendas/championes-vans-negros.webp')"></div><div class="b"><div class="nm">Vans Sk8-Hi Pro</div><div class="pr">$55.000</div><div class="cond">Stock: 11</div><div class="loc"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Montevideo</div><button class="contact">Editar</button></div></div>
+    </div>
+  </div>
+  <div class="fab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg></div>
+  <div class="tabbar">
+    <button class="tab" data-go="s-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
+    <button class="tab active" data-go="s-inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Stock</button>
+    <button class="tab" data-go="s-leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Leads</button>
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+  </div>
+</section>
+
+<!-- ================= SHOP 03 — LEADS ================= -->
+<section class="scr" data-screen="s-leads">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div></div>
+  <div class="pad pad-b" style="padding-top:8px">
+    <h2 class="h-l">Leads</h2>
+    <p class="sub" style="margin-top:2px">Mensajes, reservas y acciones de comunidad.</p>
+    <div class="brand-tabs">
+      <button class="brand-tab active">Nuevos <span class="section-count">8</span></button>
+      <button class="brand-tab">Reservas</button>
+      <button class="brand-tab">Campañas</button>
+    </div>
+    <div class="lead-card">
+      <div class="row"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div><div class="ttl" style="font-weight:600">@santi.sk8</div><div class="meta">Quiere probar Deck SPOTRA Street · Montevideo</div></div><div class="status">HOT</div></div>
+      <div class="actions" style="display:flex;gap:9px;margin-top:14px"><button class="btn-sm btn-primary" style="flex:1;box-shadow:none">Responder</button><button class="btn-sm" style="flex:1;border:1px solid rgba(255,255,255,.15);color:var(--txt)">Reservar</button></div>
+    </div>
+    <div class="lead-card">
+      <div class="row"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><div class="ttl" style="font-weight:600">@maru.bmx</div><div class="meta">Pregunta por envio a Cordoba · BMX cromoly</div></div><div class="status">BMX</div></div>
+      <div class="actions" style="display:flex;gap:9px;margin-top:14px"><button class="btn-sm btn-primary" style="flex:1;box-shadow:none">Responder</button><button class="btn-sm" style="flex:1;border:1px solid rgba(255,255,255,.15);color:var(--txt)">Cotizar</button></div>
+    </div>
+    <div class="card" style="padding:15px;border-color:rgba(46,232,77,.25);background:linear-gradient(160deg,rgba(46,232,77,.08),var(--surface))">
+      <div style="font-size:12px;letter-spacing:.1em;color:var(--green);font-weight:700">CAMPAÑA SUGERIDA</div>
+      <div style="font-weight:600;font-size:16px;margin-top:6px">Session Night Montevideo</div>
+      <div style="font-size:12.5px;color:var(--txt-2);margin-top:4px">Invita riders verificados, activa descuento y aparece en mapa por 72 h.</div>
+      <button class="btn-sm btn-primary" style="margin-top:14px;box-shadow:none">Crear campaña</button>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="s-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
+    <button class="tab" data-go="s-inventory"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Stock</button>
+    <button class="tab active" data-go="s-leads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Leads</button>
+    <button class="tab" data-go="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
+  </div>
+</section>
+
+<!-- ================= BRAND 01 — DASHBOARD ================= -->
+<section class="scr" data-screen="b-dash">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <div style="display:flex;gap:8px;align-items:center"><div class="tag-pill" style="color:var(--green);border-color:rgba(46,232,77,.4); background:rgba(46,232,77,0.05)">Marca</div><button class="icon-btn bell"><svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg></button></div>
+  </div>
+  <div class="pad pad-b" style="padding-top:14px">
+    <h2 class="h-l">Nómada <span class="green">Skate Co.</span></h2>
+    <p class="sub" style="margin-top:2px">Panel de marca y patrocinios</p>
+    <div class="kpi-grid" style="margin-top:20px">
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/></svg></div><div class="num">34</div><div class="lbl">Riders patrocinados</div><div class="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17l6-6 4 4 8-8M21 7v5M21 7h-5"/></svg>+6 este mes</div></div>
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div><div class="num">128k</div><div class="lbl">Alcance de la marca</div><div class="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17l6-6 4 4 8-8M21 7v5M21 7h-5"/></svg>+18%</div></div>
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div><div class="num">7</div><div class="lbl">Productos publicados</div></div>
+      <div class="kpi"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg></div><div class="num">12</div><div class="lbl">Postulaciones nuevas</div><div class="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17l6-6 4 4 8-8M21 7v5M21 7h-5"/></svg>Revisar</div></div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:16px">
+      <button class="btn-sm btn-primary" style="flex:1;box-shadow:var(--green-glow)" data-go="b-scout">Descubrir riders</button>
+      <button class="btn-sm" style="flex:1;border:1px solid rgba(255,255,255,0.2);color:var(--txt);background:rgba(255,255,255,0.02)">Publicar campaña</button>
+    </div>
+    <div class="sect-head"><h3>POSTULACIONES RECIENTES</h3><a data-go="b-apps">Ver todas</a></div>
+    <div class="rider-card" data-go="b-apps"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div class="info"><div class="nm">@santi.sk8 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div><div class="meta">Street · Canelones, UY · 1.2k seg.</div></div><div class="score"><div class="v">92</div><div class="l">SCORE</div></div></div>
+    <div class="rider-card" data-go="b-apps"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div class="info"><div class="nm">@lucas.flips <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div><div class="meta">Street · Buenos Aires · 3.4k seg.</div></div><div class="score"><div class="v">88</div><div class="l">SCORE</div></div></div>
+    <div class="rider-card" data-go="b-apps"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div class="info"><div class="nm">@vitoria.sk</div><div class="meta">Bowl · São Paulo, BR · 5.1k seg.</div></div><div class="score"><div class="v">95</div><div class="l">SCORE</div></div></div>
+  </div>
+  <div class="tabbar">
+    <button class="tab active" data-go="b-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
+    <button class="tab" data-go="b-scout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Descubrir</button>
+    <button class="tab" data-go="b-apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg>Postulaciones</button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Tienda</button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= BRAND 02 — SCOUT ================= -->
+<section class="scr" data-screen="b-scout">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div></div>
+  <div class="pad pad-b" style="padding-top:8px">
+    <h2 class="h-l">Descubrir riders</h2>
+    <p class="sub" style="margin-top:2px">Filtrá talento por disciplina, país y score.</p>
+    <div class="searchbar" style="margin:16px 0 0;padding:0 16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span class="ph-in">Buscar por nombre o @usuario</span></div>
+    <div class="chips" style="margin-top:14px"><button class="chip active">Todos</button><button class="chip">Skate</button><button class="chip">BMX</button><button class="chip">Uruguay</button><button class="chip">Argentina</button><button class="chip">Brasil</button></div>
+    <div style="margin-top:18px">
+      <div class="rider-card"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div class="info"><div class="nm">@vitoria.sk <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div><div class="meta">Bowl · São Paulo · 5.1k seg. · 4 podios</div><div style="display:flex;gap:5px;margin-top:7px"><span class="tag-pill" style="padding:3px 8px;font-size:10px;color:var(--green)">Match 98%</span><span class="tag-pill" style="padding:3px 8px;font-size:10px">Bowl</span><span class="tag-pill" style="padding:3px 8px;font-size:10px">Vert</span></div></div><div class="score"><div class="v">95</div><div class="l">SCORE</div></div></div>
+      <div class="rider-card"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div class="info"><div class="nm">@santi.sk8 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div><div class="meta">Street · Canelones · 1.2k seg. · 3 podios</div><div style="display:flex;gap:5px;margin-top:7px"><span class="tag-pill" style="padding:3px 8px;font-size:10px;color:var(--green)">Match 94%</span><span class="tag-pill" style="padding:3px 8px;font-size:10px">Street</span><span class="tag-pill" style="padding:3px 8px;font-size:10px">Tech</span></div></div><div class="score"><div class="v">92</div><div class="l">SCORE</div></div></div>
+      <div class="rider-card"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div class="info"><div class="nm">@lucas.flips <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div><div class="meta">Street · Buenos Aires · 3.4k seg.</div><div style="display:flex;gap:5px;margin-top:7px"><span class="tag-pill" style="padding:3px 8px;font-size:10px">Street</span><span class="tag-pill" style="padding:3px 8px;font-size:10px">Gap</span></div></div><div class="score"><div class="v">88</div><div class="l">SCORE</div></div></div>
+      <div class="rider-card"><div class="av" style="background-image:url('assets/eventos/skater-cajon.webp')"></div><div class="info"><div class="nm">@tomi.bmx</div><div class="meta">BMX · Rosario · 980 seg.</div><div style="display:flex;gap:5px;margin-top:7px"><span class="tag-pill" style="padding:3px 8px;font-size:10px">BMX</span><span class="tag-pill" style="padding:3px 8px;font-size:10px">Park</span></div></div><div class="score"><div class="v">81</div><div class="l">SCORE</div></div></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="b-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
+    <button class="tab active" data-go="b-scout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Descubrir</button>
+    <button class="tab" data-go="b-apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg>Postulaciones</button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Tienda</button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= BRAND 03 — APPLICATIONS ================= -->
+<section class="scr" data-screen="b-apps">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div></div>
+  <div class="pad pad-b" style="padding-top:8px">
+    <h2 class="h-l">Postulaciones</h2>
+    <div class="brand-tabs">
+      <button class="brand-tab active">Nuevas <span class="section-count">12</span></button>
+      <button class="brand-tab">En revisión</button>
+      <button class="brand-tab">Aceptadas</button>
+    </div>
+    <div class="card" style="padding:14px;margin-bottom:14px;border-color:rgba(46,232,77,.3);background:linear-gradient(160deg,rgba(46,232,77,.08),var(--surface))">
+      <div style="font-size:12px;letter-spacing:.1em;color:var(--green);font-weight:700; text-shadow:0 0 8px rgba(46,232,77,0.4)">CAMPAÑA ACTIVA</div>
+      <div style="font-weight:600;font-size:16px;margin-top:6px">Team Street 2026 · 3 cupos</div>
+      <div style="font-size:12.5px;color:var(--txt-2);margin-top:4px">Cierra en 12 días · 12 postulaciones recibidas</div>
+    </div>
+    <div class="app-card">
+      <div class="row1"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div style="flex:1"><div class="ttl">@santi.sk8</div><div class="stmeta">Street · Canelones, UY · Score 92</div></div><div class="score" style="text-align:right"><div class="v" style="font-family:var(--display);font-weight:700;font-size:18px;color:var(--green)">92</div></div></div>
+      <div class="actions"><button class="b b-accept"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 8l4 4 8-9"/></svg>Aceptar</button><button class="b b-view" data-go="profile">Ver perfil</button></div>
+    </div>
+    <div class="app-card">
+      <div class="row1"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div style="flex:1"><div class="ttl">@lucas.flips</div><div class="stmeta">Street · Buenos Aires · Score 88</div></div><div class="score" style="text-align:right"><div class="v" style="font-family:var(--display);font-weight:700;font-size:18px;color:var(--green)">88</div></div></div>
+      <div class="actions"><button class="b b-accept"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 8l4 4 8-9"/></svg>Aceptar</button><button class="b b-view" data-go="profile">Ver perfil</button></div>
+    </div>
+    <div class="app-card">
+      <div class="row1"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div style="flex:1"><div class="ttl">@tomi.bmx</div><div class="stmeta">BMX · Rosario · Score 81</div></div><div class="score" style="text-align:right"><div class="v" style="font-family:var(--display);font-weight:700;font-size:18px;color:var(--green)">81</div></div></div>
+      <div class="actions"><button class="b b-accept"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 8l4 4 8-9"/></svg>Aceptar</button><button class="b b-view" data-go="profile">Ver perfil</button></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="b-dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
+    <button class="tab" data-go="b-scout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Descubrir</button>
+    <button class="tab active" data-go="b-apps"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg>Postulaciones</button>
+    <button class="tab" data-go="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Tienda</button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+  </div>
+</section>
+
+<!-- ================= ADMIN 01 — PANEL ================= -->
+<section class="scr" data-screen="a-panel">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <div style="display:flex;gap:8px;align-items:center"><div class="shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg></div><button class="icon-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button></div>
+  </div>
+  <div class="pad pad-b" style="padding-top:14px">
+    <h2 class="h-l"><span class="green">Admin</span> SPOTRA</h2>
+    <p class="sub" style="margin-top:2px">Panel de aprobaciones y gestión</p>
+    <div class="admin-kpis" style="margin-top:20px">
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg><div class="num">1.2k</div><div class="lbl">Usuarios</div></div>
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><div class="num">28</div><div class="lbl">Spots Pend.</div></div>
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><div class="num">12</div><div class="lbl">Eventos Pend.</div></div>
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg><div class="num">7</div><div class="lbl">Reportes</div></div>
+    </div>
+    <div class="admin-nav">
+      <button class="anav active" data-go="a-panel">Aprobaciones</button>
+      <button class="anav" data-go="a-users">Usuarios</button>
+      <button class="anav" data-go="a-safety">Reportes</button>
+      <button class="anav">Config</button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-family:var(--display);font-weight:600;font-size:18px">Pendientes <span class="section-count">28</span></div>
+      <div class="dd">Recientes <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+    </div>
+    <div class="approve-card">
+      <div class="th" style="background-image:url('assets/spots/spot-11.webp')"></div>
+      <div class="mid"><div class="kind">SKATEPARK</div><div class="nm">Parque Las Heras</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Buenos Aires, ARG</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@skate.bsas</div></div>
+      <div class="col"><button class="ab ab-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="ab ab-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
+    </div>
+    <div class="approve-card">
+      <div class="th" style="background-image:url('assets/spots/spot-12.webp')"></div>
+      <div class="mid"><div class="kind">STREET SPOT</div><div class="nm">Plaza Italia Ledges</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Córdoba, ARG</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@joni.sk8</div></div>
+      <div class="col"><button class="ab ab-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="ab ab-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
+    </div>
+    <div class="approve-card">
+      <div class="th" style="background-image:url('assets/tiendas/exterior-tienda.webp')"></div>
+      <div class="mid"><div class="kind">TIENDA</div><div class="nm">Underground Shop</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Montevideo, UY</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@underground.mv</div></div>
+      <div class="col"><button class="ab ab-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="ab ab-no"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab active" data-go="a-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Aprobaciones</button>
+    <button class="tab" data-go="a-users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg>Usuarios</button>
+    <button class="tab" data-go="a-safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg>Reportes</button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>Config</button>
+  </div>
+</section>
+
+<!-- ================= ADMIN 02 — USERS ================= -->
+<section class="scr" data-screen="a-users">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <div class="shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg></div>
+  </div>
+  <div class="pad pad-b" style="padding-top:14px">
+    <h2 class="h-l">Usuarios</h2>
+    <p class="sub" style="margin-top:2px">Crecimiento, verificación y roles.</p>
+    <div class="admin-kpis" style="margin-top:20px">
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/></svg><div class="num">824</div><div class="lbl">Riders</div></div>
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 9l1-4h14l1 4M5 9v10h14V9"/></svg><div class="num">86</div><div class="lbl">Tiendas</div></div>
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg><div class="num">42</div><div class="lbl">Marcas</div></div>
+      <div class="akpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 12l2.5 2.5 5-5"/><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/></svg><div class="num">119</div><div class="lbl">Verif.</div></div>
+    </div>
+    <div class="searchbar" style="margin:18px 0 0;padding:0 16px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><span class="ph-in">Buscar usuario, tienda o marca</span></div>
+    <div class="chips" style="margin-top:14px"><button class="chip active">Todos</button><button class="chip">Riders</button><button class="chip">Tiendas</button><button class="chip">Marcas</button><button class="chip">Verificacion</button></div>
+    <div style="margin-top:18px">
+      <div class="rider-card"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div class="info"><div class="nm">@santi.sk8 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></div><div class="meta">Rider · Canelones · SPOTRA ID 92</div></div><div class="score"><div class="v">OK</div><div class="l">VERIF</div></div></div>
+      <div class="rider-card"><div class="av" style="background-image:url('assets/logo/logo-2.webp')"></div><div class="info"><div class="nm">@underground.mv</div><div class="meta">Tienda · Montevideo · documentos pendientes</div></div><div class="score"><div class="v">2</div><div class="l">DOCS</div></div></div>
+      <div class="rider-card"><div class="av" style="background-image:url('assets/banners/banner-marca.webp')"></div><div class="info"><div class="nm">@nomada.skate</div><div class="meta">Marca · Argentina · campaña activa</div></div><div class="score"><div class="v">12</div><div class="l">APPS</div></div></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="a-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/></svg>Aprob.</button>
+    <button class="tab active" data-go="a-users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg>Usuarios</button>
+    <button class="tab" data-go="a-safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg>Reportes</button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Config</button>
+  </div>
+</section>
+
+<!-- ================= ADMIN 03 — SAFETY ================= -->
+<section class="scr" data-screen="a-safety">
+  <div class="bg-glow-main"></div>
+  <div class="statusbar"><span>9:41</span><div class="icns"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor"><rect x="0" y="6" width="3" height="6" rx="1"/><rect x="4.5" y="4" width="3" height="8" rx="1"/><rect x="9" y="2" width="3" height="10" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-width="1.2" opacity=".5"/><rect x="3" y="3" width="16" height="6" rx="1.5" fill="currentColor"/></svg></div></div>
+  <div class="topbar"><div class="brand-sm"><img src="assets/logo/logo-principal.webp" alt="Logo" width="26" height="26"><span>SPOTRA</span></div>
+    <div class="shield"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg></div>
+  </div>
+  <div class="pad pad-b" style="padding-top:14px">
+    <h2 class="h-l">Seguridad</h2>
+    <p class="sub" style="margin-top:2px">Moderación, reportes y confianza del marketplace.</p>
+    <div class="identity-card">
+      <div class="id-top">
+        <div>
+          <div class="id-label">TRUST OPS</div>
+          <div class="id-title">Riesgo bajo</div>
+        </div>
+        <div class="id-score"><b>91</b><span>TRUST</span></div>
+      </div>
+      <div class="signal-row">
+        <div class="signal"><div class="v">7</div><div class="l">reportes abiertos</div></div>
+        <div class="signal"><div class="v">2h</div><div class="l">SLA promedio</div></div>
+        <div class="signal"><div class="v">98%</div><div class="l">ventas sin disputa</div></div>
+      </div>
+    </div>
+    <div class="sect-head"><h3>REPORTES PRIORITARIOS</h3><span class="section-count">7</span></div>
+    <div class="approve-card">
+      <div class="th" style="background-image:url('assets/marketplace/bmx-usada.webp')"></div>
+      <div class="mid"><div class="kind">MARKETPLACE</div><div class="nm">Precio sospechoso</div><div class="ln">BMX WTP Arcade · Córdoba</div><div class="ln">@buyer.rodrigo reporto publicacion</div></div>
+      <div class="col"><button class="ab ab-ok">Revisar</button><button class="ab ab-no">Pausar</button></div>
+    </div>
+    <div class="approve-card">
+      <div class="th" style="background-image:url('assets/spots/spot-12.webp')"></div>
+      <div class="mid"><div class="kind">SPOT</div><div class="nm">Ubicacion sensible</div><div class="ln">Plaza Italia Ledges</div><div class="ln">3 usuarios pidieron ocultar hora pico</div></div>
+      <div class="col"><button class="ab ab-ok">Editar</button><button class="ab ab-no">Ocultar</button></div>
+    </div>
+    <div class="approve-card">
+      <div class="th" style="background-image:url('assets/eventos/skater-bowl.webp')"></div>
+      <div class="mid"><div class="kind">FORO</div><div class="nm">Discusion subida de tono</div><div class="ln">Post: Session Night</div><div class="ln">12 comentarios nuevos</div></div>
+      <div class="col"><button class="ab ab-ok">Moderar</button><button class="ab ab-no">Cerrar</button></div>
+    </div>
+  </div>
+  <div class="tabbar">
+    <button class="tab" data-go="a-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/></svg>Aprob.</button>
+    <button class="tab" data-go="a-users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg>Usuarios</button>
+    <button class="tab active" data-go="a-safety"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg>Reportes</button>
+    <button class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Config</button>
+  </div>
+</section>
+
+        </div><!-- viewport -->
+      </div><!-- screen -->
+    </div><!-- phone -->
+  </div><!-- phone-wrap -->
+</div><!-- stage -->
+
+<script>
+const flows = {
+  rider:['landing','signup','home','map','forum','market','profile'],
+  shop:['s-dash','s-inventory','s-leads'],
+  brand:['b-dash','b-scout','b-apps'],
+  admin:['a-panel','a-users','a-safety']
+};
+const viewport = document.getElementById('viewport');
+
+function showScreen(id){
+  document.querySelectorAll('.scr').forEach(s=>s.classList.toggle('active', s.dataset.screen===id));
+  document.querySelectorAll('.rail-item').forEach(r=>r.classList.toggle('active', r.dataset.scr===id));
+  if(viewport) viewport.scrollTop = 0;
+}
+function showFlow(flow){
+  document.querySelectorAll('.flow-tab').forEach(t=>t.classList.toggle('active', t.dataset.flow===flow));
+  document.querySelectorAll('.rail .grp').forEach(g=>g.classList.toggle('active', g.dataset.grp===flow));
+  showScreen(flows[flow][0]);
+}
+
+document.querySelectorAll('.flow-tab').forEach(t=>t.addEventListener('click',()=>showFlow(t.dataset.flow)));
+document.querySelectorAll('.rail-item').forEach(r=>r.addEventListener('click',()=>showScreen(r.dataset.scr)));
+
+// in-app navigation
+document.addEventListener('click',e=>{
+  const el = e.target.closest('[data-go]');
+  if(el){ e.preventDefault(); showScreen(el.dataset.go); }
+});
+
+// chips / type-cards / brand-tabs local toggles
+function groupToggle(selector, groupAttr){
+  document.querySelectorAll(selector).forEach(item=>{
+    item.addEventListener('click',function(){
+      const parent = this.parentElement;
+      parent.querySelectorAll(selector).forEach(s=>s.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+}
+groupToggle('.chip');
+groupToggle('.type-card');
+groupToggle('.brand-tab');
+groupToggle('.anav');
+</script>
+</body>
+</html>
