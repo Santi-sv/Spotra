@@ -303,24 +303,38 @@ img{max-width:100%;display:block}
 .profile-stats b{font-family:var(--display);font-size:32px;color:var(--green-hot)}
 .profile-stats span{display:block;color:var(--muted);margin-top:-12px}
 .social-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);padding:12px}
-.social-grid button{min-height:74px;border-radius:14px;color:rgba(245,247,244,.82);display:grid;place-items:center;font-weight:700}
-.social-grid span{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:900;color:#fff;margin-bottom:5px}
-.social-ig{background:linear-gradient(135deg,#feda75,#d62976,#4f5bd5)}
-.social-tk{background:#050505;border:1px solid rgba(255,255,255,.12)}
-.social-fb{background:#2f6edb}
-.social-mail{background:transparent;border:1px solid var(--green-hot);color:var(--green-hot)!important}
+.social-grid button{min-height:76px;border-radius:14px;color:rgba(245,247,244,.82);display:grid;place-items:center;font-weight:700}
+.social-logo{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;margin-bottom:6px;box-shadow:0 0 18px rgba(0,0,0,.28)}
+.social-logo svg{width:23px;height:23px;display:block}
+.social-ig{background:radial-gradient(circle at 32% 98%,#feda75 0 20%,transparent 24%),linear-gradient(135deg,#833ab4,#fd1d1d 52%,#fcb045)}
+.social-tk{background:#050505;border:1px solid rgba(255,255,255,.16)}
+.social-tk svg{filter:drop-shadow(-1.5px 0 #25f4ee) drop-shadow(1.5px 0 #fe2c55)}
+.social-fb{background:#1877f2}
+.social-mail{background:rgba(46,232,77,.08);border:1px solid var(--green-hot);color:var(--green-hot)!important}
 .profile-wall .section-head{margin:0 0 14px}
 .wall-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .wall-grid div{aspect-ratio:1.08;border-radius:18px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;overflow:hidden}
 .wall-grid span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.46);backdrop-filter:blur(8px)}
-.upload-media{width:100%;height:66px;margin-top:18px;font-family:var(--display);font-size:20px}
-.upload-media span{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#071007;color:var(--green-hot);font-size:28px}
-.profile-settings h2{font-family:var(--display);font-size:26px;margin-bottom:10px}
-.profile-settings button{width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(245,247,244,.78);font-size:16px}
-.profile-settings button:last-child{border-bottom:0}
-.profile-settings b{font-size:30px;color:var(--muted);font-weight:400}
-.profile-settings .danger{color:#ff5d5d}
-.profile-settings .danger b{color:#ff5d5d}
+.upload-media{width:100%;height:68px;margin-top:18px;border-radius:18px;font-family:var(--display);font-size:19px;letter-spacing:.02em;justify-content:flex-start;padding:0 18px;background:linear-gradient(135deg,var(--green-hot),#14cc48);box-shadow:0 0 34px rgba(116,255,58,.24)}
+.upload-media .upload-icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:rgba(5,10,6,.92);color:var(--green-hot);margin-right:8px}
+.upload-media .upload-icon svg{width:24px;height:24px}
+.upload-media .upload-copy{display:grid;text-align:left;line-height:1.05}
+.upload-media .upload-copy small{font-family:var(--body);font-size:11px;color:rgba(6,16,6,.68);font-weight:900;letter-spacing:0;margin-top:4px}
+.profile-settings-entry{width:100%;display:flex;align-items:center;justify-content:space-between;text-align:left;padding:20px 22px;border-radius:22px;color:var(--text);border-color:rgba(46,232,77,.28)}
+.profile-settings-entry span{display:grid;gap:5px}
+.profile-settings-entry b{font-family:var(--display);font-size:24px}
+.profile-settings-entry small{color:var(--muted);font-size:14px}
+.profile-settings-entry i{width:42px;height:42px;border-radius:14px;border:1px solid rgba(116,255,58,.32);display:grid;place-items:center;color:var(--green-hot);font-style:normal;font-size:30px;background:rgba(46,232,77,.07)}
+.settings-list{display:grid;gap:6px;margin-top:16px}
+.settings-list button{width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;border-radius:16px;padding:0 14px;color:rgba(245,247,244,.82);background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08);font-size:16px}
+.settings-list button span{display:flex;align-items:center;gap:12px}
+.settings-list button svg{width:22px;height:22px;color:var(--green-hot)}
+.settings-list button b{font-size:26px;color:var(--muted);font-weight:400}
+.settings-list .danger{color:#ff5d5d;border-color:rgba(255,93,93,.3);background:rgba(255,93,93,.055)}
+.settings-list .danger svg,.settings-list .danger b{color:#ff5d5d}
+.security-warning{border:1px solid rgba(255,93,93,.32);background:rgba(255,93,93,.07);border-radius:16px;padding:12px 14px;color:rgba(255,220,220,.9);font-size:13px;line-height:1.45;margin:12px 0}
+.delete-confirm{margin:4px 0 0;color:rgba(245,247,244,.82);line-height:1.35}
+.danger-action{background:linear-gradient(135deg,#ff4f4f,#c90f22)!important;color:#fff!important;box-shadow:0 0 28px rgba(255,79,79,.22)!important}
 .signup-layout{width:min(1180px,100%);min-height:100vh;min-height:100dvh;margin:0 auto;padding:28px clamp(16px,3vw,34px);display:grid;grid-template-columns:410px minmax(0,1fr);gap:20px;align-items:stretch}
 .signup-visual{position:relative;overflow:hidden;min-height:720px;border-radius:30px;background:radial-gradient(circle at 72% 10%,rgba(116,255,58,.17),transparent 28%),linear-gradient(150deg,rgba(12,19,14,.94),rgba(4,7,5,.98));border:1px solid rgba(46,232,77,.32);display:flex;flex-direction:column;justify-content:space-between;padding:24px;box-shadow:0 28px 72px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.05)}
 .signup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(46,232,77,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(46,232,77,.035) 1px,transparent 1px),url('assets/banners/login-hero.webp') 42% bottom/780px auto no-repeat;opacity:.34;mask-image:linear-gradient(180deg,#000,transparent 92%);pointer-events:none}
@@ -339,9 +353,8 @@ img{max-width:100%;display:block}
 .signup-panel{padding:28px;border-radius:30px;background:radial-gradient(circle at 92% 0,rgba(116,255,58,.12),transparent 24%),linear-gradient(145deg,rgba(18,25,20,.92),rgba(6,9,7,.98))}
 .auth-back{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--green-hot);display:grid;place-items:center;margin-bottom:16px;box-shadow:0 0 20px rgba(46,232,77,.12)}
 .auth-back svg{width:22px;height:22px}
-.signup-logo-line{display:flex;align-items:center;justify-content:center;gap:12px;margin:-58px 0 18px;pointer-events:none}
-.signup-logo-line img{width:46px;height:46px;object-fit:contain}
-.signup-logo-line span{font-family:var(--display);font-size:26px;letter-spacing:.14em}
+.signup-logo-line{display:flex;align-items:center;justify-content:center;margin:-56px 0 18px;pointer-events:none}
+.signup-logo-line img{width:164px;height:auto;object-fit:contain;filter:drop-shadow(0 0 18px rgba(255,255,255,.14))}
 .signup-panel .lead{font-size:15px;margin-top:9px}
 .signup-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .signup-chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid rgba(116,255,58,.36);padding:8px 11px;color:var(--green-hot);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;background:rgba(46,232,77,.07);white-space:nowrap}
@@ -450,12 +463,18 @@ img{max-width:100%;display:block}
   .profile-stats div{min-height:74px;border-radius:15px}
   .profile-stats b{font-size:26px}
   .social-grid{grid-template-columns:repeat(4,1fr);gap:6px;padding:8px}
-  .social-grid button{min-height:62px;font-size:12px}
-  .social-grid span{width:28px;height:28px}
+  .social-grid button{min-height:64px;font-size:12px}
+  .social-logo{width:30px;height:30px;border-radius:9px}
+  .social-logo svg{width:19px;height:19px}
   .wall-grid{grid-template-columns:repeat(4,1fr);gap:8px}
   .wall-grid div{border-radius:14px}
-  .upload-media{height:58px;font-size:17px}
-  .profile-settings button{min-height:54px;font-size:15px}
+  .upload-media{height:58px;font-size:16px;padding:0 12px}
+  .upload-media .upload-icon{width:40px;height:40px;border-radius:12px;margin-right:5px}
+  .upload-media .upload-copy small{display:none}
+  .profile-settings-entry{padding:16px 18px;border-radius:20px}
+  .profile-settings-entry b{font-size:21px}
+  .profile-settings-entry small{font-size:12px}
+  .settings-list button{min-height:54px;font-size:15px}
   .sponsor-card,.application-card{grid-template-columns:72px 1fr;gap:12px}
   .sponsor-card .primary-btn,.application-card .primary-btn{grid-column:1/-1;width:100%}
   .sponsor-logo{width:72px;height:72px;border-radius:20px}
@@ -722,10 +741,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   radial-gradient(300px 160px at 92% 4%,rgba(46,232,77,.12),transparent 60%)}
 .auth-inner{position:relative;z-index:2;width:min(560px,100%);min-height:100vh;min-height:100dvh;padding:18px 22px 46px;display:flex;flex-direction:column}
 .auth-top{display:flex;justify-content:space-between;align-items:flex-start}
-.auth-coords{margin:8px auto 0;text-align:left;font-size:12px;letter-spacing:.06em;color:rgba(245,247,244,.85);display:flex;gap:10px;align-items:flex-start}
-.auth-coords svg{width:26px;height:26px;color:var(--green-hot);flex-shrink:0;filter:drop-shadow(0 0 8px rgba(116,255,58,.7))}
-.auth-coords span{display:block;line-height:1.5}
-.auth-coords .c-country{color:var(--muted);letter-spacing:.22em;font-weight:700;font-size:11px}
+.auth-ambient-logo{height:42px;margin:4px auto 0;display:flex;align-items:center;justify-content:center;opacity:.46;filter:drop-shadow(0 0 18px rgba(116,255,58,.12))}
+.auth-ambient-logo img{width:152px;height:auto;object-fit:contain}
 .auth-stats{display:flex;gap:24px;margin-top:64px;z-index:3}
 .auth-stat{min-width:88px;text-align:center;border:1px solid rgba(116,255,58,.14);border-radius:16px;background:linear-gradient(180deg,rgba(6,12,8,.32),rgba(6,10,7,.08));padding:10px 8px;backdrop-filter:blur(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .auth-stat svg{width:22px;height:22px;color:var(--green-hot);margin:0 auto 7px;display:block;filter:drop-shadow(0 0 10px rgba(116,255,58,.6))}
@@ -776,7 +793,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     radial-gradient(300px 170px at 86% 30%,rgba(46,232,77,.12),transparent 66%);
   }
   .auth-inner{min-height:100svh;min-height:100dvh;padding:max(14px,env(safe-area-inset-top)) 22px max(26px,env(safe-area-inset-bottom))}
-  .auth-coords{margin-top:4px}
+  .auth-ambient-logo{height:34px;margin-top:4px}
+  .auth-ambient-logo img{width:132px}
   .auth-stats{gap:16px;margin-top:28px}
   .auth-stat svg{width:21px;height:21px;margin-bottom:6px}
   .auth-stat b{font-size:13.5px}
@@ -800,8 +818,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 @media(max-width:390px){
   .auth-bg{background-size:100% 100%,620px auto;background-position:center top,44% 10px}
   .auth-inner{padding-left:18px;padding-right:18px}
-  .auth-coords{font-size:11px}
-  .auth-coords svg{width:23px;height:23px}
+  .auth-ambient-logo{height:30px;margin-top:0}
+  .auth-ambient-logo img{width:118px}
   .auth-stats{gap:12px;margin-top:18px}
   .auth-stat svg{width:19px;height:19px;margin-bottom:5px}
   .auth-stat b{font-size:12.5px}
@@ -842,9 +860,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   .signup-score span{margin-top:-8px;font-size:6.5px;letter-spacing:.12em}
   .signup-panel{padding:14px;border-radius:22px}
   .auth-back{width:42px;height:42px;margin-bottom:12px}
-  .signup-logo-line{margin:-54px 0 14px}
-  .signup-logo-line img{width:40px;height:40px}
-  .signup-logo-line span{font-size:21px}
+  .signup-logo-line{margin:-50px 0 14px}
+  .signup-logo-line img{width:142px}
   .signup-header{display:block}
   .signup-chip{display:none}
   .signup-panel .kicker{font-size:10px}
@@ -953,10 +970,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div class="auth">
         <div class="auth-bg"></div>
         <div class="auth-inner">
-          <div class="auth-coords">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
-            <div><span>34.9078° S</span><span>56.1645° W</span><span class="c-country">URUGUAY</span></div>
-          </div>
+          <div class="auth-ambient-logo"><img src="assets/logo/spotra-brush.webp" alt="SPOTRA"></div>
           <div class="auth-stats">
             <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><b>12.000+</b><span>SPOTS</span></div>
             <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3M9 14v3M15 14v3M8 20h8"/></svg><b>500+</b><span>EVENTOS</span></div>
@@ -1203,10 +1217,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <div><b>1.2k</b><span>seguidores</span></div>
           </div>
           <div class="social-grid">
-            <button data-toast="Instagram conectado: @santi.sk8"><span class="social-ig">IG</span>Instagram</button>
-            <button data-toast="TikTok conectado."><span class="social-tk">♪</span>TikTok</button>
-            <button data-toast="Facebook conectado."><span class="social-fb">f</span>Facebook</button>
-            <button data-toast="Correo: santiagovarela29011999@gmail.com"><span class="social-mail">@</span>Email</button>
+            <button data-toast="Instagram conectado: @santi.sk8"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.5" cy="7.6" r="1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
+            <button data-toast="TikTok conectado."><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M15.7 3c.4 2.5 1.8 4.1 4.3 4.3v3.1c-1.5.1-2.8-.3-4.2-1.1v5.8c0 5.8-6.3 7.6-9.7 4.3-2.2-2.1-2.1-5.8.3-7.8 1.4-1.2 3-1.6 5-1.2v3.3c-.6-.2-1.2-.2-1.8 0-1.7.5-2.4 2.5-1.3 3.8 1.1 1.4 3.7 1.1 4.1-1.1.1-.4.1-.8.1-1.2V3h3.2Z"/></svg></span>TikTok</button>
+            <button data-toast="Facebook conectado."><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M14.4 8.1H16V5.2c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4v2.5H6.5v3.2h2.8V23h3.4v-7.8h2.8l.4-3.2h-3.2V9.8c0-.9.3-1.7 1.7-1.7Z"/></svg></span>Facebook</button>
+            <button data-toast="Correo: santiagovarela29011999@gmail.com"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span>Email</button>
           </div>
         </div>
 
@@ -1218,19 +1232,13 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <div style="background-image:url('assets/spots/spot-7.webp')"><span>▶</span></div>
             <div style="background-image:url('assets/eventos/biker-1.webp')"></div>
           </div>
-          <button class="primary-btn upload-media" data-open-modal="post"><span>+</span>Subir foto o video</button>
+          <button class="primary-btn upload-media" data-open-modal="post"><span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 16V5"/><path d="M7.5 9.5 12 5l4.5 4.5"/><rect x="4" y="15" width="16" height="5" rx="2"/></svg></span><span class="upload-copy">Subir foto o video<small>Sumalo a tu muro</small></span></button>
         </div>
 
-        <div class="panel profile-settings">
-          <h2>Configuración</h2>
-          <button data-toast="Abriremos selector de imagen cuando conectemos storage."><span>Editar foto de perfil</span><b>›</b></button>
-          <button data-open-modal="editProfile"><span>Editar nombre</span><b>›</b></button>
-          <button data-open-modal="editProfile"><span>Editar apellido</span><b>›</b></button>
-          <button data-open-modal="editContact"><span>Editar contacto</span><b>›</b></button>
-          <button data-open-modal="password"><span>Cambiar contraseña</span><b>›</b></button>
-          <button data-open-modal="privacy"><span>Privacidad</span><b>›</b></button>
-          <button class="danger" data-toast="La eliminación de cuenta pedirá confirmación fuerte cuando conectemos backend."><span>Eliminar cuenta</span><b>›</b></button>
-        </div>
+        <button class="profile-settings-entry panel" data-open-modal="settings">
+          <span><b>Configuración</b><small>Privacidad, contacto, contraseña y seguridad de cuenta</small></span>
+          <i>›</i>
+        </button>
       </section>
     </section>
 
@@ -1262,7 +1270,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <button class="auth-back" data-route="login" aria-label="Volver a iniciar sesión">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
-          <div class="signup-logo-line"><img src="assets/logo/logo-principal.webp" alt="SPOTRA"><span>SPOTRA</span></div>
+          <div class="signup-logo-line"><img src="assets/logo/spotra-brush.webp" alt="SPOTRA"></div>
           <div class="signup-header">
             <div>
               <div class="kicker">Crear cuenta</div>
@@ -1593,6 +1601,17 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     </div>
 
     <!-- PERFIL / CONFIG -->
+    <div class="modal-form" data-form="settings">
+      <p class="hint">Gestioná tu perfil y la seguridad de tu cuenta desde un panel privado.</p>
+      <div class="settings-list">
+        <button data-toast="Abriremos selector de imagen cuando conectemos storage."><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M17 4h4v4"/></svg>Editar foto de perfil</span><b>›</b></button>
+        <button data-open-modal="editProfile"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>Nombre y apellido</span><b>›</b></button>
+        <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
+        <button data-open-modal="password"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Cambiar contraseña</span><b>›</b></button>
+        <button data-open-modal="privacy"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg>Privacidad</span><b>›</b></button>
+        <button class="danger" data-open-modal="deleteAccount"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16"/><path d="M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg>Eliminar cuenta</span><b>›</b></button>
+      </div>
+    </div>
     <div class="modal-form" data-form="editProfile">
       <p class="hint">Estos datos se usarán en tu perfil público y en postulaciones a sponsors.</p>
       <div class="form-grid" id="editProfileForm" style="grid-template-columns:1fr">
@@ -1610,11 +1629,13 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar contacto</button>
     </div>
     <div class="modal-form" data-form="password">
-      <p class="hint">Cuando conectemos backend, esta acción pedirá contraseña actual y confirmación segura.</p>
+      <p class="hint">Confirmá que sos vos y escribí dos veces la nueva contraseña.</p>
       <div class="form-grid" id="passwordForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input type="password" placeholder="Nueva contraseña"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="currentPassword" required type="password" placeholder="Contraseña actual" autocomplete="current-password"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="newPassword" required type="password" minlength="8" placeholder="Nueva contraseña (mín. 8)" autocomplete="new-password"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="repeatPassword" required type="password" minlength="8" placeholder="Reingresar nueva contraseña" autocomplete="new-password"></div>
       </div>
-      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Cambiar contraseña</button>
+      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-change-password>Cambiar contraseña</button>
     </div>
     <div class="modal-form" data-form="privacy">
       <p class="hint">Definí qué partes de tu perfil competitivo se muestran públicamente.</p>
@@ -1622,6 +1643,15 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <button class="create-opt" data-toast="Perfil público activado."><div class="ic">✓</div><div><b>Perfil público</b><span>Visible para riders, tiendas y marcas.</span></div></button>
         <button class="create-opt" data-toast="Contacto privado activado."><div class="ic">✓</div><div><b>Contacto privado</b><span>Solo se muestra al aprobar un chat o sponsor.</span></div></button>
       </div>
+    </div>
+    <div class="modal-form" data-form="deleteAccount">
+      <p class="hint">Esta acción elimina tu perfil, muro, postulaciones y publicaciones asociadas a tu cuenta.</p>
+      <div class="security-warning"><b>Atención:</b> para evitar eliminaciones accidentales, primero confirmá tu contraseña y luego marcá la reconfirmación.</div>
+      <div class="form-grid" id="deleteAccountForm" style="grid-template-columns:1fr">
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="deletePassword" required type="password" placeholder="Contraseña actual" autocomplete="current-password"></div>
+        <label class="check delete-confirm"><input id="deleteConfirm" type="checkbox"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><path d="M5 12l4.5 4.5L19 7"/></svg></span>Entiendo que esta acción no se puede deshacer.</label>
+      </div>
+      <button class="primary-btn danger-action" style="width:100%;margin-top:18px;height:56px" data-delete-account>Eliminar mi cuenta</button>
     </div>
   </div>
 </div>
@@ -1922,7 +1952,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad' };
+const MODAL_TITLES = { menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -1958,6 +1988,31 @@ document.addEventListener('click', e => {
   /* submit de formularios de creación */
   const submit = e.target.closest('[data-submit]');
   if(submit) handleCreate(submit.dataset.submit);
+  const changePassword = e.target.closest('[data-change-password]');
+  if(changePassword){
+    if(!validateForm('passwordForm')) return;
+    const current = document.getElementById('currentPassword');
+    const next = document.getElementById('newPassword');
+    const repeat = document.getElementById('repeatPassword');
+    const mismatch = next.value !== repeat.value;
+    repeat.closest('.field').classList.toggle('error', mismatch);
+    if(mismatch){ toast('Las nuevas contraseñas no coinciden.'); return; }
+    resetForm('passwordForm');
+    closeModal();
+    toast('Contraseña actualizada correctamente.');
+    return;
+  }
+  const deleteAccount = e.target.closest('[data-delete-account]');
+  if(deleteAccount){
+    if(!validateForm('deleteAccountForm')) return;
+    const confirm = document.getElementById('deleteConfirm');
+    if(!confirm.checked){ toast('Marcá la reconfirmación para eliminar la cuenta.'); return; }
+    resetForm('deleteAccountForm');
+    closeModal();
+    setRoute('login');
+    toast('Cuenta eliminada. Te llevamos al inicio.');
+    return;
+  }
   const saveSettings = e.target.closest('[data-save-settings]');
   if(saveSettings){ closeModal(); toast('Cambios guardados en el perfil.'); }
 });
@@ -1989,7 +2044,8 @@ function validateForm(id){
   form.querySelectorAll('input,select').forEach(inp => {
     if(inp.type === 'file') return;
     const invalid = !inp.checkValidity();
-    inp.closest('.field').classList.toggle('error', invalid);
+    const field = inp.closest('.field');
+    if(field) field.classList.toggle('error', invalid);
     if(invalid) bad++;
   });
   if(bad) toast('Revisá los campos marcados en rojo.');
@@ -1997,7 +2053,11 @@ function validateForm(id){
 }
 function resetForm(id, dzId){
   const form = document.getElementById(id);
-  form.querySelectorAll('input').forEach(i => { if(i.type !== 'file') i.value=''; });
+  form.querySelectorAll('input').forEach(i => {
+    if(i.type === 'file') return;
+    if(i.type === 'checkbox') i.checked = false;
+    else i.value='';
+  });
   form.querySelectorAll('select').forEach(s => s.selectedIndex = 0);
   if(dzId){ const dz = document.getElementById(dzId); dz.classList.remove('has-img'); dz.querySelector('input').value=''; }
 }
