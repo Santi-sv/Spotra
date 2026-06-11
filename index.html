@@ -1680,13 +1680,24 @@ function toast(msg){
   const zone = document.getElementById('toastZone');
   const t = document.createElement('div');
   t.className = 'toast';
-  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l5 5L20 6"/></svg><span>${msg}</span>`;
+  t.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l5 5L20 6"/></svg><span></span>`;
+  t.querySelector('span').textContent = msg;
   zone.appendChild(t);
   setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(), 320); }, 2600);
 }
 function escapeHTML(value){
   return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 }
+function storedUserName(){
+  try { return localStorage.getItem('spotraUserName') || 'Santiago'; }
+  catch { return 'Santiago'; }
+}
+function setUserName(value){
+  const first = String(value || 'Santiago').trim().split(/\s+/)[0] || 'Santiago';
+  document.querySelectorAll('[data-user-name]').forEach(el => { el.textContent = first; });
+  return first;
+}
+setUserName(storedUserName());
 
 /* ===== Notificaciones ===== */
 const notifBtn = document.getElementById('notifBtn');
@@ -1870,7 +1881,14 @@ document.addEventListener('click', event => {
       if(invalid) bad++;
     });
     if(bad){ event.preventDefault(); toast('Revisá los campos marcados en rojo.'); return; }
-    toast(validate.dataset.validate === 'signupForm' ? 'Cuenta creada. Bienvenido a SPOTRA.' : 'Bienvenido de vuelta, rider.');
+    if(validate.dataset.validate === 'signupForm'){
+      const name = document.querySelector('#signupForm input[autocomplete="name"]')?.value || 'Santiago';
+      try { localStorage.setItem('spotraUserName', name.trim()); } catch {}
+      const first = setUserName(name);
+      toast(`Cuenta creada. Bienvenido a SPOTRA, ${first}.`);
+    } else {
+      toast(`Bienvenido de vuelta, ${setUserName(storedUserName())}.`);
+    }
   }
 
   /* navegación */
