@@ -75,7 +75,7 @@ img{max-width:100%;display:block}
   border-bottom:1px solid rgba(46,232,77,.18);
 }
 .brand{display:flex;align-items:center;gap:13px;min-width:0}
-.brand img{width:44px;height:44px;border-radius:12px;border:1px solid rgba(46,232,77,.5);box-shadow:0 0 22px rgba(46,232,77,.26)}
+.brand img{width:44px;height:44px;border-radius:12px;border:1px solid rgba(46,232,77,.5);box-shadow:0 0 22px rgba(46,232,77,.26);object-fit:contain;background:#050705;padding:3px}
 .brand strong{font-family:var(--display);font-size:25px;letter-spacing:.16em}
 .brand span{display:block;margin-top:1px;color:var(--muted);font-size:12px}
 .nav{display:flex;align-items:center;gap:8px;padding:6px;border:1px solid rgba(255,255,255,.08);border-radius:17px;background:rgba(255,255,255,.025);overflow-x:auto}
@@ -91,6 +91,7 @@ img{max-width:100%;display:block}
 }
 .nav-btn.active{background:var(--green-hot);color:#051006;box-shadow:0 0 20px rgba(116,255,58,.36)}
 .actions{display:flex;align-items:center;gap:10px;min-width:0}
+.profile-mini{width:48px;height:48px;border-radius:16px;background:url('assets/eventos/skater-2.webp') center/cover;border:1px solid var(--green-hot);box-shadow:0 0 22px rgba(116,255,58,.32);display:inline-block;flex-shrink:0}
 .icon-btn,.primary-btn,.ghost-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;border-radius:15px;font-weight:800;transition:.18s}
 .icon-btn{width:43px;height:43px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04)}
 .icon-btn svg,.primary-btn svg,.ghost-btn svg,.bottom-nav svg{width:20px;height:20px}
@@ -217,7 +218,13 @@ img{max-width:100%;display:block}
   background:radial-gradient(circle at 48% 48%,rgba(116,255,58,.16),transparent 20%),#050807;
   box-shadow:0 0 34px rgba(46,232,77,.18),inset 0 0 80px rgba(0,0,0,.9);
 }
-.map-stage::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(116,255,58,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(116,255,58,.045) 1px,transparent 1px);background-size:34px 34px}
+.map-stage::before{content:'';position:absolute;inset:0;background:
+  linear-gradient(22deg,transparent 0 28%,rgba(255,255,255,.06) 28% 28.45%,transparent 28.45% 100%),
+  linear-gradient(-14deg,transparent 0 38%,rgba(255,255,255,.07) 38% 38.45%,transparent 38.45% 100%),
+  linear-gradient(86deg,transparent 0 58%,rgba(255,255,255,.06) 58% 58.35%,transparent 58.35% 100%),
+  linear-gradient(rgba(116,255,58,.045) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(116,255,58,.035) 1px,transparent 1px);
+  background-size:100% 100%,100% 100%,100% 100%,36px 36px,36px 36px;opacity:.95}
 .map-road{position:absolute;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);box-shadow:0 0 18px rgba(116,255,58,.08)}
 .map-label{position:absolute;color:rgba(245,247,244,.72);font-weight:900;letter-spacing:.28em;text-shadow:0 0 12px rgba(255,255,255,.16)}
 .map-label::after{content:'';display:block;width:38px;height:3px;margin:8px auto 0;border-radius:999px;background:var(--green-hot);box-shadow:0 0 12px rgba(116,255,58,.8)}
@@ -226,16 +233,30 @@ img{max-width:100%;display:block}
 .pin.big svg{width:92px;height:92px}
 .map-tools{position:absolute;left:22px;right:22px;top:22px;display:flex;justify-content:space-between;gap:12px;z-index:3}
 .search{height:52px;display:flex;align-items:center;gap:12px;flex:1;padding:0 16px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(5,9,6,.78);backdrop-filter:blur(14px);color:var(--muted)}
+.map-tune{height:52px;width:52px;flex-shrink:0;color:var(--muted)}
+.map-kind-row{position:absolute;left:22px;right:22px;top:88px;z-index:4;display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
+.map-kind-row::-webkit-scrollbar{display:none}
+.map-kind-row button{min-width:max-content;height:48px;padding:0 16px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(8,13,9,.82);backdrop-filter:blur(14px);color:var(--muted);display:inline-flex;align-items:center;gap:9px;font-weight:900}
+.map-kind-row button svg{width:20px;height:20px}
+.map-kind-row button.active{background:var(--green-hot);color:#061006;border-color:var(--green-hot);box-shadow:0 0 22px rgba(116,255,58,.32)}
 .filter-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 .filter-row button{padding:9px 13px;border-radius:12px;border:1px solid rgba(255,255,255,.1);color:var(--muted);font-weight:800;background:rgba(255,255,255,.035)}
 .filter-row button.active{border-color:var(--green-hot);color:var(--green-hot);background:rgba(46,232,77,.1)}
 .spot-detail .cover{height:205px;border-radius:22px;background:url('assets/banners/banner-skatepark-4.webp') center/cover;border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 -90px 70px rgba(0,0,0,.82)}
 .spot-detail h2{font-family:var(--display);font-size:32px;margin-top:18px}
+.map-sheet-handle{width:54px;height:5px;border-radius:999px;background:rgba(255,255,255,.28);margin:0 auto 16px}
+.spot-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.spot-actions .primary-btn,.spot-actions .ghost-btn{width:100%;min-height:48px}
+.pin.hidden-map{opacity:.12;filter:none;pointer-events:none}
 .event-row,.sponsor-mini{display:flex;align-items:center;gap:13px;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);margin-top:12px}
 .date{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;border:1px solid rgba(116,255,58,.42);color:var(--green-hot);font-family:var(--display);font-size:23px}
 .tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:18px}
 .tabs button{padding:10px 14px;border-radius:13px;border:1px solid rgba(255,255,255,.1);color:var(--muted);font-weight:800;background:rgba(255,255,255,.03);min-width:max-content}
 .tabs button.active{color:#061006;background:var(--green-hot)}
+.forum-composer{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid rgba(46,232,77,.25);background:rgba(255,255,255,.035);border-radius:22px;padding:12px;margin-bottom:18px}
+.composer-prompt{height:54px;border-radius:16px;display:flex;align-items:center;gap:12px;color:var(--muted);padding:0 16px;background:rgba(0,0,0,.18);font-size:18px}
+.composer-prompt svg{width:24px;height:24px}
+.forum-composer .primary-btn{height:54px;padding:0 18px}
 .feed-grid{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px}
 .feed-card{border-radius:24px;padding:18px;margin-bottom:14px}
 .feed-card>*{position:relative;z-index:1}
@@ -247,6 +268,15 @@ img{max-width:100%;display:block}
 .product-img{height:210px;background-size:cover;background-position:center}
 .product-body{position:relative;z-index:1;padding:15px}
 .price{font-family:var(--display);font-size:28px;color:var(--green-hot);margin-top:8px}
+.market-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+.market-head .h1{font-size:46px}
+.market-head .lead{margin-top:6px}
+.publish-btn{min-height:48px;padding:0 18px}
+.market-search{margin-bottom:18px}
+.save-btn{position:absolute;right:14px;top:14px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.18);font-size:22px;color:rgba(255,255,255,.82);backdrop-filter:blur(12px)}
+.seller{display:flex;align-items:center;gap:8px;margin-top:12px;color:var(--text);font-size:13px;font-weight:700}
+.seller span{width:28px;height:28px;border-radius:50%;background-size:cover;background-position:center;border:1px solid rgba(116,255,58,.42);display:inline-block}
+[data-view="market"] .product-card .ghost-btn{width:100%;margin-top:14px;min-height:40px}
 .sponsor-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .sponsor-card{border-radius:26px;padding:20px;border:1px solid rgba(46,232,77,.32);background:linear-gradient(145deg,rgba(18,25,20,.9),rgba(6,9,7,.94));display:grid;grid-template-columns:92px 1fr auto;gap:16px;align-items:center}
 .sponsor-logo{width:92px;height:92px;border-radius:24px;border:1px solid var(--green-hot);display:grid;place-items:center;background:#050705;box-shadow:0 0 26px rgba(116,255,58,.24)}
@@ -258,6 +288,39 @@ img{max-width:100%;display:block}
 .profile-card h2{font-family:var(--display);font-size:34px;margin-top:18px}
 .gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .gallery div{aspect-ratio:1;border-radius:18px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.1)}
+.profile-screen{display:grid;gap:18px;max-width:980px;margin:0 auto}
+.profile-hero{border-radius:28px;border:1px solid rgba(46,232,77,.32);background:linear-gradient(145deg,rgba(18,25,20,.9),rgba(6,9,7,.94));padding:22px;box-shadow:0 22px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.04)}
+.profile-cover{height:260px;border-radius:24px;background:linear-gradient(180deg,transparent,rgba(0,0,0,.7)),url('assets/banners/banner-skatepark-4.webp') center/cover;border:1px solid rgba(255,255,255,.08)}
+.profile-identity{display:grid;grid-template-columns:160px 1fr;gap:22px;align-items:end;margin:-70px 26px 0}
+.profile-avatar{width:160px;height:160px;border-radius:32px;background:url('assets/eventos/skater-2.webp') center/cover;border:5px solid #071007;box-shadow:0 0 30px rgba(46,232,77,.3)}
+.profile-identity h1{font-family:var(--display);font-size:44px;line-height:1.02}
+.profile-identity p{color:var(--muted);font-size:18px;margin-top:4px}
+.verified-dot{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--green-hot);color:#051006;font-size:18px;vertical-align:middle}
+.profile-meta{display:flex;gap:18px;flex-wrap:wrap;color:rgba(245,247,244,.78);font-size:16px;margin-top:14px}
+.profile-meta span{display:inline-flex;align-items:center;gap:6px}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}
+.profile-stats div{min-height:92px;border-radius:18px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);display:grid;place-items:center;text-align:center}
+.profile-stats b{font-family:var(--display);font-size:32px;color:var(--green-hot)}
+.profile-stats span{display:block;color:var(--muted);margin-top:-12px}
+.social-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:18px;border-radius:18px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);padding:12px}
+.social-grid button{min-height:74px;border-radius:14px;color:rgba(245,247,244,.82);display:grid;place-items:center;font-weight:700}
+.social-grid span{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:900;color:#fff;margin-bottom:5px}
+.social-ig{background:linear-gradient(135deg,#feda75,#d62976,#4f5bd5)}
+.social-tk{background:#050505;border:1px solid rgba(255,255,255,.12)}
+.social-fb{background:#2f6edb}
+.social-mail{background:transparent;border:1px solid var(--green-hot);color:var(--green-hot)!important}
+.profile-wall .section-head{margin:0 0 14px}
+.wall-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.wall-grid div{aspect-ratio:1.08;border-radius:18px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;overflow:hidden}
+.wall-grid span{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:rgba(0,0,0,.46);backdrop-filter:blur(8px)}
+.upload-media{width:100%;height:66px;margin-top:18px;font-family:var(--display);font-size:20px}
+.upload-media span{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#071007;color:var(--green-hot);font-size:28px}
+.profile-settings h2{font-family:var(--display);font-size:26px;margin-bottom:10px}
+.profile-settings button{width:100%;min-height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);color:rgba(245,247,244,.78);font-size:16px}
+.profile-settings button:last-child{border-bottom:0}
+.profile-settings b{font-size:30px;color:var(--muted);font-weight:400}
+.profile-settings .danger{color:#ff5d5d}
+.profile-settings .danger b{color:#ff5d5d}
 .signup-layout{width:min(1180px,100%);min-height:100vh;min-height:100dvh;margin:0 auto;padding:28px clamp(16px,3vw,34px);display:grid;grid-template-columns:410px minmax(0,1fr);gap:20px;align-items:stretch}
 .signup-visual{position:relative;overflow:hidden;min-height:720px;border-radius:30px;background:radial-gradient(circle at 72% 10%,rgba(116,255,58,.17),transparent 28%),linear-gradient(150deg,rgba(12,19,14,.94),rgba(4,7,5,.98));border:1px solid rgba(46,232,77,.32);display:flex;flex-direction:column;justify-content:space-between;padding:24px;box-shadow:0 28px 72px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.05)}
 .signup-visual::before{content:'';position:absolute;inset:0;background:linear-gradient(rgba(46,232,77,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(46,232,77,.035) 1px,transparent 1px),url('assets/banners/login-hero.webp') 42% bottom/780px auto no-repeat;opacity:.34;mask-image:linear-gradient(180deg,#000,transparent 92%);pointer-events:none}
@@ -274,6 +337,11 @@ img{max-width:100%;display:block}
 .signup-proof{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:22px}
 .signup-proof .mini-stat{min-height:96px;display:flex;flex-direction:column;justify-content:center}
 .signup-panel{padding:28px;border-radius:30px;background:radial-gradient(circle at 92% 0,rgba(116,255,58,.12),transparent 24%),linear-gradient(145deg,rgba(18,25,20,.92),rgba(6,9,7,.98))}
+.auth-back{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:var(--green-hot);display:grid;place-items:center;margin-bottom:16px;box-shadow:0 0 20px rgba(46,232,77,.12)}
+.auth-back svg{width:22px;height:22px}
+.signup-logo-line{display:flex;align-items:center;justify-content:center;gap:12px;margin:-58px 0 18px;pointer-events:none}
+.signup-logo-line img{width:46px;height:46px;object-fit:contain}
+.signup-logo-line span{font-family:var(--display);font-size:26px;letter-spacing:.14em}
 .signup-panel .lead{font-size:15px;margin-top:9px}
 .signup-header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .signup-chip{display:inline-flex;align-items:center;gap:8px;border-radius:999px;border:1px solid rgba(116,255,58,.36);padding:8px 11px;color:var(--green-hot);font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;background:rgba(46,232,77,.07);white-space:nowrap}
@@ -330,6 +398,7 @@ img{max-width:100%;display:block}
   .actions{display:contents}
   .actions .ghost-btn{display:none!important}
   .notif-wrap{grid-column:2;grid-row:1}
+  .profile-mini{grid-column:3;grid-row:1;width:48px;height:48px}
   .actions>.primary-btn{grid-column:3;grid-row:1;min-width:0;max-width:180px;height:48px;padding:0 14px;white-space:nowrap}
   .actions>.primary-btn svg{flex-shrink:0}
   .main{padding:16px 14px 92px;width:100%;max-width:100%}
@@ -341,8 +410,52 @@ img{max-width:100%;display:block}
   .grid-3,.grid-4,.spot-list,.product-grid,.gallery,.type-grid,.form-grid{grid-template-columns:1fr}
   .metric-card{min-height:210px}
   .map-stage{min-height:500px;border-radius:24px}
-  .map-tools{position:relative;left:auto;right:auto;top:auto;padding:14px;flex-direction:column}
-  .spot-detail .cover,.feed-media,.product-img{height:220px}
+  .map-layout{display:block}
+  .map-stage{min-height:680px;border-radius:24px}
+  .map-tools{position:absolute;left:16px;right:16px;top:16px;padding:0;flex-direction:row}
+  .map-kind-row{left:16px;right:16px;top:82px}
+  .map-kind-row button{height:46px;padding:0 14px;border-radius:15px}
+  .map-label{font-size:18px}
+  .pin svg{width:42px;height:42px}
+  .pin.big svg{width:76px;height:76px}
+  .spot-detail{margin:-214px 12px 0;z-index:5;position:relative;border-radius:24px;padding:16px}
+  .spot-detail .cover{height:138px}
+  .spot-detail h2{font-size:28px;margin-top:8px}
+  .spot-detail .mini-stats,.spot-detail .section-head,.spot-detail .event-row{display:none}
+  .spot-actions{grid-template-columns:1fr 1fr}
+  .feed-media,.product-img{height:220px}
+  [data-view="market"] .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  [data-view="market"] .product-img{height:160px}
+  [data-view="market"] .product-body{padding:12px}
+  [data-view="market"] .product-body b{font-size:14px;line-height:1.2;display:block}
+  [data-view="market"] .price{font-size:24px}
+  [data-view="market"] .seller{font-size:12px}
+  [data-view="market"] .product-card .ghost-btn{min-height:38px;font-size:13px}
+  .market-head{align-items:center;margin-top:8px}
+  .market-head .h1{font-size:38px}
+  .market-head .lead{font-size:14px}
+  .publish-btn{min-height:44px;padding:0 14px}
+  .forum-composer{grid-template-columns:1fr;padding:10px}
+  .composer-prompt{height:50px;font-size:16px}
+  .forum-composer .primary-btn{height:50px;width:100%}
+  .profile-screen{gap:14px}
+  .profile-hero{padding:16px;border-radius:24px}
+  .profile-cover{height:210px;border-radius:20px}
+  .profile-identity{grid-template-columns:116px 1fr;gap:14px;margin:-58px 12px 0;align-items:end}
+  .profile-avatar{width:116px;height:116px;border-radius:26px;border-width:4px}
+  .profile-identity h1{font-size:34px}
+  .profile-identity p{font-size:15px}
+  .profile-meta{font-size:13px;gap:10px}
+  .profile-stats{gap:10px;margin-top:20px}
+  .profile-stats div{min-height:74px;border-radius:15px}
+  .profile-stats b{font-size:26px}
+  .social-grid{grid-template-columns:repeat(4,1fr);gap:6px;padding:8px}
+  .social-grid button{min-height:62px;font-size:12px}
+  .social-grid span{width:28px;height:28px}
+  .wall-grid{grid-template-columns:repeat(4,1fr);gap:8px}
+  .wall-grid div{border-radius:14px}
+  .upload-media{height:58px;font-size:17px}
+  .profile-settings button{min-height:54px;font-size:15px}
   .sponsor-card,.application-card{grid-template-columns:72px 1fr;gap:12px}
   .sponsor-card .primary-btn,.application-card .primary-btn{grid-column:1/-1;width:100%}
   .sponsor-logo{width:72px;height:72px;border-radius:20px}
@@ -364,6 +477,8 @@ body[data-role="brand"] .nav [data-role-nav="brand"],
 body[data-role="admin"] .nav [data-role-nav="admin"]{display:flex}
 body:not([data-role="rider"]) .actions .ghost-btn,
 body:not([data-role="rider"]) .actions .primary-btn{display:none}
+body:not(.auth-mode) .actions>.ghost-btn,
+body:not(.auth-mode) .actions>.primary-btn{display:none}
 
 /* ===== KPIs compactos (marca / admin) ===== */
 .kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
@@ -423,7 +538,7 @@ body:not([data-role="rider"]) .actions .primary-btn{display:none}
   .approve-row{grid-template-columns:72px 1fr}
   .approve-row .col{grid-column:1/-1;flex-direction:row}
   .approve-row .col button{flex:1;justify-content:center}
-  .role-switch{grid-column:1/-1;grid-row:2;width:100%;max-width:100%;overflow-x:auto;justify-content:flex-start}
+  .role-switch{display:none}
   .role-switch::-webkit-scrollbar{display:none}
   .role-switch button{flex:1;min-width:0;padding:8px 9px;font-size:11.5px}
   .bottom-nav.cols-4{grid-template-columns:repeat(4,1fr)}
@@ -574,6 +689,25 @@ body[data-role="rider"] .fab{display:grid}
 /* Badge pendiente en items recién creados */
 .pending-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:800;color:#ffd24a;border:1px solid rgba(255,210,74,.45);background:rgba(255,210,74,.08);border-radius:8px;padding:4px 9px;margin-top:8px}
 
+/* Chat marketplace */
+.chat-sheet{position:fixed;inset:0;z-index:140;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.34);opacity:0;visibility:hidden;transition:.22s}
+.chat-sheet.open{opacity:1;visibility:visible}
+.chat-card{width:min(760px,100%);border-radius:28px 28px 0 0;border:1px solid rgba(116,255,58,.34);border-bottom:0;background:rgba(7,10,8,.96);backdrop-filter:blur(22px);padding:18px 20px 20px;box-shadow:0 -28px 70px rgba(0,0,0,.7);transform:translateY(100%);transition:.28s cubic-bezier(.2,.8,.3,1)}
+.chat-sheet.open .chat-card{transform:none}
+.chat-head{display:flex;align-items:center;gap:12px}
+.seller-avatar{width:52px;height:52px;border-radius:16px;background-size:cover;background-position:center;border:1px solid rgba(116,255,58,.48)}
+.chat-head b{display:block;font-family:var(--display);font-size:18px}
+.chat-head span{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.chat-head .icon-btn{margin-left:auto}
+.chat-product{margin:14px 0;padding:10px 12px;border-radius:14px;background:rgba(46,232,77,.07);border:1px solid rgba(116,255,58,.18);color:var(--green-hot);font-weight:800;font-size:13px}
+.bubble{max-width:78%;padding:11px 14px;border-radius:16px;margin-top:10px;font-size:14px;line-height:1.35}
+.seller-bubble{background:rgba(255,255,255,.08);color:var(--text)}
+.my-bubble{margin-left:auto;background:var(--green-hot);color:#061006;font-weight:700}
+.chat-input{display:flex;align-items:center;gap:10px;height:50px;margin-top:14px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);padding:0 10px 0 14px}
+.chat-input input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text)}
+.chat-input button{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--green-hot)}
+.chat-input svg{width:22px;height:22px}
+
 /* ============ PANTALLA DE LOGIN (entrada) ============ */
 body.auth-mode .topbar,body.auth-mode .bottom-nav,body.auth-mode .fab{display:none!important}
 body.auth-mode .main{padding:0;width:100%;max-width:none}
@@ -707,6 +841,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   .signup-score b{font-size:20px}
   .signup-score span{margin-top:-8px;font-size:6.5px;letter-spacing:.12em}
   .signup-panel{padding:14px;border-radius:22px}
+  .auth-back{width:42px;height:42px;margin-bottom:12px}
+  .signup-logo-line{margin:-54px 0 14px}
+  .signup-logo-line img{width:40px;height:40px}
+  .signup-logo-line span{font-size:21px}
   .signup-header{display:block}
   .signup-chip{display:none}
   .signup-panel .kicker{font-size:10px}
@@ -804,6 +942,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="notif-item"><div class="dot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div><p><b>Skate Jam</b> confirmó tu inscripción para el 24 de mayo.</p><span>Ayer</span></div></div>
         </div>
       </div>
+      <button class="profile-mini" data-route="profile" aria-label="Abrir perfil"></button>
       <button class="ghost-btn" data-route="signin">Iniciar sesión</button>
       <button class="primary-btn" data-route="signup">Crear cuenta <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
     </div>
@@ -858,11 +997,11 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div class="dashboard-hero">
         <div class="hero-copy">
           <div class="kicker">Uruguay · Argentina · Brasil</div>
-          <h1 class="h1">Encontrá spots. Conectá riders. <span class="green">Competí.</span></h1>
-          <p class="lead">Mapa, comunidad, marketplace y sponsors en una sola red para skaters y bikers del Cono Sur.</p>
+          <h1 class="h1">Bienvenido, <span class="green" data-user-name>Santiago</span></h1>
+          <p class="lead">Tu red rider está activa: spots cercanos, comunidad, marketplace y sponsors listos para moverse con vos.</p>
           <div class="hero-actions">
             <button class="primary-btn" data-route="map">Explorar mapa</button>
-            <button class="ghost-btn" data-route="signup">Crear mi SPOTRA ID</button>
+            <button class="ghost-btn" data-route="profile">Ver mi SPOTRA ID</button>
           </div>
         </div>
         <aside class="id-card">
@@ -911,7 +1050,13 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <div class="map-stage">
           <div class="map-tools">
             <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar spots, skateparks, tiendas...</div>
-            <button class="primary-btn" data-open-modal="spot" style="min-height:52px">Agregar spot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button class="icon-btn map-tune" data-toast="Filtros avanzados disponibles al conectar el mapa real." aria-label="Filtros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
+          </div>
+          <div class="map-kind-row">
+            <button class="active" data-map-filter="skatepark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 16h16M5 16c2-7 5-7 7-2 2 4 5 4 7-2"/></svg>Skateparks</button>
+            <button data-map-filter="spot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Spots</button>
+            <button data-map-filter="store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/></svg>Tiendas</button>
+            <button data-map-filter="event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>Eventos</button>
           </div>
           <div class="map-road" style="top:29%;left:-5%;right:-2%;height:2px;transform:rotate(-5deg)"></div>
           <div class="map-road" style="top:0;bottom:0;left:48%;width:2px;transform:rotate(6deg)"></div>
@@ -921,15 +1066,16 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="map-label" style="top:53%;left:45%">ALMAGRO</div>
           <div class="map-label" style="top:69%;left:16%">CABALLITO</div>
           <div class="map-label" style="top:77%;left:57%">BOEDO</div>
-          <div class="pin big" data-spot="rivadavia" style="top:52%;left:47%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.8" fill="#06140a"/></svg></div>
-          <div class="pin" data-spot="italia" style="top:33%;left:23%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
-          <div class="pin" data-spot="palermo" style="top:28%;left:75%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
-          <div class="pin" data-spot="caballito" style="top:66%;left:29%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
-          <div class="pin" data-spot="boedo" style="top:64%;left:78%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+          <div class="pin big" data-map-cat="skatepark" data-spot="rivadavia" style="top:52%;left:47%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.8" fill="#06140a"/></svg></div>
+          <div class="pin" data-map-cat="spot" data-spot="italia" style="top:33%;left:23%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+          <div class="pin" data-map-cat="event" data-spot="palermo" style="top:28%;left:75%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+          <div class="pin" data-map-cat="spot" data-spot="caballito" style="top:66%;left:29%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
+          <div class="pin" data-map-cat="store" data-spot="boedo" style="top:64%;left:78%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
         </div>
         <aside class="panel spot-detail">
-          <div class="filter-row"><button class="active">Skateparks</button><button>Spots</button><button>Tiendas</button><button>Eventos</button></div>
+          <div class="map-sheet-handle"></div>
           <div class="cover" id="spotCover"></div>
+          <div class="kicker" id="spotType">Skatepark</div>
           <h2 id="spotName">Parque Rivadavia</h2>
           <div class="meta" id="spotMeta">Caballito, CABA · Skatepark verificado</div>
           <div class="mini-stats">
@@ -940,13 +1086,20 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="section-head"><h3>Próximos eventos</h3></div>
           <div class="event-row"><div class="date">24</div><div><b>Skate Jam</b><div class="meta">Best trick · 18:00</div></div></div>
           <div class="event-row"><div class="date">31</div><div><b>BMX Street</b><div class="meta">Clasificatoria regional</div></div></div>
-          <button class="primary-btn" style="width:100%;margin-top:16px" data-open-modal="event">Agregar evento aquí</button>
+          <div class="spot-actions">
+            <button class="primary-btn" data-route="map">Ver spot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+            <button class="ghost-btn" data-toast="Cuando conectemos el mapa real, abriremos indicaciones desde tu ubicación.">Cómo llegar</button>
+          </div>
         </aside>
       </div>
     </section>
 
     <section class="view" data-view="community">
       <div class="tabs" data-filter-target="feed"><button class="active" data-f="all">Todos</button><button data-f="skate">Skate</button><button data-f="bmx">BMX</button><button data-f="spots">Spots</button><button data-f="venta">Compra/Venta</button></div>
+      <div class="forum-composer">
+        <div class="composer-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>¿Qué estás haciendo?</div>
+        <button class="primary-btn" data-open-modal="post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Crear publicación</button>
+      </div>
       <div class="feed-grid">
         <div id="feed">
           <article class="feed-card" data-cat="skate">
@@ -996,13 +1149,20 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     </section>
 
     <section class="view" data-view="market">
-      <div class="section-head"><h2>Marketplace rider</h2><button class="primary-btn" data-open-modal="product">Publicar producto</button></div>
+      <div class="market-head">
+        <div>
+          <h1 class="h1">Marketplace</h1>
+          <p class="lead">Compra y vende equipamiento deportivo.</p>
+        </div>
+        <button class="ghost-btn publish-btn" data-open-modal="product">Publicar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
+      </div>
+      <div class="search market-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar productos, marcas o usuarios...</div>
       <div class="tabs" data-filter-target="mkt"><button class="active" data-f="all">Todos</button><button data-f="tabla">Tablas</button><button data-f="bici">Bicicletas</button><button data-f="ropa">Ropa</button><button data-f="acc">Accesorios</button></div>
       <div class="product-grid" id="mkt">
-        <article class="product-card" data-cat="tabla"><div class="product-img" style="background-image:url('assets/marketplace/skate-completo.webp')"></div><div class="product-body"><b>Tabla completa SPOTRA</b><div class="price">$85.000</div><div class="meta">Buenos Aires · Muy buen estado</div><button class="ghost-btn" style="width:100%;margin-top:12px;min-height:40px" data-toast="Chat con el vendedor disponible al conectar tu cuenta.">Contactar</button></div></article>
-        <article class="product-card" data-cat="bici"><div class="product-img" style="background-image:url('assets/marketplace/bmx-usada.webp')"></div><div class="product-body"><b>BMX WTP Arcade 20.5"</b><div class="price">$120.000</div><div class="meta">Córdoba · Buen estado</div><button class="ghost-btn" style="width:100%;margin-top:12px;min-height:40px" data-toast="Chat con el vendedor disponible al conectar tu cuenta.">Contactar</button></div></article>
-        <article class="product-card" data-cat="ropa"><div class="product-img" style="background-image:url('assets/tiendas/championes-vans-negros.webp')"></div><div class="product-body"><b>Vans Sk8-Hi Pro</b><div class="price">$55.000</div><div class="meta">Rosario · Muy buen estado</div><button class="ghost-btn" style="width:100%;margin-top:12px;min-height:40px" data-toast="Chat con el vendedor disponible al conectar tu cuenta.">Contactar</button></div></article>
-        <article class="product-card" data-cat="acc"><div class="product-img" style="background-image:url('assets/marketplace/ruedas-skate.webp')"></div><div class="product-body"><b>Set ruedas skate</b><div class="price">$35.000</div><div class="meta">Montevideo · Excelente</div><button class="ghost-btn" style="width:100%;margin-top:12px;min-height:40px" data-toast="Chat con el vendedor disponible al conectar tu cuenta.">Contactar</button></div></article>
+        <article class="product-card" data-cat="tabla"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/marketplace/skate-completo.webp')"></div><div class="product-body"><b>Tabla completa SPOTRA</b><div class="price">$85.000</div><div class="meta">Buenos Aires, CABA</div><div class="seller"><span style="background-image:url('assets/eventos/skater-2.webp')"></span>SantiSk8</div><button class="ghost-btn" data-open-chat="SantiSk8" data-product="Tabla completa SPOTRA">Contactar</button></div></article>
+        <article class="product-card" data-cat="bici"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/marketplace/bmx-usada.webp')"></div><div class="product-body"><b>BMX WeThePeople Justice</b><div class="price">$320.000</div><div class="meta">Rosario, Santa Fe</div><div class="seller"><span style="background-image:url('assets/eventos/biker-1.webp')"></span>RodriBMX</div><button class="ghost-btn" data-open-chat="RodriBMX" data-product="BMX WeThePeople Justice">Contactar</button></div></article>
+        <article class="product-card" data-cat="acc"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/marketplace/kit-rodillerasycoderas.webp')"></div><div class="product-body"><b>Casco TSG Evolution</b><div class="price">$45.000</div><div class="meta">Córdoba, Córdoba</div><div class="seller"><span style="background-image:url('assets/perfiles/ChatGPT Image 7 jun 2026, 07_36_58 a.m. (9).webp')"></span>MicaProtect</div><button class="ghost-btn" data-open-chat="MicaProtect" data-product="Casco TSG Evolution">Contactar</button></div></article>
+        <article class="product-card" data-cat="ropa"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/tiendas/championes-vans-negros.webp')"></div><div class="product-body"><b>Zapatillas Vans Old Skool</b><div class="price">$65.000</div><div class="meta">Buenos Aires, CABA</div><div class="seller"><span style="background-image:url('assets/eventos/skater.webp')"></span>Underground</div><button class="ghost-btn" data-open-chat="Underground" data-product="Zapatillas Vans Old Skool">Contactar</button></div></article>
         <div class="empty-state" data-empty="mkt" style="grid-column:1/-1">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
           <b>Sin publicaciones en esta categoría</b>
@@ -1026,39 +1186,52 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     </section>
 
     <section class="view" data-view="profile">
-      <div class="profile-layout">
-        <aside class="panel profile-card">
-          <div class="cover"></div>
-          <div class="profile-photo"></div>
-          <h2>Santiago Varela</h2>
-          <div class="meta">@santi.sk8 · Skate · Canelones, UY</div>
-          <div class="mini-stats">
-            <div class="mini-stat"><b>8</b><span>eventos</span></div>
-            <div class="mini-stat"><b>3</b><span>podios</span></div>
-            <div class="mini-stat"><b>1.2k</b><span>seguidores</span></div>
-          </div>
-        </aside>
-        <div>
-          <div class="id-card">
-            <div class="kicker">SPOTRA ID</div>
-            <div class="id-title">Prueba competitiva</div>
-            <div class="mini-stats">
-              <div class="mini-stat"><b>3</b><span>podios verificados</span></div>
-              <div class="mini-stat"><b>6</b><span>clips destacados</span></div>
-              <div class="mini-stat"><b>94%</b><span>match sponsor</span></div>
+      <section class="profile-screen">
+        <div class="profile-hero">
+          <div class="profile-cover"></div>
+          <div class="profile-identity">
+            <div class="profile-avatar"></div>
+            <div>
+              <h1>Santiago Varela <span class="verified-dot">✓</span></h1>
+              <p>@santi.sk8</p>
+              <div class="profile-meta"><span>Skate</span><span>Canelones, Uruguay</span></div>
             </div>
           </div>
-          <div class="section-head"><h2>Portafolio</h2><button>Subir video</button></div>
-          <div class="gallery">
-            <div style="background-image:url('assets/spots/spot-7.webp')"></div>
-            <div style="background-image:url('assets/spots/spot-8.webp')"></div>
-            <div style="background-image:url('assets/eventos/bajando-rampa.webp')"></div>
-            <div style="background-image:url('assets/eventos/skater.webp')"></div>
-            <div style="background-image:url('assets/spots/spot-9.webp')"></div>
-            <div style="background-image:url('assets/spots/spot-10.webp')"></div>
+          <div class="profile-stats">
+            <div><b>8</b><span>eventos</span></div>
+            <div><b>3</b><span>podios</span></div>
+            <div><b>1.2k</b><span>seguidores</span></div>
+          </div>
+          <div class="social-grid">
+            <button data-toast="Instagram conectado: @santi.sk8"><span class="social-ig">IG</span>Instagram</button>
+            <button data-toast="TikTok conectado."><span class="social-tk">♪</span>TikTok</button>
+            <button data-toast="Facebook conectado."><span class="social-fb">f</span>Facebook</button>
+            <button data-toast="Correo: santiagovarela29011999@gmail.com"><span class="social-mail">@</span>Email</button>
           </div>
         </div>
-      </div>
+
+        <div class="profile-wall panel">
+          <div class="section-head"><h2>Mi muro</h2><button data-toast="Vista completa del muro disponible al conectar backend.">Ver todo</button></div>
+          <div class="wall-grid">
+            <div style="background-image:url('assets/eventos/skater-bowl.webp')"><span>▶</span></div>
+            <div style="background-image:url('assets/eventos/skater-2.webp')"></div>
+            <div style="background-image:url('assets/spots/spot-7.webp')"><span>▶</span></div>
+            <div style="background-image:url('assets/eventos/biker-1.webp')"></div>
+          </div>
+          <button class="primary-btn upload-media" data-open-modal="post"><span>+</span>Subir foto o video</button>
+        </div>
+
+        <div class="panel profile-settings">
+          <h2>Configuración</h2>
+          <button data-toast="Abriremos selector de imagen cuando conectemos storage."><span>Editar foto de perfil</span><b>›</b></button>
+          <button data-open-modal="editProfile"><span>Editar nombre</span><b>›</b></button>
+          <button data-open-modal="editProfile"><span>Editar apellido</span><b>›</b></button>
+          <button data-open-modal="editContact"><span>Editar contacto</span><b>›</b></button>
+          <button data-open-modal="password"><span>Cambiar contraseña</span><b>›</b></button>
+          <button data-open-modal="privacy"><span>Privacidad</span><b>›</b></button>
+          <button class="danger" data-toast="La eliminación de cuenta pedirá confirmación fuerte cuando conectemos backend."><span>Eliminar cuenta</span><b>›</b></button>
+        </div>
+      </section>
     </section>
 
     <section class="view" data-view="signup">
@@ -1086,6 +1259,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           </div>
         </aside>
         <div class="panel signup-panel">
+          <button class="auth-back" data-route="login" aria-label="Volver a iniciar sesión">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
+          </button>
+          <div class="signup-logo-line"><img src="assets/logo/logo-principal.webp" alt="SPOTRA"><span>SPOTRA</span></div>
           <div class="signup-header">
             <div>
               <div class="kicker">Crear cuenta</div>
@@ -1348,6 +1525,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <div class="modal-form" data-form="menu">
       <p class="hint">¿Qué querés sumar a la comunidad?</p>
       <div class="create-menu">
+        <button class="create-opt" data-open-modal="post"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg></div><div><b>Publicación del foro</b><span>Compartí una sesión, un clip, una duda o un spot.</span></div></button>
         <button class="create-opt" data-open-modal="spot"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></div><div><b>Spot o skatepark</b><span>Sumalo al mapa colaborativo. Pasa por aprobación.</span></div></button>
         <button class="create-opt" data-open-modal="event"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div><b>Competencia o evento</b><span>Organizá una fecha en un spot existente.</span></div></button>
         <button class="create-opt" data-open-modal="product"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div><div><b>Producto usado</b><span>Vendé lo que ya no uses en el marketplace.</span></div></button>
@@ -1369,6 +1547,20 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <div class="dz-preview"></div><span class="dz-badge">Foto lista</span>
       </label>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="spot">Enviar a aprobación</button>
+    </div>
+
+    <!-- POST -->
+    <div class="modal-form" data-form="post">
+      <p class="hint">Compartí una sesión, una pregunta, un clip o un nuevo hallazgo para la comunidad.</p>
+      <div class="form-grid" id="postForm" style="grid-template-columns:1fr">
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input required placeholder="¿Qué querés compartir?"></div>
+      </div>
+      <label class="dropzone" id="dzPost">
+        <input type="file" accept="image/*,video/*">
+        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Subí foto o video<br><b style="color:var(--green-hot)">Tocá o arrastrá el archivo</b></div>
+        <div class="dz-preview"></div><span class="dz-badge">Archivo listo</span>
+      </label>
+      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="post">Publicar en foro</button>
     </div>
 
     <!-- EVENTO -->
@@ -1399,6 +1591,53 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       </label>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="product">Publicar ahora</button>
     </div>
+
+    <!-- PERFIL / CONFIG -->
+    <div class="modal-form" data-form="editProfile">
+      <p class="hint">Estos datos se usarán en tu perfil público y en postulaciones a sponsors.</p>
+      <div class="form-grid" id="editProfileForm" style="grid-template-columns:1fr">
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required value="Santiago" placeholder="Nombre"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required value="Varela" placeholder="Apellido"></div>
+      </div>
+      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar cambios</button>
+    </div>
+    <div class="modal-form" data-form="editContact">
+      <p class="hint">Tu contacto privado solo se comparte con acciones aprobadas por vos.</p>
+      <div class="form-grid" id="editContactForm" style="grid-template-columns:1fr">
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input type="email" value="santiagovarela29011999@gmail.com" placeholder="Email"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input type="tel" placeholder="Celular"></div>
+      </div>
+      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar contacto</button>
+    </div>
+    <div class="modal-form" data-form="password">
+      <p class="hint">Cuando conectemos backend, esta acción pedirá contraseña actual y confirmación segura.</p>
+      <div class="form-grid" id="passwordForm" style="grid-template-columns:1fr">
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input type="password" placeholder="Nueva contraseña"></div>
+      </div>
+      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Cambiar contraseña</button>
+    </div>
+    <div class="modal-form" data-form="privacy">
+      <p class="hint">Definí qué partes de tu perfil competitivo se muestran públicamente.</p>
+      <div class="create-menu">
+        <button class="create-opt" data-toast="Perfil público activado."><div class="ic">✓</div><div><b>Perfil público</b><span>Visible para riders, tiendas y marcas.</span></div></button>
+        <button class="create-opt" data-toast="Contacto privado activado."><div class="ic">✓</div><div><b>Contacto privado</b><span>Solo se muestra al aprobar un chat o sponsor.</span></div></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="chat-sheet" id="chatSheet" aria-hidden="true">
+  <div class="chat-card">
+    <div class="map-sheet-handle"></div>
+    <div class="chat-head">
+      <div class="seller-avatar" style="background-image:url('assets/eventos/skater-2.webp')"></div>
+      <div><b id="chatSeller">SantiSk8</b><span>En línea · Marketplace</span></div>
+      <button class="icon-btn" data-close-chat aria-label="Cerrar chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="chat-product" id="chatProduct">Consulta por producto</div>
+    <div class="bubble seller-bubble">¡Hola! ¿Sigue disponible?</div>
+    <div class="bubble my-bubble">Sí, todavía lo tengo.</div>
+    <div class="chat-input"><input placeholder="Escribí un mensaje..."><button aria-label="Enviar mensaje"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l11 2-11 2v6Z"/></svg></button></div>
   </div>
 </div>
 
@@ -1445,6 +1684,9 @@ function toast(msg){
   zone.appendChild(t);
   setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(), 320); }, 2600);
 }
+function escapeHTML(value){
+  return String(value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
 
 /* ===== Notificaciones ===== */
 const notifBtn = document.getElementById('notifBtn');
@@ -1472,14 +1714,15 @@ function bumpCounter(el, delta){
 
 /* ===== Datos de spots (mapa) ===== */
 const SPOTS = {
-  rivadavia:{ name:'Parque Rivadavia', meta:'Caballito, CABA · Skatepark verificado', s1:'86', s2:'18', s3:'OK', img:'assets/banners/banner-skatepark-4.webp' },
-  italia:{ name:'Plaza Italia', meta:'Palermo, CABA · Street spot', s1:'74', s2:'9', s3:'OK', img:'assets/spots/spot-5.webp' },
-  palermo:{ name:'Bowl Palermo', meta:'Palermo, CABA · Skatepark', s1:'91', s2:'24', s3:'OK', img:'assets/spots/spot-6.webp' },
-  caballito:{ name:'Ledges Caballito', meta:'Caballito, CABA · Street spot', s1:'58', s2:'4', s3:'OK', img:'assets/spots/spot-8.webp' },
-  boedo:{ name:'Plaza Boedo', meta:'Boedo, CABA · Street spot', s1:'63', s2:'7', s3:'OK', img:'assets/spots/spot-7.webp' }
+  rivadavia:{ type:'Skatepark', name:'Parque Rivadavia', meta:'Caballito, CABA · Skatepark verificado', s1:'86', s2:'18', s3:'OK', img:'assets/banners/banner-skatepark-4.webp' },
+  italia:{ type:'Spot', name:'Plaza Italia', meta:'Palermo, CABA · Street spot', s1:'74', s2:'9', s3:'OK', img:'assets/spots/spot-5.webp' },
+  palermo:{ type:'Evento', name:'Bowl Palermo', meta:'Palermo, CABA · Competencia este sábado', s1:'91', s2:'24', s3:'OK', img:'assets/spots/spot-6.webp' },
+  caballito:{ type:'Spot', name:'Ledges Caballito', meta:'Caballito, CABA · Street spot', s1:'58', s2:'4', s3:'OK', img:'assets/spots/spot-8.webp' },
+  boedo:{ type:'Tienda', name:'Underground Boedo', meta:'Boedo, CABA · Tienda verificada', s1:'15%', s2:'ON', s3:'OK', img:'assets/tiendas/interior-tienda.webp' }
 };
 function showSpot(id){
   const s = SPOTS[id]; if(!s) return;
+  document.getElementById('spotType').textContent = s.type;
   document.getElementById('spotName').textContent = s.name;
   document.getElementById('spotMeta').textContent = s.meta;
   document.getElementById('spotS1').textContent = s.s1;
@@ -1531,6 +1774,17 @@ document.addEventListener('click', event => {
   /* pin del mapa */
   const pin = event.target.closest('.pin[data-spot]');
   if(pin){ showSpot(pin.dataset.spot); return; }
+
+  const mapFilter = event.target.closest('[data-map-filter]');
+  if(mapFilter){
+    const f = mapFilter.dataset.mapFilter;
+    mapFilter.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+    mapFilter.classList.add('active');
+    document.querySelectorAll('.pin[data-map-cat]').forEach(p => p.classList.toggle('hidden-map', p.dataset.mapCat !== f));
+    const first = document.querySelector(`.pin[data-map-cat="${f}"]`);
+    if(first) showSpot(first.dataset.spot);
+    return;
+  }
 
   /* like */
   const like = event.target.closest('[data-like]');
@@ -1591,6 +1845,20 @@ document.addEventListener('click', event => {
   const toastBtn = event.target.closest('[data-toast]');
   if(toastBtn){ toast(toastBtn.dataset.toast); return; }
 
+  const openChat = event.target.closest('[data-open-chat]');
+  if(openChat){
+    document.getElementById('chatSeller').textContent = openChat.dataset.openChat;
+    document.getElementById('chatProduct').textContent = `Consulta por ${openChat.dataset.product || 'producto'}`;
+    document.getElementById('chatSheet').classList.add('open');
+    document.getElementById('chatSheet').setAttribute('aria-hidden','false');
+    return;
+  }
+  if(event.target.closest('[data-close-chat]') || event.target.id === 'chatSheet'){
+    document.getElementById('chatSheet').classList.remove('open');
+    document.getElementById('chatSheet').setAttribute('aria-hidden','true');
+    return;
+  }
+
   /* validación de formularios antes de navegar */
   const validate = event.target.closest('[data-validate]');
   if(validate){
@@ -1636,7 +1904,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { menu:'Crear', spot:'Agregar spot', event:'Crear evento', product:'Publicar producto' };
+const MODAL_TITLES = { menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -1647,7 +1915,18 @@ function closeModal(){ modalBg.classList.remove('open'); }
 
 document.addEventListener('click', e => {
   const open = e.target.closest('[data-open-modal]');
-  if(open){ e.preventDefault(); openModal(open.dataset.openModal); return; }
+  if(open){
+    e.preventDefault();
+    let type = open.dataset.openModal;
+    const activeView = document.querySelector('.view.active')?.dataset.view;
+    if(type === 'menu'){
+      if(activeView === 'community' || activeView === 'profile') type = 'post';
+      else if(activeView === 'market') type = 'product';
+      else if(activeView === 'map') type = 'spot';
+    }
+    openModal(type);
+    return;
+  }
   if(e.target.closest('[data-close-modal]') || e.target === modalBg){ closeModal(); return; }
 
   /* segmentos dentro del modal */
@@ -1661,6 +1940,8 @@ document.addEventListener('click', e => {
   /* submit de formularios de creación */
   const submit = e.target.closest('[data-submit]');
   if(submit) handleCreate(submit.dataset.submit);
+  const saveSettings = e.target.closest('[data-save-settings]');
+  if(saveSettings){ closeModal(); toast('Cambios guardados en el perfil.'); }
 });
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeModal(); });
 
@@ -1745,6 +2026,21 @@ function handleCreate(type){
     resetForm('eventForm'); closeModal();
     toast('Evento enviado a aprobación del admin.');
   }
+  if(type === 'post'){
+    if(!validateForm('postForm')) return;
+    const text = escapeHTML(document.querySelector('#postForm input').value);
+    const card = document.createElement('article');
+    card.className = 'feed-card';
+    card.dataset.cat = 'skate';
+    card.innerHTML = `<div class="feed-head"><div class="avatar" style="background-image:url('assets/eventos/skater-2.webp')"></div><div><b>@santi.sk8</b><div class="meta">Skate · Canelones · Ahora</div></div></div>
+      <p class="lead" style="font-size:15px">${text}</p>
+      <div class="feed-media" style="background-image:url('${dzImage('dzPost','assets/eventos/skater-bowl.webp')}')"></div>
+      <div class="feed-actions"><button data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg><span>0</span></button><button data-toast="Comentarios disponibles cuando conectemos el backend.">Comentar</button><button data-toast="Enlace del post copiado.">Compartir</button></div>`;
+    document.getElementById('feed').prepend(card);
+    resetForm('postForm','dzPost'); closeModal();
+    setRoute('community');
+    toast('Publicación creada en el foro.');
+  }
   if(type === 'product'){
     if(!validateForm('productForm')) return;
     const ins = document.querySelectorAll('#productForm input');
@@ -1753,8 +2049,8 @@ function handleCreate(type){
     card.className = 'product-card';
     card.dataset.cat = cat;
     card.innerHTML = `<div class="product-img" style="background-image:url('${dzImage('dzProd','assets/marketplace/skate-completo.webp')}')"></div>
-      <div class="product-body"><b>${ins[0].value}</b><div class="price">$${parseInt(ins[1].value,10).toLocaleString('es-AR')}</div>
-      <div class="meta">${ins[2].value} · Publicado por vos</div><span class="pending-tag">Tu publicación</span></div>`;
+      <div class="product-body"><b>${escapeHTML(ins[0].value)}</b><div class="price">$${parseInt(ins[1].value,10).toLocaleString('es-AR')}</div>
+      <div class="meta">${escapeHTML(ins[2].value)} · Publicado por vos</div><span class="pending-tag">Tu publicación</span></div>`;
     document.getElementById('mkt').prepend(card);
     resetForm('productForm','dzProd'); closeModal();
     setRoute('market');
