@@ -1,0 +1,25 @@
+{
+  "name": "SPOTRA",
+  "short_name": "SPOTRA",
+  "description": "Mapa, comunidad, marketplace y sponsors para skaters y bikers.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#070907",
+  "theme_color": "#070907",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/logo/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

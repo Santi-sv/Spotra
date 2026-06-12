@@ -2,8 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>SPOTRA App</title>
+<meta name="theme-color" content="#070907">
+<meta name="application-name" content="SPOTRA">
+<meta name="apple-mobile-web-app-title" content="SPOTRA">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/logo/favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/logo/apple-touch-icon.png">
 <link rel="preconnect" href="https://api.fontshare.com">
 <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700,500&f[]=general-sans@400,500,600,700&display=swap" rel="stylesheet">
 <style>
@@ -728,6 +737,7 @@ body[data-role="rider"] .fab{display:grid}
 .chat-input svg{width:22px;height:22px}
 
 /* ============ PANTALLA DE LOGIN (entrada) ============ */
+body.auth-mode{min-height:100vh;min-height:100dvh}
 body.auth-mode .topbar,body.auth-mode .bottom-nav,body.auth-mode .fab{display:none!important}
 body.auth-mode .main{padding:0;width:100%;max-width:none}
 .auth{position:relative;min-height:100vh;min-height:100dvh;overflow-x:hidden;overflow-y:auto;display:flex;flex-direction:column;align-items:center}
@@ -743,8 +753,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 .auth-top{display:flex;justify-content:space-between;align-items:flex-start}
 .auth-ambient-logo{height:42px;margin:4px auto 0;display:flex;align-items:center;justify-content:center;opacity:.46;filter:drop-shadow(0 0 18px rgba(116,255,58,.12))}
 .auth-ambient-logo img{width:152px;height:auto;object-fit:contain}
-.auth-stats{display:flex;gap:24px;margin-top:64px;z-index:3}
-.auth-stat{min-width:88px;text-align:center;border:1px solid rgba(116,255,58,.14);border-radius:16px;background:linear-gradient(180deg,rgba(6,12,8,.32),rgba(6,10,7,.08));padding:10px 8px;backdrop-filter:blur(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.auth-stats{width:100%;display:flex;justify-content:center;align-items:stretch;gap:24px;margin-top:64px;z-index:3}
+.auth-stat{flex:0 1 112px;min-width:0;text-align:center;border:1px solid rgba(116,255,58,.14);border-radius:16px;background:linear-gradient(180deg,rgba(6,12,8,.32),rgba(6,10,7,.08));padding:10px 8px;backdrop-filter:blur(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.04);display:grid;justify-items:center;align-content:center}
 .auth-stat svg{width:22px;height:22px;color:var(--green-hot);margin:0 auto 7px;display:block;filter:drop-shadow(0 0 10px rgba(116,255,58,.6))}
 .auth-stat b{display:block;font-family:var(--display);font-size:15px;letter-spacing:.02em}
 .auth-stat span{display:block;font-size:9.5px;letter-spacing:.18em;color:var(--muted);font-weight:800;margin-top:2px}
@@ -780,7 +790,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 .auth-feat svg{width:24px;height:24px;color:var(--green-hot);margin:0 auto 8px;display:block}
 .auth-feat span{display:block;font-size:10px;letter-spacing:.1em;font-weight:800;color:var(--text);line-height:1.45;text-transform:uppercase}
 @media(max-width:560px){
-  .auth{min-height:100svh;min-height:100dvh}
+  body.auth-mode{height:100svh;height:100dvh;overflow:hidden}
+  .auth{height:100svh;height:100dvh;min-height:0;overflow:hidden}
   .auth-bg{
     filter:brightness(1.12) contrast(1.04);
     background-size:100% 100%,clamp(640px,154vw,680px) auto;
@@ -792,41 +803,41 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     radial-gradient(360px 190px at 14% 34%,rgba(46,232,77,.16),transparent 64%),
     radial-gradient(300px 170px at 86% 30%,rgba(46,232,77,.12),transparent 66%);
   }
-  .auth-inner{min-height:100svh;min-height:100dvh;padding:max(14px,env(safe-area-inset-top)) 22px max(26px,env(safe-area-inset-bottom))}
+  .auth-inner{height:100svh;height:100dvh;min-height:0;padding:max(10px,env(safe-area-inset-top)) 22px max(12px,env(safe-area-inset-bottom));justify-content:flex-start;overflow:hidden}
   .auth-ambient-logo{height:34px;margin-top:4px}
   .auth-ambient-logo img{width:132px}
-  .auth-stats{gap:16px;margin-top:28px}
+  .auth-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;max-width:386px;gap:clamp(8px,2.8vw,13px);margin:clamp(12px,2.8dvh,24px) auto 0}
+  .auth-stat{width:100%;min-width:0;padding:8px 6px;border-radius:15px}
   .auth-stat svg{width:21px;height:21px;margin-bottom:6px}
   .auth-stat b{font-size:13.5px}
   .auth-stat span{font-size:9px}
-  .auth-logo{margin:34px auto 8px}
-  .auth-logo img{max-width:min(360px,88vw)}
-  .auth-tag{font-size:14px;line-height:1.32;margin:4px 0 20px}
+  .auth-logo{margin:clamp(16px,3dvh,28px) auto 4px}
+  .auth-logo img{max-width:min(304px,78vw)}
+  .auth-tag{font-size:clamp(12.5px,3.45vw,14px);line-height:1.28;margin:2px 0 clamp(11px,2dvh,17px)}
   .auth .field{height:58px;margin-top:11px}
   #loginForm .field:first-child{margin-top:0}
-  .auth-row{gap:10px;margin:13px 2px 5px;font-size:13px}
+  .auth-row{gap:10px;margin:clamp(8px,1.8dvh,12px) 2px 4px;font-size:13px}
   .auth-forgot{font-size:13px;white-space:nowrap}
-  .auth-enter{height:60px;margin-top:14px;font-size:17px}
-  .auth-div{margin:19px 0 13px}
+  .auth-enter{height:58px;margin-top:clamp(9px,1.7dvh,13px);font-size:17px}
+  .auth-div{margin:clamp(11px,2dvh,17px) 0 clamp(8px,1.5dvh,12px)}
   .social-btn span{display:none}
-  .social-btn{height:54px;gap:0}
-  .auth-create{height:56px;margin-top:13px;font-size:16px}
-  .auth-feats{margin-top:15px;padding:14px 8px}
-  .auth-feat svg{width:22px;height:22px;margin-bottom:7px}
-  .auth-feat span{font-size:9px}
+  .social-btn{height:50px;gap:0}
+  .auth-create{height:52px;margin-top:clamp(9px,1.8dvh,12px);font-size:16px}
+  .auth-feats{display:none}
 }
 @media(max-width:390px){
   .auth-bg{background-size:100% 100%,620px auto;background-position:center top,44% 10px}
   .auth-inner{padding-left:18px;padding-right:18px}
   .auth-ambient-logo{height:30px;margin-top:0}
   .auth-ambient-logo img{width:118px}
-  .auth-stats{gap:12px;margin-top:18px}
+  .auth-stats{gap:8px;margin-top:clamp(9px,2.3dvh,16px)}
+  .auth-stat{padding:7px 5px}
   .auth-stat svg{width:19px;height:19px;margin-bottom:5px}
   .auth-stat b{font-size:12.5px}
   .auth-stat span{font-size:8.4px}
-  .auth-logo{margin-top:20px}
-  .auth-logo img{max-width:84vw}
-  .auth-tag{font-size:13px;margin-bottom:16px}
+  .auth-logo{margin-top:clamp(12px,2.6dvh,18px)}
+  .auth-logo img{max-width:76vw}
+  .auth-tag{font-size:12.7px;margin-bottom:clamp(10px,1.8dvh,14px)}
   .auth .field{height:54px;margin-top:9px}
   .auth-row{font-size:12.5px;margin-top:10px}
   .auth-forgot{font-size:12.5px}
@@ -835,10 +846,64 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   .social-row{gap:9px}
   .social-btn{height:50px}
   .auth-create{height:52px;margin-top:11px}
-  .auth-feats{margin-top:13px}
-  .auth-feats{gap:6px;padding-left:6px;padding-right:6px}
-  .auth-feat svg{width:20px;height:20px;margin-bottom:6px}
-  .auth-feat span{font-size:8px}
+}
+@media(min-width:561px) and (max-height:820px){
+  body.auth-mode{height:100vh;height:100dvh;overflow:hidden}
+  .auth{height:100vh;height:100dvh;min-height:0;overflow:hidden}
+  .auth-inner{height:100vh;height:100dvh;min-height:0;padding:12px 22px 14px}
+  .auth-ambient-logo{height:30px;margin-top:0}
+  .auth-ambient-logo img{width:126px}
+  .auth-stats{margin-top:14px;gap:14px}
+  .auth-stat{flex-basis:100px;padding:8px 6px;border-radius:15px}
+  .auth-stat svg{width:20px;height:20px;margin-bottom:5px}
+  .auth-stat b{font-size:13px}
+  .auth-stat span{font-size:8.5px}
+  .auth-logo{margin:16px auto 4px}
+  .auth-logo img{max-width:min(320px,54vw)}
+  .auth-tag{font-size:13px;line-height:1.24;margin:0 0 12px}
+  .auth .field{height:52px;margin-top:9px;border-radius:15px}
+  .auth-row{margin:9px 2px 4px;font-size:13px}
+  .auth-enter{height:54px;margin-top:10px;font-size:16px}
+  .auth-div{margin:12px 0 9px}
+  .social-btn{height:46px}
+  .auth-create{height:50px;margin-top:10px;font-size:15px}
+  .auth-feats{display:none}
+}
+@media(max-width:560px) and (max-height:760px){
+  .auth-inner{padding-top:max(8px,env(safe-area-inset-top));padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  .auth-ambient-logo{height:28px}
+  .auth-ambient-logo img{width:112px}
+  .auth-stats{margin-top:9px;gap:8px}
+  .auth-stat{padding:7px 5px;border-radius:14px}
+  .auth-stat svg{width:18px;height:18px;margin-bottom:3px}
+  .auth-stat b{font-size:12px}
+  .auth-stat span{font-size:7.7px;letter-spacing:.13em}
+  .auth-logo{margin:10px auto 2px}
+  .auth-logo img{max-width:min(255px,68vw)}
+  .auth-tag{font-size:12px;line-height:1.18;margin-bottom:9px}
+  .auth .field{height:48px;margin-top:8px;border-radius:14px}
+  .auth .field svg{width:19px;height:19px}
+  .auth-row{margin:7px 2px 3px;font-size:11.5px}
+  .check{gap:7px}
+  .check .box{width:20px;height:20px;border-radius:6px}
+  .auth-forgot{font-size:11.5px}
+  .auth-enter{height:49px;margin-top:8px;border-radius:14px;font-size:14px;letter-spacing:.07em}
+  .auth-enter svg{width:21px;height:21px}
+  .auth-div{margin:8px 0 7px;font-size:9px;letter-spacing:.16em}
+  .social-row{gap:8px}
+  .social-btn{height:41px;border-radius:13px}
+  .social-btn svg{width:19px;height:19px}
+  .auth-create{height:45px;margin-top:8px;border-radius:14px;font-size:13.5px}
+}
+@media(max-width:380px) and (max-height:690px){
+  .auth-ambient-logo{display:none}
+  .auth-stats{margin-top:8px}
+  .auth-logo{margin-top:8px}
+  .auth-tag{font-size:11.4px}
+  .auth .field{height:46px}
+  .auth-enter{height:47px}
+  .social-btn{height:39px}
+  .auth-create{height:43px}
 }
 @media(max-width:760px){
   .signup-layout{min-height:100svh;min-height:100dvh;padding:10px 14px 16px;grid-template-columns:1fr;gap:0}
