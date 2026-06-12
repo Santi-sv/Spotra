@@ -8,7 +8,7 @@
 <meta name="application-name" content="SPOTRA">
 <meta name="apple-mobile-web-app-title" content="SPOTRA">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/logo/favicon-32.png">
@@ -412,7 +412,7 @@ img{max-width:100%;display:block}
   .map-stage{min-height:560px}
 }
 @media(max-width:760px){
-  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;padding:12px 12px 10px;align-items:center}
+  .topbar{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;padding:calc(12px + env(safe-area-inset-top)) 12px 10px;align-items:center}
   .brand{min-width:0;overflow:hidden}
   .brand img{width:42px;height:42px;flex-shrink:0}
   .brand strong{font-size:22px;letter-spacing:.12em;white-space:nowrap}
