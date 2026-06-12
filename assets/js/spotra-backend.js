@@ -1,0 +1,257 @@
+(function(){
+  const cfg = Object.assign({
+    SUPABASE_URL: '',
+    SUPABASE_ANON_KEY: '',
+    DEFAULT_CENTER: { lat: -34.9011, lng: -56.1645 },
+    MOCK_MODE: true
+  }, window.SPOTRA_CONFIG || {});
+
+  const seedPlaces = [
+    {
+      id: 'rivadavia',
+      type: 'skatepark',
+      label: 'Skatepark',
+      name: 'Parque Rivadavia',
+      meta: 'Caballito, CABA · Skatepark verificado',
+      city: 'Buenos Aires',
+      countryCode: 'AR',
+      address: 'Caballito, Buenos Aires',
+      lat: -34.6186,
+      lng: -58.4356,
+      imageUrl: 'assets/banners/banner-skatepark-4.webp',
+      stats: ['86', '18', 'OK']
+    },
+    {
+      id: 'italia',
+      type: 'street_spot',
+      label: 'Spot',
+      name: 'Plaza Italia',
+      meta: 'Palermo, CABA · Street spot',
+      city: 'Buenos Aires',
+      countryCode: 'AR',
+      address: 'Palermo, Buenos Aires',
+      lat: -34.5807,
+      lng: -58.4205,
+      imageUrl: 'assets/spots/spot-5.webp',
+      stats: ['74', '9', 'OK']
+    },
+    {
+      id: 'palermo',
+      type: 'event_venue',
+      label: 'Evento',
+      name: 'Bowl Palermo',
+      meta: 'Palermo, CABA · Competencia este sábado',
+      city: 'Buenos Aires',
+      countryCode: 'AR',
+      address: 'Palermo, Buenos Aires',
+      lat: -34.5722,
+      lng: -58.4304,
+      imageUrl: 'assets/spots/spot-6.webp',
+      stats: ['91', '24', 'OK']
+    },
+    {
+      id: 'caballito',
+      type: 'street_spot',
+      label: 'Spot',
+      name: 'Ledges Caballito',
+      meta: 'Caballito, CABA · Street spot',
+      city: 'Buenos Aires',
+      countryCode: 'AR',
+      address: 'Caballito, Buenos Aires',
+      lat: -34.6238,
+      lng: -58.4428,
+      imageUrl: 'assets/spots/spot-8.webp',
+      stats: ['58', '4', 'OK']
+    },
+    {
+      id: 'boedo',
+      type: 'store',
+      label: 'Tienda',
+      name: 'Underground Boedo',
+      meta: 'Boedo, CABA · Tienda verificada',
+      city: 'Buenos Aires',
+      countryCode: 'AR',
+      address: 'Boedo, Buenos Aires',
+      lat: -34.6316,
+      lng: -58.4171,
+      imageUrl: 'assets/tiendas/interior-tienda.webp',
+      stats: ['15%', 'ON', 'OK']
+    }
+  ];
+
+  let supabaseClient;
+  let supabaseLoadPromise;
+
+  function isSupabaseReady(){
+    return Boolean(cfg.SUPABASE_URL && cfg.SUPABASE_ANON_KEY && !cfg.MOCK_MODE);
+  }
+
+  async function loadSupabase(){
+    if(!isSupabaseReady()) return null;
+    if(window.supabase) return true;
+    if(!supabaseLoadPromise){
+      supabaseLoadPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.onload = () => resolve(true);
+        script.onerror = reject;
+        document.head.appendChild(script);
+      }).catch(error => {
+        console.warn('[SPOTRA] Supabase JS unavailable:', error);
+        return false;
+      });
+    }
+    return supabaseLoadPromise;
+  }
+
+  async function client(){
+    const loaded = await loadSupabase();
+    if(!loaded || !window.supabase) return null;
+    if(!supabaseClient){
+      supabaseClient = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+    }
+    return supabaseClient;
+  }
+
+  function normalizeType(type){
+    return {
+      skatepark: 'skatepark',
+      spot: 'street_spot',
+      street: 'street_spot',
+      'street spot': 'street_spot',
+      street_spot: 'street_spot',
+      store: 'store',
+      tienda: 'store',
+      event: 'event_venue',
+      evento: 'event_venue',
+      event_venue: 'event_venue'
+    }[String(type || '').toLowerCase()] || type || 'street_spot';
+  }
+
+  function labelForType(type){
+    return {
+      skatepark: 'Skatepark',
+      street_spot: 'Spot',
+      store: 'Tienda',
+      event_venue: 'Evento'
+    }[type] || 'Spot';
+  }
+
+  function normalizePlace(row){
+    const type = normalizeType(row.type);
+    const lat = Number(row.latitude ?? row.lat);
+    const lng = Number(row.longitude ?? row.lng);
+    const address = row.address || row.meta || '';
+    const city = row.city || '';
+    const countryCode = row.country_code || row.countryCode || '';
+    const meta = row.meta || [city, address].filter(Boolean).join(' · ') || labelForType(type);
+    return {
+      id: row.id,
+      type,
+      label: row.label || labelForType(type),
+      name: row.name,
+      meta,
+      city,
+      countryCode,
+      address,
+      lat,
+      lng,
+      googlePlaceId: row.google_place_id || row.googlePlaceId || '',
+      imageUrl: row.image_url || row.imageUrl || 'assets/banners/banner-skatepark-4.webp',
+      rating: row.rating,
+      stats: row.stats || ['--', '--', 'OK'],
+      directionsUrl: googleDirectionsUrl({
+        lat,
+        lng,
+        name: row.name,
+        googlePlaceId: row.google_place_id || row.googlePlaceId
+      })
+    };
+  }
+
+  function googleDirectionsUrl(place){
+    const query = place.lat && place.lng
+      ? `${place.lat},${place.lng}`
+      : encodeURIComponent(place.name || 'SPOTRA spot');
+    const placeId = place.googlePlaceId ? `&query_place_id=${encodeURIComponent(place.googlePlaceId)}` : '';
+    return `https://www.google.com/maps/search/?api=1&query=${query}${placeId}`;
+  }
+
+  function localSubmissions(){
+    try { return JSON.parse(localStorage.getItem('spotraPlaceSubmissions') || '[]'); }
+    catch { return []; }
+  }
+
+  function saveLocalSubmission(payload){
+    const item = Object.assign({
+      id: `local-${Date.now()}`,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    }, payload);
+    try {
+      const list = localSubmissions();
+      list.unshift(item);
+      localStorage.setItem('spotraPlaceSubmissions', JSON.stringify(list.slice(0, 50)));
+    } catch {}
+    return item;
+  }
+
+  async function listPlaces(options = {}){
+    const type = normalizeType(options.type || 'all');
+    const db = await client();
+    if(db){
+      let query = db
+        .from('places')
+        .select('id, google_place_id, type, name, description, city, country_code, address, latitude, longitude, image_url, rating, updated_at')
+        .eq('status', 'approved')
+        .order('updated_at', { ascending: false })
+        .limit(120);
+      if(type !== 'all') query = query.eq('type', type);
+      const { data, error } = await query;
+      if(!error && Array.isArray(data)) return data.map(normalizePlace);
+      console.warn('[SPOTRA] Supabase places fallback:', error);
+    }
+    return seedPlaces.filter(place => type === 'all' || place.type === type).map(normalizePlace);
+  }
+
+  async function createPlaceSubmission(payload){
+    const mapped = {
+      candidate_google_place_id: payload.googlePlaceId || null,
+      type: normalizeType(payload.type),
+      name: payload.name,
+      description: payload.description || null,
+      country_code: payload.countryCode || cfg.DEFAULT_COUNTRY || null,
+      city: payload.city || null,
+      address: payload.address || payload.locationLabel || null,
+      latitude: payload.lat ?? null,
+      longitude: payload.lng ?? null,
+      image_url: payload.imageUrl || null,
+      google_payload: payload.googlePayload || {}
+    };
+    const db = await client();
+    if(db){
+      const { data: authData } = await db.auth.getUser();
+      if(!authData?.user?.id) return { mode: 'local', data: saveLocalSubmission(Object.assign({}, payload, mapped)) };
+      mapped.submitted_by = authData.user.id;
+      const { data, error } = await db
+        .from('place_submissions')
+        .insert(mapped)
+        .select()
+        .single();
+      if(!error) return { mode: 'supabase', data };
+      console.warn('[SPOTRA] Supabase submission fallback:', error);
+    }
+    return { mode: 'local', data: saveLocalSubmission(Object.assign({}, payload, mapped)) };
+  }
+
+  window.SpotraBackend = {
+    config: cfg,
+    isSupabaseReady,
+    listPlaces,
+    createPlaceSubmission,
+    normalizeType,
+    labelForType,
+    googleDirectionsUrl,
+    seedPlaces: seedPlaces.map(normalizePlace)
+  };
+})();

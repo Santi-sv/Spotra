@@ -237,11 +237,20 @@ img{max-width:100%;display:block}
 .map-road{position:absolute;background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);box-shadow:0 0 18px rgba(116,255,58,.08)}
 .map-label{position:absolute;color:rgba(245,247,244,.72);font-weight:900;letter-spacing:.28em;text-shadow:0 0 12px rgba(255,255,255,.16)}
 .map-label::after{content:'';display:block;width:38px;height:3px;margin:8px auto 0;border-radius:999px;background:var(--green-hot);box-shadow:0 0 12px rgba(116,255,58,.8)}
+.google-map-canvas{position:absolute;inset:0;z-index:0;background:#050807}
+.map-stage.google-live::before,
+.map-stage.google-live .map-road,
+.map-stage.google-live .map-label,
+.map-stage.google-live .pin{display:none}
+.map-stage.google-live .map-tools,
+.map-stage.google-live .map-kind-row{z-index:6}
 .pin{position:absolute;color:var(--green-hot);filter:drop-shadow(0 0 22px rgba(116,255,58,.74));transform:translate(-50%,-100%)}
 .pin svg{width:52px;height:52px}
 .pin.big svg{width:92px;height:92px}
 .map-tools{position:absolute;left:22px;right:22px;top:22px;display:flex;justify-content:space-between;gap:12px;z-index:3}
 .search{height:52px;display:flex;align-items:center;gap:12px;flex:1;padding:0 16px;border-radius:16px;border:1px solid rgba(255,255,255,.12);background:rgba(5,9,6,.78);backdrop-filter:blur(14px);color:var(--muted)}
+.search input{width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--text);font:inherit}
+.search input::placeholder{color:var(--muted)}
 .map-tune{height:52px;width:52px;flex-shrink:0;color:var(--muted)}
 .map-kind-row{position:absolute;left:22px;right:22px;top:88px;z-index:4;display:flex;gap:10px;overflow-x:auto;padding-bottom:4px}
 .map-kind-row::-webkit-scrollbar{display:none}
@@ -1128,7 +1137,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div class="map-layout">
         <div class="map-stage">
           <div class="map-tools">
-            <div class="search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar spots, skateparks, tiendas...</div>
+            <label class="search" for="mapSearchInput"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="mapSearchInput" placeholder="Buscar spots, skateparks, tiendas..." autocomplete="off"></label>
             <button class="icon-btn map-tune" data-toast="Filtros avanzados disponibles al conectar el mapa real." aria-label="Filtros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
           </div>
           <div class="map-kind-row">
@@ -1167,7 +1176,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="event-row"><div class="date">31</div><div><b>BMX Street</b><div class="meta">Clasificatoria regional</div></div></div>
           <div class="spot-actions">
             <button class="primary-btn" data-route="map">Ver spot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
-            <button class="ghost-btn" data-toast="Cuando conectemos el mapa real, abriremos indicaciones desde tu ubicación.">Cómo llegar</button>
+            <button class="ghost-btn" id="spotDirectionsBtn" data-toast="Cuando conectemos el mapa real, abriremos indicaciones desde tu ubicación.">Cómo llegar</button>
           </div>
         </aside>
       </div>
@@ -1738,6 +1747,9 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
+<script src="config.js"></script>
+<script src="assets/js/spotra-backend.js"></script>
+<script src="assets/js/spotra-google-map.js"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
@@ -1768,6 +1780,7 @@ function setRoute(route, push = true){
   });
   if(push) history.pushState(null, '', `#${target}`);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if(target === 'map' && window.SpotraMaps) window.SpotraMaps.init();
 }
 
 /* ===== Toast ===== */
@@ -1889,6 +1902,7 @@ document.addEventListener('click', event => {
     document.querySelectorAll('.pin[data-map-cat]').forEach(p => p.classList.toggle('hidden-map', p.dataset.mapCat !== f));
     const first = document.querySelector(`.pin[data-map-cat="${f}"]`);
     if(first) showSpot(first.dataset.spot);
+    if(window.SpotraMaps) window.SpotraMaps.setFilter(f);
     return;
   }
 
@@ -2151,14 +2165,30 @@ function pushToAdminQueue(kind, name, location, img){
   bumpCounter(kind === 'Evento' ? kpis[2] : kpis[1], 1);
 }
 
-function handleCreate(type){
+async function handleCreate(type){
   if(type === 'spot'){
     if(!validateForm('spotForm')) return;
     const ins = document.querySelectorAll('#spotForm input');
     const kind = document.querySelector('[data-seg="spotType"] .active').dataset.v;
-    pushToAdminQueue(kind, ins[0].value, ins[1].value, dzImage('dzSpot','assets/spots/spot-7.webp'));
+    const image = dzImage('dzSpot','assets/spots/spot-7.webp');
+    let saveMode = 'local';
+    try {
+      const result = await window.SpotraBackend?.createPlaceSubmission({
+        type: kind,
+        name: ins[0].value,
+        locationLabel: ins[1].value,
+        description: ins[2]?.value || '',
+        imageUrl: image
+      });
+      saveMode = result?.mode || 'local';
+    } catch(error) {
+      console.warn('[SPOTRA] No se pudo guardar el spot en backend:', error);
+    }
+    pushToAdminQueue(kind, ins[0].value, ins[1].value, image);
     resetForm('spotForm','dzSpot'); closeModal();
-    toast('Spot enviado. Lo ves en Admin, en Aprobaciones, como pendiente.');
+    toast(saveMode === 'supabase'
+      ? 'Spot enviado al backend. Quedó pendiente de aprobación.'
+      : 'Spot enviado. Quedó en cola local hasta conectar Supabase.');
   }
   if(type === 'event'){
     if(!validateForm('eventForm')) return;
