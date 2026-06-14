@@ -5,6 +5,7 @@
   let markers = [];
   let initialized = false;
   let activeType = 'skatepark';
+  let currentDetail = null;
 
   const darkStyle = [
     { elementType: 'geometry', stylers: [{ color: '#061009' }] },
@@ -64,6 +65,7 @@
   }
 
   function updateDetail(place){
+    currentDetail = place;
     const type = document.getElementById('spotType');
     const name = document.getElementById('spotName');
     const meta = document.getElementById('spotMeta');
@@ -85,6 +87,12 @@
     if(directions){
       directions.dataset.directions = place.directionsUrl || window.SpotraBackend.googleDirectionsUrl(place);
       directions.removeAttribute('data-toast');
+    }
+    const addBtn = document.getElementById('spotAddBtn');
+    if(addBtn){
+      addBtn.style.display = place.isGoogleResult ? '' : 'none';
+      addBtn.disabled = false;
+      addBtn.textContent = 'Agregar a SPOTRA';
     }
   }
 
@@ -132,6 +140,7 @@
       const place = {
         id: result.place_id,
         googlePlaceId: result.place_id,
+        isGoogleResult: true,
         type: activeType,
         label: window.SpotraBackend.labelForType(activeType),
         name: result.name,
@@ -182,10 +191,47 @@
 
   document.addEventListener('click', event => {
     const directions = event.target.closest('#spotDirectionsBtn');
-    if(!directions || !directions.dataset.directions) return;
-    event.preventDefault();
-    window.open(directions.dataset.directions, '_blank', 'noopener');
+    if(directions && directions.dataset.directions){
+      event.preventDefault();
+      window.open(directions.dataset.directions, '_blank', 'noopener');
+      return;
+    }
+    const addBtn = event.target.closest('#spotAddBtn');
+    if(addBtn){
+      event.preventDefault();
+      submitCurrentPlace(addBtn);
+    }
   });
+
+  async function submitCurrentPlace(btn){
+    if(!currentDetail || !window.SpotraBackend) return;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    try {
+      const result = await window.SpotraBackend.createPlaceSubmission({
+        type: currentDetail.type,
+        name: currentDetail.name,
+        address: currentDetail.address || currentDetail.meta || '',
+        lat: currentDetail.lat,
+        lng: currentDetail.lng,
+        googlePlaceId: currentDetail.googlePlaceId,
+        imageUrl: currentDetail.imageUrl
+      });
+      if(result && result.mode === 'supabase'){
+        btn.textContent = 'Enviado a aprobación';
+        if(window.toast) window.toast('Lugar enviado. Queda pendiente de aprobación.');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Agregar a SPOTRA';
+        if(window.toast) window.toast('Iniciá sesión para sumar lugares a SPOTRA.');
+      }
+    } catch(error){
+      console.warn('[SPOTRA] No se pudo enviar el lugar:', error);
+      btn.disabled = false;
+      btn.textContent = 'Agregar a SPOTRA';
+      if(window.toast) window.toast('No se pudo enviar el lugar. Probá de nuevo.');
+    }
+  }
 
   window.SpotraMaps = { init, refresh, setFilter };
 })();
