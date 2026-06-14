@@ -246,6 +246,7 @@
 
   window.SpotraBackend = {
     config: cfg,
+    getClient: client,
     isSupabaseReady,
     listPlaces,
     createPlaceSubmission,
