@@ -244,12 +244,53 @@
     return { mode: 'local', data: saveLocalSubmission(Object.assign({}, payload, mapped)) };
   }
 
+  async function listSubmissions(){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('place_submissions')
+      .select('id, candidate_google_place_id, type, name, description, country_code, city, address, latitude, longitude, image_url, created_at')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if(error){ console.warn('[SPOTRA] listSubmissions:', error.message); return []; }
+    return (data || []).map(row => ({
+      id: row.id,
+      type: normalizeType(row.type),
+      label: labelForType(normalizeType(row.type)),
+      name: row.name,
+      address: row.address || [row.city, row.country_code].filter(Boolean).join(', ') || 'Sin ubicación',
+      city: row.city || '',
+      countryCode: row.country_code || '',
+      lat: Number(row.latitude),
+      lng: Number(row.longitude),
+      imageUrl: row.image_url || 'assets/banners/banner-skatepark-4.webp',
+      googlePlaceId: row.candidate_google_place_id || '',
+      createdAt: row.created_at
+    }));
+  }
+
+  async function reviewSubmission(id, decision){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    if(decision === 'approved'){
+      const { error } = await db.rpc('approve_submission', { submission_id: id });
+      if(error){ console.warn('[SPOTRA] approve:', error.message); return { ok: false, error: error.message }; }
+      return { ok: true };
+    }
+    const { error } = await db.rpc('reject_submission', { submission_id: id, notes: null });
+    if(error){ console.warn('[SPOTRA] reject:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
     isSupabaseReady,
     listPlaces,
     createPlaceSubmission,
+    listSubmissions,
+    reviewSubmission,
     normalizeType,
     labelForType,
     googleDirectionsUrl,
