@@ -113,6 +113,15 @@
     return { session, profile };
   }
 
+  async function doLogout(){
+    const client = await db();
+    if(client) await client.auth.signOut();
+    try { localStorage.removeItem('spotraPendingProfile'); } catch {}
+    notify('Sesión cerrada.');
+    location.hash = 'login';
+    location.reload();
+  }
+
   function ensureLogoutButton(show){
     const actions = document.querySelector('header .actions');
     if(!actions) return;
@@ -122,17 +131,19 @@
       btn.id = 'spotraLogout';
       btn.className = 'ghost-btn';
       btn.textContent = 'Salir';
-      btn.addEventListener('click', async () => {
-        const client = await db();
-        if(client) await client.auth.signOut();
-        notify('Sesión cerrada.');
-        location.hash = 'login';
-        location.reload();
-      });
+      btn.addEventListener('click', doLogout);
       actions.appendChild(btn);
     }
     btn.style.display = show ? '' : 'none';
   }
+
+  // Cerrar sesión desde cualquier botón con [data-logout] (ej. Configuración)
+  document.addEventListener('click', function(e){
+    if(e.target.closest('[data-logout]')){
+      e.preventDefault();
+      doLogout();
+    }
+  });
 
   function roleHome(accountType){
     if(accountType === 'brand') return 'brand';
