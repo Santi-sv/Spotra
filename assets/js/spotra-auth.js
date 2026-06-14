@@ -162,26 +162,31 @@
 
     try { localStorage.setItem('spotraPendingProfile', JSON.stringify(f)); } catch {}
 
-    const { data, error } = await client.auth.signUp({
-      email: f.email,
-      password: f.password,
-      options: { data: { full_name: f.fullName, account_type: f.accountType } }
-    });
-    if(error){ notify(traducir(error.message)); return; }
+    try {
+      const { data, error } = await client.auth.signUp({
+        email: f.email,
+        password: f.password,
+        options: { data: { full_name: f.fullName, account_type: f.accountType } }
+      });
+      if(error){ notify(traducir(error.message)); return; }
 
-    if(data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0){
-      notify('Ese email ya tiene una cuenta. Iniciá sesión.');
-      return;
-    }
+      if(data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0){
+        notify('Ese email ya tiene una cuenta. Iniciá sesión.');
+        return;
+      }
 
-    if(data.session){
-      const profile = await ensureProfile();
-      const first = ((profile && profile.full_name) || f.fullName || 'rider').split(' ')[0];
-      notify('Cuenta creada. Bienvenido a SPOTRA, ' + first + '.');
-      await applyAuthUI();
-      if(window.setRole) window.setRole(roleHome(f.accountType));
-    } else {
-      notify('Te enviamos un email para confirmar tu cuenta. Confirmalo y luego iniciá sesión.');
+      if(data.session){
+        const profile = await ensureProfile();
+        const first = ((profile && profile.full_name) || f.fullName || 'rider').split(' ')[0];
+        notify('Cuenta creada. Bienvenido a SPOTRA, ' + first + '.');
+        await applyAuthUI();
+        if(window.setRole) window.setRole(roleHome(f.accountType));
+      } else {
+        notify('Te enviamos un email para confirmar tu cuenta. Confirmalo y luego iniciá sesión.');
+      }
+    } catch(err){
+      console.error('[SPOTRA] signup error:', err);
+      notify('Error al crear la cuenta: ' + ((err && err.message) ? err.message : 'reintentá'));
     }
   }
 
@@ -199,14 +204,20 @@
     const client = await db();
     if(!client){ notify('No hay conexión con el backend.'); return; }
 
-    const { error } = await client.auth.signInWithPassword({ email: identifier, password });
-    if(error){ notify(traducir(error.message)); return; }
+    notify('Ingresando...');
+    try {
+      const { error } = await client.auth.signInWithPassword({ email: identifier, password });
+      if(error){ notify(traducir(error.message)); return; }
 
-    const ui = await applyAuthUI();
-    const accountType = (ui.profile && ui.profile.account_type) || 'rider';
-    const first = (((ui.profile && ui.profile.full_name) || identifier).split(' ')[0]).split('@')[0];
-    notify('Bienvenido de vuelta, ' + first + '.');
-    if(window.setRole) window.setRole(roleHome(accountType));
+      const ui = await applyAuthUI();
+      const accountType = (ui.profile && ui.profile.account_type) || 'rider';
+      const first = (((ui.profile && ui.profile.full_name) || identifier).split(' ')[0]).split('@')[0];
+      notify('Bienvenido de vuelta, ' + first + '.');
+      if(window.setRole) window.setRole(roleHome(accountType));
+    } catch(err){
+      console.error('[SPOTRA] login error:', err);
+      notify('Error al iniciar sesión: ' + ((err && err.message) ? err.message : 'reintentá'));
+    }
   }
 
   function traducir(msg){
