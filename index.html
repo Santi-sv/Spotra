@@ -984,6 +984,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   .discipline-card{min-height:64px;border-radius:13px;font-size:9.5px;padding:6px 4px}
   .discipline-card .card-label{margin-bottom:7px}
 }
+.spot-gallery{display:flex;gap:8px;overflow-x:auto;margin:14px 0 4px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.spot-gallery-thumb{position:relative;flex:0 0 auto;width:92px;height:66px;border-radius:12px;background:#111 center/cover no-repeat;border:1px solid rgba(255,255,255,.1);cursor:pointer}
+.spot-gallery-thumb.is-cover{border-color:var(--green-hot);box-shadow:0 0 0 1px var(--green-hot)}
+.spot-gallery-thumb .set-cover{position:absolute;right:4px;bottom:4px;font-size:10px;padding:3px 7px;border-radius:8px;background:rgba(0,0,0,.72);color:var(--green-hot);border:1px solid var(--green-hot)}
 </style>
 </head>
 <body data-role="rider">
@@ -1171,6 +1175,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <div class="mini-stat"><b id="spotS2">18</b><span>riders ahora</span></div>
             <div class="mini-stat"><b id="spotS3">OK</b><span>seguridad</span></div>
           </div>
+          <div class="spot-gallery" id="spotGallery" style="display:none"></div>
           <div class="section-head"><h3>Próximos eventos</h3></div>
           <div class="event-row"><div class="date">24</div><div><b>Skate Jam</b><div class="meta">Best trick · 18:00</div></div></div>
           <div class="event-row"><div class="date">31</div><div><b>BMX Street</b><div class="meta">Clasificatoria regional</div></div></div>
@@ -1178,6 +1183,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <button class="primary-btn" data-route="map">Ver spot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
             <button class="ghost-btn" id="spotDirectionsBtn" data-toast="Cuando conectemos el mapa real, abriremos indicaciones desde tu ubicación.">Cómo llegar</button>
             <button class="primary-btn" id="spotAddBtn" style="display:none;grid-column:1/-1">Agregar a SPOTRA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
+            <button class="ghost-btn" id="spotPhotoBtn" style="display:none;grid-column:1/-1">Subir foto</button>
+            <input type="file" id="spotPhotoInput" accept="image/*" hidden>
           </div>
         </aside>
       </div>
