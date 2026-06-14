@@ -206,8 +206,21 @@
 
     notify('Ingresando...');
     try {
-      const { error } = await client.auth.signInWithPassword({ email: identifier, password });
-      if(error){ notify(traducir(error.message)); return; }
+      let signedIn = false;
+      try {
+        const { error } = await Promise.race([
+          client.auth.signInWithPassword({ email: identifier, password }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
+        ]);
+        if(error){ notify(traducir(error.message)); return; }
+        signedIn = true;
+      } catch(raceErr){
+        // si la llamada se colgó pero la sesión quedó creada, seguimos igual
+        const { data } = await client.auth.getSession();
+        if(!(data && data.session)){ notify('La conexión tardó demasiado. Reintentá en unos segundos.'); return; }
+        signedIn = true;
+      }
+      if(!signedIn) return;
 
       const ui = await applyAuthUI();
       const accountType = (ui.profile && ui.profile.account_type) || 'rider';
