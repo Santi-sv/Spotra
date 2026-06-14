@@ -269,7 +269,16 @@
   (async () => {
     const client = await db();
     if(client && client.auth && client.auth.onAuthStateChange){
-      client.auth.onAuthStateChange(() => applyAuthUI());
+      client.auth.onAuthStateChange((event, session) => {
+        applyAuthUI().then(({ profile }) => {
+          if(event === 'SIGNED_IN'){
+            const h = location.hash;
+            if(h === '#login' || h === '#signup' || h === '' || h === '#'){
+              if(window.setRole) window.setRole(roleHome(profile && profile.account_type));
+            }
+          }
+        });
+      });
     }
   })();
 
