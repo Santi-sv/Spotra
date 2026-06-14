@@ -112,6 +112,7 @@
         auth: {
           persistSession: true,
           autoRefreshToken: true,
+          detectSessionInUrl: false,
           // Safari de iOS a veces cuelga con el lock de navigator.locks: lo hacemos pass-through
           lock: async (_name, _timeout, fn) => await fn()
         }
