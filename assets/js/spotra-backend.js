@@ -108,7 +108,14 @@
     const loaded = await loadSupabase();
     if(!loaded || !window.supabase) return null;
     if(!supabaseClient){
-      supabaseClient = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY);
+      supabaseClient = window.supabase.createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          // Safari de iOS a veces cuelga con el lock de navigator.locks: lo hacemos pass-through
+          lock: async (_name, _timeout, fn) => await fn()
+        }
+      });
     }
     return supabaseClient;
   }
