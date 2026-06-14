@@ -283,6 +283,66 @@
     return { ok: true };
   }
 
+  /* ---------- fotos de lugares (galería) ---------- */
+  async function uploadPlacePhoto(placeId, blob, ext){
+    const db = await client();
+    if(!db) return { ok:false, error:'sin conexión' };
+    const { data: u } = await db.auth.getUser();
+    const user = u && u.user;
+    if(!user) return { ok:false, error:'iniciá sesión' };
+    const rand = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+    const path = placeId + '/' + rand + '.' + ext;
+    const up = await db.storage.from('place-images').upload(path, blob, { contentType: blob.type, upsert:false });
+    if(up.error) return { ok:false, error: up.error.message };
+    const { data: pub } = db.storage.from('place-images').getPublicUrl(path);
+    const url = pub.publicUrl;
+    const { error } = await db.from('place_photos').insert({ place_id: placeId, url, uploaded_by: user.id, status:'pending' });
+    if(error) return { ok:false, error: error.message };
+    return { ok:true, url };
+  }
+
+  async function listPlacePhotos(placeId){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db.from('place_photos')
+      .select('id, url, is_cover, status')
+      .eq('place_id', placeId).eq('status','approved')
+      .order('is_cover', { ascending:false }).order('created_at', { ascending:true });
+    if(error){ console.warn('[SPOTRA] listPlacePhotos:', error.message); return []; }
+    return data || [];
+  }
+
+  async function listPendingPhotos(){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db.from('place_photos')
+      .select('id, url, created_at, place_id, places(name, type)')
+      .eq('status','pending').order('created_at', { ascending:false }).limit(100);
+    if(error){ console.warn('[SPOTRA] listPendingPhotos:', error.message); return []; }
+    return (data || []).map(r => ({
+      id: r.id, url: r.url, placeId: r.place_id,
+      placeName: r.places ? r.places.name : 'Lugar',
+      placeType: r.places ? normalizeType(r.places.type) : ''
+    }));
+  }
+
+  async function reviewPhoto(id, decision){
+    const db = await client();
+    if(!db) return { ok:false, error:'sin conexión' };
+    const fn = decision === 'approved' ? 'approve_place_photo' : 'reject_place_photo';
+    const { error } = await db.rpc(fn, { photo_id: id });
+    if(error){ console.warn('[SPOTRA] reviewPhoto:', error.message); return { ok:false, error:error.message }; }
+    return { ok:true };
+  }
+
+  async function setPlaceCover(photoId){
+    const db = await client();
+    if(!db) return { ok:false, error:'sin conexión' };
+    const { error } = await db.rpc('set_place_cover', { photo_id: photoId });
+    if(error){ console.warn('[SPOTRA] setPlaceCover:', error.message); return { ok:false, error:error.message }; }
+    return { ok:true };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -291,6 +351,11 @@
     createPlaceSubmission,
     listSubmissions,
     reviewSubmission,
+    uploadPlacePhoto,
+    listPlacePhotos,
+    listPendingPhotos,
+    reviewPhoto,
+    setPlaceCover,
     normalizeType,
     labelForType,
     googleDirectionsUrl,
