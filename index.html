@@ -1288,9 +1288,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="profile-identity">
             <div class="profile-avatar"></div>
             <div>
-              <h1>Santiago Varela <span class="verified-dot">✓</span></h1>
-              <p>@santi.sk8</p>
-              <div class="profile-meta"><span>Skate</span><span>Canelones, Uruguay</span></div>
+              <h1><span data-profile-name>Santiago Varela</span> <span class="verified-dot">✓</span></h1>
+              <p data-profile-handle>@santi.sk8</p>
+              <div class="profile-meta"><span data-profile-discipline>Skate</span><span data-profile-location>Canelones, Uruguay</span></div>
+              <p class="profile-bio" data-profile-bio style="margin-top:8px;color:var(--muted);font-size:14px"></p>
             </div>
           </div>
           <div class="profile-stats">
@@ -1299,10 +1300,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <div><b>1.2k</b><span>seguidores</span></div>
           </div>
           <div class="social-grid">
-            <button data-toast="Instagram conectado: @santi.sk8"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.5" cy="7.6" r="1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
-            <button data-toast="TikTok conectado."><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M15.7 3c.4 2.5 1.8 4.1 4.3 4.3v3.1c-1.5.1-2.8-.3-4.2-1.1v5.8c0 5.8-6.3 7.6-9.7 4.3-2.2-2.1-2.1-5.8.3-7.8 1.4-1.2 3-1.6 5-1.2v3.3c-.6-.2-1.2-.2-1.8 0-1.7.5-2.4 2.5-1.3 3.8 1.1 1.4 3.7 1.1 4.1-1.1.1-.4.1-.8.1-1.2V3h3.2Z"/></svg></span>TikTok</button>
-            <button data-toast="Facebook conectado."><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M14.4 8.1H16V5.2c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4v2.5H6.5v3.2h2.8V23h3.4v-7.8h2.8l.4-3.2h-3.2V9.8c0-.9.3-1.7 1.7-1.7Z"/></svg></span>Facebook</button>
-            <button data-toast="Correo: santiagovarela29011999@gmail.com"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span>Email</button>
+            <button data-social="instagram" data-toast="Instagram conectado: @santi.sk8"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.5" cy="7.6" r="1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
+            <button data-social="tiktok" data-toast="TikTok conectado."><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M15.7 3c.4 2.5 1.8 4.1 4.3 4.3v3.1c-1.5.1-2.8-.3-4.2-1.1v5.8c0 5.8-6.3 7.6-9.7 4.3-2.2-2.1-2.1-5.8.3-7.8 1.4-1.2 3-1.6 5-1.2v3.3c-.6-.2-1.2-.2-1.8 0-1.7.5-2.4 2.5-1.3 3.8 1.1 1.4 3.7 1.1 4.1-1.1.1-.4.1-.8.1-1.2V3h3.2Z"/></svg></span>TikTok</button>
+            <button data-social="facebook" data-toast="Facebook conectado."><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M14.4 8.1H16V5.2c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4v2.5H6.5v3.2h2.8V23h3.4v-7.8h2.8l.4-3.2h-3.2V9.8c0-.9.3-1.7 1.7-1.7Z"/></svg></span>Facebook</button>
+            <button data-social="email" data-toast="Correo"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span>Email</button>
           </div>
         </div>
 
@@ -1698,16 +1699,22 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <div class="modal-form" data-form="editProfile">
       <p class="hint">Estos datos se usarán en tu perfil público y en postulaciones a sponsors.</p>
       <div class="form-grid" id="editProfileForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required value="Santiago" placeholder="Nombre"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required value="Varela" placeholder="Apellido"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="pfNombre" required value="Santiago" placeholder="Nombre"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="pfApellido" value="Varela" placeholder="Apellido"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/></svg><input id="pfUsername" placeholder="Usuario (@)"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input id="pfDiscipline" placeholder="Disciplina (Skate, BMX, Roller, Scooter)"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/></svg><input id="pfInstagram" placeholder="Instagram (usuario o link)"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4c.4 2 1.6 3.2 3.6 3.4M9 13a3.5 3.5 0 1 0 3.5 3.5V4"/></svg><input id="pfTiktok" placeholder="TikTok (usuario o link)"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8h2V5h-2c-2 0-3 1.2-3 3v2H9v3h2v6h3v-6h2l.4-3H14V8.4c0-.3.2-.4.5-.4Z"/></svg><input id="pfFacebook" placeholder="Facebook (usuario o link)"></div>
+        <div class="field full" style="align-items:flex-start;min-height:96px"><textarea id="pfBio" rows="3" placeholder="Bio: contá quién sos como rider" style="width:100%;background:transparent;border:0;color:var(--text);resize:none;font:inherit;outline:none"></textarea></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar cambios</button>
     </div>
     <div class="modal-form" data-form="editContact">
       <p class="hint">Tu contacto privado solo se comparte con acciones aprobadas por vos.</p>
       <div class="form-grid" id="editContactForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input type="email" value="santiagovarela29011999@gmail.com" placeholder="Email"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input type="tel" placeholder="Celular"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input id="pfEmail" type="email" value="santiagovarela29011999@gmail.com" placeholder="Email"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input id="pfPhone" type="tel" placeholder="Celular"></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar contacto</button>
     </div>
@@ -2255,5 +2262,6 @@ setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=2"></script>
 <script src="assets/js/spotra-admin.js?v=2"></script>
+<script src="assets/js/spotra-profile.js?v=3"></script>
 </body>
 </html>
