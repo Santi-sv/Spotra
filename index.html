@@ -1757,8 +1757,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js"></script>
-<script src="assets/js/spotra-google-map.js"></script>
+<script src="assets/js/spotra-backend.js?v=2"></script>
+<script src="assets/js/spotra-google-map.js?v=2"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
@@ -2253,7 +2253,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-auth.js"></script>
-<script src="assets/js/spotra-admin.js"></script>
+<script src="assets/js/spotra-auth.js?v=2"></script>
+<script src="assets/js/spotra-admin.js?v=2"></script>
 </body>
 </html>
