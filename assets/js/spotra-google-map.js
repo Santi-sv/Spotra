@@ -94,6 +94,7 @@
       addBtn.disabled = false;
       addBtn.textContent = 'Agregar a SPOTRA';
     }
+    renderGallery(place);
   }
 
   function clearMarkers(){
@@ -200,8 +201,102 @@
     if(addBtn){
       event.preventDefault();
       submitCurrentPlace(addBtn);
+      return;
+    }
+    const photoBtn = event.target.closest('#spotPhotoBtn');
+    if(photoBtn){
+      event.preventDefault();
+      const input = document.getElementById('spotPhotoInput');
+      if(input) input.click();
     }
   });
+
+  document.addEventListener('change', event => {
+    if(event.target && event.target.id === 'spotPhotoInput'){
+      const file = event.target.files && event.target.files[0];
+      if(file) handlePhotoFile(file);
+      event.target.value = '';
+    }
+  });
+
+  /* comprime la imagen a WebP (o JPEG si el navegador no soporta WebP), máx 1600px */
+  function compressImage(file){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let w = img.width, h = img.height;
+        const max = 1600;
+        if(w > max || h > max){ const s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          if(blob && blob.type === 'image/webp') resolve({ blob, ext: 'webp' });
+          else canvas.toBlob(b2 => resolve({ blob: b2, ext: 'jpg' }), 'image/jpeg', 0.82);
+        }, 'image/webp', 0.8);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagen inválida')); };
+      img.src = url;
+    });
+  }
+
+  async function handlePhotoFile(file){
+    if(!currentDetail || !currentDetail.id || currentDetail.isGoogleResult) return;
+    if(!/^image\//.test(file.type)){ if(window.toast) window.toast('Solo se pueden subir imágenes.'); return; }
+    if(file.size > 20 * 1024 * 1024){ if(window.toast) window.toast('La imagen es muy pesada (máx. 20 MB).'); return; }
+    if(window.toast) window.toast('Procesando imagen...');
+    try {
+      const { blob, ext } = await compressImage(file);
+      const result = await window.SpotraBackend.uploadPlacePhoto(currentDetail.id, blob, ext);
+      if(result.ok){
+        if(window.toast) window.toast('Foto enviada. Queda pendiente de aprobación.');
+      } else {
+        if(window.toast) window.toast('No se pudo subir: ' + (result.error || 'probá de nuevo.'));
+      }
+    } catch(err){
+      console.warn('[SPOTRA] foto:', err);
+      if(window.toast) window.toast('No se pudo procesar la imagen.');
+    }
+  }
+
+  async function renderGallery(place){
+    const gallery = document.getElementById('spotGallery');
+    const photoBtn = document.getElementById('spotPhotoBtn');
+    const canUse = !!(place && place.id && !place.isGoogleResult);
+    if(photoBtn) photoBtn.style.display = canUse ? '' : 'none';
+    if(!gallery) return;
+    gallery.innerHTML = '';
+    gallery.style.display = 'none';
+    if(!canUse || !window.SpotraBackend) return;
+    const photos = await window.SpotraBackend.listPlacePhotos(place.id);
+    if(!photos.length) return;
+    gallery.style.display = 'flex';
+    const admin = window.SpotraAuth ? await window.SpotraAuth.isAdmin() : false;
+    photos.forEach(p => {
+      const thumb = document.createElement('div');
+      thumb.className = 'spot-gallery-thumb' + (p.is_cover ? ' is-cover' : '');
+      thumb.style.backgroundImage = "url('" + p.url + "')";
+      thumb.addEventListener('click', () => {
+        const cover = document.getElementById('spotCover');
+        if(cover) cover.style.backgroundImage = "url('" + p.url + "')";
+      });
+      if(admin && !p.is_cover){
+        const b = document.createElement('button');
+        b.className = 'set-cover';
+        b.textContent = 'Portada';
+        b.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const r = await window.SpotraBackend.setPlaceCover(p.id);
+          if(r.ok){ if(window.toast) window.toast('Portada actualizada.'); renderGallery(place); refresh(); }
+          else if(window.toast) window.toast('No se pudo cambiar la portada.');
+        });
+        thumb.appendChild(b);
+      }
+      gallery.appendChild(thumb);
+    });
+  }
 
   async function submitCurrentPlace(btn){
     if(!currentDetail || !window.SpotraBackend) return;
