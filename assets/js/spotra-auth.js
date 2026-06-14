@@ -251,6 +251,12 @@
 
   window.SpotraAuth = {
     applyAuthUI, ensureProfile,
+    isAdmin: async () => {
+      const c = await db(); if(!c) return false;
+      const { data } = await c.auth.getSession();
+      const s = data ? data.session : null;
+      return !!(s && s.user && s.user.app_metadata && s.user.app_metadata.role === 'admin');
+    },
     signOut: async () => { const c = await db(); if(c) await c.auth.signOut(); }
   };
 })();
