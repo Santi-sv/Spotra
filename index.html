@@ -221,6 +221,7 @@ img{max-width:100%;display:block}
 .map-stage{
   position:relative;
   min-height:680px;
+  height:calc(100dvh - 172px);
   border-radius:30px;
   border:1.5px solid rgba(116,255,58,.68);
   overflow:hidden;
@@ -1766,7 +1767,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 
 <script src="config.js"></script>
 <script src="assets/js/spotra-backend.js?v=2"></script>
-<script src="assets/js/spotra-google-map.js?v=2"></script>
+<script src="assets/js/spotra-google-map.js?v=4"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
