@@ -172,6 +172,8 @@
       zoom: cfg().DEFAULT_ZOOM || 12,
       disableDefaultUI: true,
       zoomControl: true,
+      gestureHandling: 'greedy',
+      clickableIcons: false,
       fullscreenControl: false,
       streetViewControl: false,
       mapTypeControl: false,
