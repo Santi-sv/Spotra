@@ -1774,8 +1774,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=6"></script>
-<script src="assets/js/spotra-google-map.js?v=5"></script>
+<script src="assets/js/spotra-backend.js?v=7"></script>
+<script src="assets/js/spotra-google-map.js?v=7"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
@@ -2196,10 +2196,21 @@ async function handleCreate(type){
     if(!validateForm('spotForm')) return;
     const ins = document.querySelectorAll('#spotForm input');
     const kind = document.querySelector('[data-seg="spotType"] .active').dataset.v;
-    const image = dzImage('dzSpot','assets/spots/spot-7.webp');
     const latV = document.getElementById('spotLat')?.value;
     const lngV = document.getElementById('spotLng')?.value;
     if(!latV || !lngV){ toast('Marcá la ubicación del spot en el mapa.'); return; }
+    let image = 'assets/spots/spot-7.webp';
+    const _fi = document.querySelector('#dzSpot input[type="file"]');
+    const _file = _fi && _fi.files && _fi.files[0];
+    if(_file && window.SpotraMaps?.compressImage && window.SpotraBackend?.uploadSpotImage){
+      try {
+        toast('Subiendo foto...');
+        const { blob, ext } = await window.SpotraMaps.compressImage(_file);
+        const up = await window.SpotraBackend.uploadSpotImage(blob, ext);
+        if(up && up.ok){ image = up.url; }
+        else { toast('No se pudo subir la foto; se usará una imagen por defecto.'); }
+      } catch(err){ console.warn('[SPOTRA] subir foto del spot:', err); }
+    }
     let saveMode = 'local';
     try {
       const result = await window.SpotraBackend?.createPlaceSubmission({
