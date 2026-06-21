@@ -1634,6 +1634,14 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg><input required placeholder="Ciudad y país (ej. Córdoba, Argentina)"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input placeholder="Descripción corta (obstáculos, superficie, horarios)"></div>
       </div>
+      <div style="margin-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px">
+          <span style="color:var(--muted);font-size:13px">Marcá la ubicación exacta tocando el mapa</span>
+          <button type="button" id="spotUseLoc" style="background:var(--green-hot);color:#06100a;border:0;border-radius:999px;padding:9px 14px;font-weight:800;font-size:13px;white-space:nowrap">Usar mi ubicación</button>
+        </div>
+        <div id="spotPickMap" style="height:240px;border-radius:16px;overflow:hidden;background:#0c1014"></div>
+        <input type="hidden" id="spotLat"><input type="hidden" id="spotLng">
+      </div>
       <label class="dropzone" id="dzSpot">
         <input type="file" accept="image/*">
         <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Subí una foto del spot<br><b style="color:var(--green-hot)">Tocá o arrastrá la imagen</b></div>
@@ -1767,7 +1775,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 
 <script src="config.js"></script>
 <script src="assets/js/spotra-backend.js?v=2"></script>
-<script src="assets/js/spotra-google-map.js?v=4"></script>
+<script src="assets/js/spotra-google-map.js?v=5"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
@@ -2189,6 +2197,9 @@ async function handleCreate(type){
     const ins = document.querySelectorAll('#spotForm input');
     const kind = document.querySelector('[data-seg="spotType"] .active').dataset.v;
     const image = dzImage('dzSpot','assets/spots/spot-7.webp');
+    const latV = document.getElementById('spotLat')?.value;
+    const lngV = document.getElementById('spotLng')?.value;
+    if(!latV || !lngV){ toast('Marcá la ubicación del spot en el mapa.'); return; }
     let saveMode = 'local';
     try {
       const result = await window.SpotraBackend?.createPlaceSubmission({
@@ -2196,6 +2207,8 @@ async function handleCreate(type){
         name: ins[0].value,
         locationLabel: ins[1].value,
         description: ins[2]?.value || '',
+        lat: parseFloat(latV),
+        lng: parseFloat(lngV),
         imageUrl: image
       });
       saveMode = result?.mode || 'local';
@@ -2204,6 +2217,7 @@ async function handleCreate(type){
     }
     pushToAdminQueue(kind, ins[0].value, ins[1].value, image);
     resetForm('spotForm','dzSpot'); closeModal();
+    const _la=document.getElementById('spotLat'), _lo=document.getElementById('spotLng'); if(_la)_la.value=''; if(_lo)_lo.value='';
     toast(saveMode === 'supabase'
       ? 'Spot enviado al backend. Quedó pendiente de aprobación.'
       : 'Spot enviado. Quedó en cola local hasta conectar Supabase.');
@@ -2265,5 +2279,6 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-auth.js?v=2"></script>
 <script src="assets/js/spotra-admin.js?v=2"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
+<script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
 </html>
