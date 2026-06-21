@@ -298,6 +298,19 @@
     return { ok: true };
   }
 
+  async function uploadSpotImage(blob, ext){
+    const db = await client();
+    if(!db) return { ok:false, error:'sin conexión' };
+    const { data: u } = await db.auth.getUser();
+    if(!(u && u.user)) return { ok:false, error:'iniciá sesión' };
+    const rand = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+    const path = 'submissions/' + rand + '.' + ext;
+    const up = await db.storage.from('place-images').upload(path, blob, { contentType: blob.type, upsert:false });
+    if(up.error) return { ok:false, error: up.error.message };
+    const { data: pub } = db.storage.from('place-images').getPublicUrl(path);
+    return { ok:true, url: pub.publicUrl };
+  }
+
   /* ---------- fotos de lugares (galería) ---------- */
   async function uploadPlacePhoto(placeId, blob, ext){
     const db = await client();
@@ -367,6 +380,7 @@
     listSubmissions,
     reviewSubmission,
     setSubmissionLocation,
+    uploadSpotImage,
     uploadPlacePhoto,
     listPlacePhotos,
     listPendingPhotos,
