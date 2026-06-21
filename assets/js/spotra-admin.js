@@ -29,13 +29,19 @@
     v.querySelectorAll('.approve-row, .admin-note').forEach(el => el.remove());
   }
 
+  function hasCoords(s){ return Number.isFinite(s.lat) && Number.isFinite(s.lng) && !(s.lat === 0 && s.lng === 0); }
+
   function rowHTML(s){
-    return `<div class="approve-row" data-sub-id="${esc(s.id)}">
+    const missing = !hasCoords(s);
+    return `<div class="approve-row" data-sub-id="${esc(s.id)}" data-lat="${missing ? '' : s.lat}" data-lng="${missing ? '' : s.lng}">
       <div class="thumb" style="background-image:url('${esc(s.imageUrl)}')"></div>
       <div><div class="kind">${esc(s.label)}</div><div class="name">${esc(s.name)}</div>
         <div class="ln">${PIN}${esc(s.address)}</div>
+        ${missing ? `<div class="ln loc-missing" style="color:#ff7a7a">Sin ubicación — tocá "Ubicar"</div>` : ``}
         <div class="ln">${USER}comunidad</div></div>
-      <div class="col"><button class="ok-btn">${OK}Aprobar</button><button class="no-btn">${NO}Rechazar</button></div>
+      <div class="col">
+        <button class="loc-btn" style="background:transparent;border:1px solid var(--green-hot);color:var(--green-hot);border-radius:12px;padding:8px 12px;font-weight:700;cursor:pointer">Ubicar</button>
+        <button class="ok-btn">${OK}Aprobar</button><button class="no-btn">${NO}Rechazar</button></div>
     </div>`;
   }
 
@@ -93,6 +99,10 @@
   async function handleReview(row, decision){
     const photoId = row.dataset.photoId;
     const subId = row.dataset.subId;
+    if(subId && decision === 'approved' && (!row.dataset.lat || !row.dataset.lng)){
+      notify('Marcá la ubicación con "Ubicar" antes de aprobar este spot.');
+      return;
+    }
     const name = (row.querySelector('.name') || {}).textContent || 'Elemento';
     row.querySelectorAll('button').forEach(b => b.disabled = true);
 
@@ -125,10 +135,95 @@
       : `${what} de "${name.trim()}" rechazado.`);
   }
 
-  /* Intercepta Aprobar/Rechazar de filas reales ANTES del handler legacy */
+  /* ---- Overlay para marcar/corregir la ubicación de un envío ---- */
+  const LOC_DARK = [
+    { elementType:'geometry', stylers:[{color:'#0c1014'}] },
+    { elementType:'labels.text.fill', stylers:[{color:'#5b6b63'}] },
+    { elementType:'labels.text.stroke', stylers:[{color:'#0c1014'}] },
+    { featureType:'road', elementType:'geometry', stylers:[{color:'#1a2420'}] },
+    { featureType:'water', elementType:'geometry', stylers:[{color:'#0a1f16'}] },
+    { featureType:'poi', stylers:[{visibility:'off'}] }
+  ];
+  let locMap, locMarker, locSubId = null, locLat = null, locLng = null;
+  function setLoc(lat, lng){ locLat = lat; locLng = lng; }
+  function closeLoc(){ const o = document.getElementById('admLocOverlay'); if(o) o.style.display = 'none'; }
+
+  function ensureOverlay(){
+    if(document.getElementById('admLocOverlay')) return;
+    const o = document.createElement('div');
+    o.id = 'admLocOverlay';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:18px';
+    o.innerHTML = `<div style="width:min(560px,95vw);background:#0c1014;border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px">
+        <b style="color:#fff;font-size:16px">Marcá la ubicación del spot</b>
+        <button id="admLocUse" style="background:var(--green-hot);color:#06100a;border:0;border-radius:999px;padding:9px 14px;font-weight:800;cursor:pointer">Usar mi ubicación</button>
+      </div>
+      <div id="admLocMap" style="height:340px;border-radius:14px;overflow:hidden;background:#0c1014"></div>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        <button id="admLocCancel" style="flex:1;background:transparent;border:1px solid rgba(255,255,255,.18);color:#dce3dd;border-radius:12px;padding:12px;font-weight:700;cursor:pointer">Cancelar</button>
+        <button id="admLocSave" style="flex:2;background:var(--green-hot);color:#06100a;border:0;border-radius:12px;padding:12px;font-weight:800;cursor:pointer">Guardar ubicación</button>
+      </div></div>`;
+    document.body.appendChild(o);
+    o.addEventListener('click', (e) => { if(e.target === o) closeLoc(); });
+    document.getElementById('admLocCancel').addEventListener('click', closeLoc);
+    document.getElementById('admLocUse').addEventListener('click', useMyLoc);
+    document.getElementById('admLocSave').addEventListener('click', saveLoc);
+  }
+
+  async function openLoc(subId, lat, lng){
+    ensureOverlay();
+    locSubId = subId;
+    document.getElementById('admLocOverlay').style.display = 'flex';
+    const ready = window.SpotraMaps && window.SpotraMaps.ensureApi ? await window.SpotraMaps.ensureApi() : !!(window.google && window.google.maps);
+    const el = document.getElementById('admLocMap');
+    if(!ready){ el.innerHTML = '<div style="padding:18px;color:#9aa6a0">No se pudo cargar el mapa.</div>'; return; }
+    const has = Number.isFinite(lat) && Number.isFinite(lng);
+    const center = has ? { lat, lng } : { lat:-34.9011, lng:-56.1645 };
+    if(!locMap){
+      locMap = new google.maps.Map(el, { center, zoom: has ? 16 : 13, disableDefaultUI:true, zoomControl:true, gestureHandling:'greedy', clickableIcons:false, styles: LOC_DARK });
+      locMarker = new google.maps.Marker({ position:center, map:locMap, draggable:true });
+      locMarker.addListener('dragend', () => { const p = locMarker.getPosition(); setLoc(p.lat(), p.lng()); });
+      locMap.addListener('click', (e) => { locMarker.setPosition(e.latLng); setLoc(e.latLng.lat(), e.latLng.lng()); });
+    } else {
+      locMap.setCenter(center); locMap.setZoom(has ? 16 : 13); locMarker.setPosition(center);
+    }
+    setLoc(center.lat, center.lng);
+    setTimeout(() => { google.maps.event.trigger(locMap, 'resize'); locMap.setCenter(center); }, 250);
+  }
+
+  function useMyLoc(){
+    if(!navigator.geolocation){ notify('Tu dispositivo no permite ubicación.'); return; }
+    notify('Buscando tu ubicación...');
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const ll = { lat:pos.coords.latitude, lng:pos.coords.longitude };
+      if(locMap && locMarker){ locMap.setCenter(ll); locMap.setZoom(16); locMarker.setPosition(ll); setLoc(ll.lat, ll.lng); }
+    }, () => notify('No pudimos obtener tu ubicación. Marcá el punto tocando el mapa.'), { enableHighAccuracy:true, timeout:9000 });
+  }
+
+  async function saveLoc(){
+    if(locSubId == null || locLat == null || locLng == null){ notify('Marcá un punto en el mapa.'); return; }
+    const btn = document.getElementById('admLocSave'); btn.disabled = true; btn.textContent = 'Guardando...';
+    const res = window.SpotraBackend ? await window.SpotraBackend.setSubmissionLocation(locSubId, locLat, locLng) : { ok:false };
+    btn.disabled = false; btn.textContent = 'Guardar ubicación';
+    if(!res.ok){ notify('No se pudo guardar. ' + (res.error || '')); return; }
+    const sel = (window.CSS && CSS.escape) ? CSS.escape(locSubId) : locSubId;
+    const row = document.querySelector('.approve-row[data-sub-id="' + sel + '"]');
+    if(row){ row.dataset.lat = locLat; row.dataset.lng = locLng; const m = row.querySelector('.loc-missing'); if(m) m.remove(); }
+    notify('Ubicación guardada. Ya podés aprobar el spot.');
+    closeLoc();
+  }
+
+  /* Intercepta Ubicar / Aprobar / Rechazar ANTES del handler legacy */
   document.addEventListener('click', function(e){
     const row = e.target.closest('.approve-row[data-sub-id], .approve-row[data-photo-id]');
     if(!row) return;
+    const loc = e.target.closest('.loc-btn');
+    if(loc){
+      e.preventDefault(); e.stopImmediatePropagation();
+      const lat = parseFloat(row.dataset.lat), lng = parseFloat(row.dataset.lng);
+      openLoc(row.dataset.subId, Number.isFinite(lat) ? lat : undefined, Number.isFinite(lng) ? lng : undefined);
+      return;
+    }
     const ok = e.target.closest('.ok-btn');
     const no = e.target.closest('.no-btn');
     if(!ok && !no) return;

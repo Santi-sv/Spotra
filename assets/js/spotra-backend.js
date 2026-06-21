@@ -278,8 +278,7 @@
     }));
   }
 
-  async function reviewSubmission(id, decision){
-    const db = await client();
+  async function reviewSubmission(id, decision){    const db = await client();
     if(!db) return { ok: false, error: 'sin conexión' };
     if(decision === 'approved'){
       const { error } = await db.rpc('approve_submission', { submission_id: id });
@@ -288,6 +287,14 @@
     }
     const { error } = await db.rpc('reject_submission', { submission_id: id, notes: null });
     if(error){ console.warn('[SPOTRA] reject:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function setSubmissionLocation(id, lat, lng){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.rpc('set_submission_location', { submission_id: id, lat: lat, lng: lng });
+    if(error){ console.warn('[SPOTRA] set location:', error.message); return { ok: false, error: error.message }; }
     return { ok: true };
   }
 
@@ -359,6 +366,7 @@
     createPlaceSubmission,
     listSubmissions,
     reviewSubmission,
+    setSubmissionLocation,
     uploadPlacePhoto,
     listPlacePhotos,
     listPendingPhotos,
