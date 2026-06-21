@@ -330,5 +330,5 @@
     }
   }
 
-  window.SpotraMaps = { init, refresh, setFilter };
+  window.SpotraMaps = { init, refresh, setFilter, ensureApi: loadGoogleMaps };
 })();
