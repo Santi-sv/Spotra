@@ -2172,25 +2172,6 @@ function dzImage(dzId, fallback){
   return fallback;
 }
 
-const PIN_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>';
-const USER_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>';
-const OK_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>';
-const NO_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>';
-
-function pushToAdminQueue(kind, name, location, img){
-  const row = document.createElement('div');
-  row.className = 'approve-row';
-  row.innerHTML = `<div class="thumb" style="background-image:url('${img}')"></div>
-    <div><div class="kind">${kind}</div><div class="name">${name}</div>
-    <div class="ln">${PIN_SVG}${location}</div>
-    <div class="ln">${USER_SVG}@santi.sk8</div></div>
-    <div class="col"><button class="ok-btn">${OK_SVG}Aprobar</button><button class="no-btn">${NO_SVG}Rechazar</button></div>`;
-  document.querySelector('[data-view="admin-approvals"] .sub-tabs').insertAdjacentElement('afterend', row);
-  bumpCounter(document.querySelector('[data-view="admin-approvals"] .count-chip'), 1);
-  const kpis = document.querySelectorAll('[data-view="admin-approvals"] .kpi .num');
-  bumpCounter(kind === 'Evento' ? kpis[2] : kpis[1], 1);
-}
-
 async function handleCreate(type){
   if(type === 'spot'){
     if(!validateForm('spotForm')) return;
@@ -2226,7 +2207,6 @@ async function handleCreate(type){
     } catch(error) {
       console.warn('[SPOTRA] No se pudo guardar el spot en backend:', error);
     }
-    pushToAdminQueue(kind, ins[0].value, ins[1].value, image);
     resetForm('spotForm','dzSpot'); closeModal();
     const _la=document.getElementById('spotLat'), _lo=document.getElementById('spotLng'); if(_la)_la.value=''; if(_lo)_lo.value='';
     toast(saveMode === 'supabase'
@@ -2238,7 +2218,6 @@ async function handleCreate(type){
     const f = document.getElementById('eventForm');
     const name = f.querySelector('input').value;
     const spot = f.querySelector('select').value;
-    pushToAdminQueue('Evento', name, spot + ', ' + f.querySelectorAll('input')[1].value, 'assets/banners/banner-skatepark.webp');
     resetForm('eventForm'); closeModal();
     toast('Evento enviado a aprobación del admin.');
   }
