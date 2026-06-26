@@ -242,8 +242,79 @@
     return msg;
   }
 
+  /* ---------- recuperar contraseña: pedir el enlace ---------- */
+  async function handleForgot(){
+    const emailInput = document.querySelector('#loginForm input[autocomplete="username"]')
+      || document.querySelector('#loginForm input');
+    const email = (emailInput && emailInput.value || '').trim();
+    if(!email || !email.includes('@')){
+      if(emailInput){ const fld = emailInput.closest('.field'); if(fld) fld.classList.add('error'); }
+      notify('Escribí tu email arriba y tocá de nuevo "Olvidaste tu contraseña".');
+      return;
+    }
+    const client = await db();
+    if(!client){ notify('No hay conexión con el backend.'); return; }
+    notify('Enviando enlace de recuperación...');
+    try {
+      const redirectTo = location.origin + location.pathname;
+      const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+      if(error){ notify(traducir(error.message)); return; }
+      notify('Si ese email tiene cuenta, te enviamos un enlace para recuperar la contraseña.');
+    } catch(err){
+      console.error('[SPOTRA] resetPasswordForEmail:', err);
+      notify('No se pudo enviar el enlace. Reintentá en unos segundos.');
+    }
+  }
+
+  /* ---------- recuperar contraseña: fijar la nueva ---------- */
+  function ensureRecoveryOverlay(){
+    if(document.getElementById('spotraRecovery')) return;
+    const o = document.createElement('div');
+    o.id = 'spotraRecovery';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(3,5,4,.86);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;padding:18px';
+    o.innerHTML = ''
+      + '<div style="width:min(440px,95vw);background:linear-gradient(150deg,rgba(14,20,15,.99),rgba(6,9,7,1));border:1px solid rgba(116,255,58,.4);border-radius:24px;padding:24px;box-shadow:0 40px 110px rgba(0,0,0,.7)">'
+      +   '<b style="font-family:var(--display);font-size:24px;color:#fff;display:block">Nueva contraseña</b>'
+      +   '<p style="color:var(--muted);font-size:13.5px;line-height:1.5;margin:8px 0 16px">Escribí dos veces tu nueva contraseña para tu cuenta de SPOTRA.</p>'
+      +   '<div class="field full" style="margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="recPass1" type="password" minlength="8" placeholder="Nueva contraseña (min. 8)" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
+      +   '<div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="recPass2" type="password" minlength="8" placeholder="Reingresa la contraseña" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
+      +   '<button id="recSave" style="width:100%;height:54px;margin-top:18px;border-radius:16px;font-family:var(--display);font-size:16px;font-weight:700;color:#051006;background:linear-gradient(135deg,#46f05f,#2ee84d 55%,#21c93e);box-shadow:0 12px 30px rgba(46,232,77,.3)">Guardar contraseña</button>'
+      +   '<button id="recCancel" style="width:100%;height:46px;margin-top:10px;border-radius:14px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:transparent;font-weight:700">Cancelar</button>'
+      + '</div>';
+    document.body.appendChild(o);
+    document.getElementById('recSave').addEventListener('click', submitRecovery);
+    document.getElementById('recCancel').addEventListener('click', closeRecovery);
+  }
+  function openRecovery(){ ensureRecoveryOverlay(); const o = document.getElementById('spotraRecovery'); if(o) o.style.display = 'flex'; }
+  function closeRecovery(){ const o = document.getElementById('spotraRecovery'); if(o) o.style.display = 'none'; }
+
+  async function submitRecovery(){
+    const v1 = (document.getElementById('recPass1') || {}).value || '';
+    const v2 = (document.getElementById('recPass2') || {}).value || '';
+    if(v1.length < 8){ notify('La contraseña debe tener al menos 8 caracteres.'); return; }
+    if(v1 !== v2){ notify('Las contraseñas no coinciden.'); return; }
+    const client = await db();
+    if(!client){ notify('No hay conexión con el backend.'); return; }
+    const btn = document.getElementById('recSave');
+    if(btn){ btn.disabled = true; btn.textContent = 'Guardando...'; }
+    try {
+      const { error } = await client.auth.updateUser({ password: v1 });
+      if(error){ notify(traducir(error.message)); if(btn){ btn.disabled = false; btn.textContent = 'Guardar contraseña'; } return; }
+      closeRecovery();
+      notify('Contraseña actualizada. Ya estás dentro de SPOTRA.');
+      const ui = await applyAuthUI();
+      if(window.setRole) window.setRole(roleHome(ui.profile && ui.profile.account_type));
+    } catch(err){
+      console.error('[SPOTRA] updateUser:', err);
+      notify('No se pudo guardar la contraseña. Reintentá.');
+      if(btn){ btn.disabled = false; btn.textContent = 'Guardar contraseña'; }
+    }
+  }
+
   /* ---------- intercepta los botones de auth ANTES del handler general ---------- */
   document.addEventListener('click', function(e){
+    const forgot = e.target.closest('.auth-forgot');
+    if(forgot){ e.preventDefault(); e.stopImmediatePropagation(); handleForgot(); return; }
     const loginBtn  = e.target.closest('.auth-enter[data-validate="loginForm"]');
     const signinBtn = e.target.closest('[data-validate="signinForm"]');
     const signupBtn = e.target.closest('.signup-cta[data-validate="signupForm"]');
@@ -256,6 +327,9 @@
 
   /* ---------- arranque + cambios de sesión ---------- */
   function boot(){
+    if(/type=recovery/.test(location.hash) || /[?&]type=recovery/.test(location.search)){
+      openRecovery();
+    }
     applyAuthUI().then(({ session, profile }) => {
       const h = location.hash;
       if(session && (h === '#login' || h === '#signup' || h === '' || h === '#')){
@@ -270,6 +344,7 @@
     const client = await db();
     if(client && client.auth && client.auth.onAuthStateChange){
       client.auth.onAuthStateChange((event, session) => {
+        if(event === 'PASSWORD_RECOVERY'){ openRecovery(); return; }
         applyAuthUI().then(({ profile }) => {
           if(event === 'SIGNED_IN'){
             const h = location.hash;
@@ -283,7 +358,7 @@
   })();
 
   window.SpotraAuth = {
-    applyAuthUI, ensureProfile,
+    applyAuthUI, ensureProfile, requestPasswordReset: handleForgot, openRecovery,
     isAdmin: async () => {
       const c = await db(); if(!c) return false;
       const { data } = await c.auth.getSession();
