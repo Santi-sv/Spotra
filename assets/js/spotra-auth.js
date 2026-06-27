@@ -278,12 +278,10 @@
       +   '<p style="color:var(--muted);font-size:13.5px;line-height:1.5;margin:8px 0 16px">Escribí dos veces tu nueva contraseña para tu cuenta de SPOTRA.</p>'
       +   '<div class="field full" style="margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="recPass1" type="password" minlength="8" placeholder="Nueva contraseña (min. 8)" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
       +   '<div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="recPass2" type="password" minlength="8" placeholder="Reingresa la contraseña" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
-      +   '<button id="recSave" style="width:100%;height:54px;margin-top:18px;border-radius:16px;font-family:var(--display);font-size:16px;font-weight:700;color:#051006;background:linear-gradient(135deg,#46f05f,#2ee84d 55%,#21c93e);box-shadow:0 12px 30px rgba(46,232,77,.3)">Guardar contraseña</button>'
-      +   '<button id="recCancel" style="width:100%;height:46px;margin-top:10px;border-radius:14px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:transparent;font-weight:700">Cancelar</button>'
+      +   '<button id="recSave" type="button" style="width:100%;height:54px;margin-top:18px;border-radius:16px;font-family:var(--display);font-size:16px;font-weight:700;color:#051006;background:linear-gradient(135deg,#46f05f,#2ee84d 55%,#21c93e);box-shadow:0 12px 30px rgba(46,232,77,.3)">Guardar contraseña</button>'
+      +   '<button id="recCancel" type="button" style="width:100%;height:46px;margin-top:10px;border-radius:14px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:transparent;font-weight:700">Cancelar</button>'
       + '</div>';
     document.body.appendChild(o);
-    document.getElementById('recSave').addEventListener('click', submitRecovery);
-    document.getElementById('recCancel').addEventListener('click', closeRecovery);
   }
   function openRecovery(){ ensureRecoveryOverlay(); const o = document.getElementById('spotraRecovery'); if(o) o.style.display = 'flex'; }
   function closeRecovery(){ const o = document.getElementById('spotraRecovery'); if(o) o.style.display = 'none'; }
@@ -315,6 +313,8 @@
   document.addEventListener('click', function(e){
     const forgot = e.target.closest('.auth-forgot');
     if(forgot){ e.preventDefault(); e.stopImmediatePropagation(); handleForgot(); return; }
+    if(e.target.closest('#recSave')){ e.preventDefault(); e.stopImmediatePropagation(); submitRecovery(); return; }
+    if(e.target.closest('#recCancel')){ e.preventDefault(); e.stopImmediatePropagation(); closeRecovery(); return; }
     const loginBtn  = e.target.closest('.auth-enter[data-validate="loginForm"]');
     const signinBtn = e.target.closest('[data-validate="signinForm"]');
     const signupBtn = e.target.closest('.signup-cta[data-validate="signupForm"]');
