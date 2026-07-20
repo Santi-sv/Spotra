@@ -6,6 +6,8 @@
   let initialized = false;
   let activeType = 'skatepark';
   let currentDetail = null;
+  let selectedMarker = null;
+  let userMarker = null;
 
   const darkStyle = [
     { elementType: 'geometry', stylers: [{ color: '#061009' }] },
@@ -54,14 +56,60 @@
     return canvas;
   }
 
-  function markerIcon(type){
-    const color = type === 'store' ? '#2ee84d' : type === 'event_venue' ? '#9cff48' : '#74ff3a';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="68" viewBox="0 0 52 68"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path filter="url(#g)" fill="${color}" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/><circle cx="26" cy="24" r="8.5" fill="#061009"/></svg>`;
+  /* Pines SPOTRA: verde = tiendas, blanco = skateparks, gris claro = spots, lima = eventos.
+     El seleccionado se agranda y suma halo verde. */
+  function markerIcon(type, selected){
+    const colors = {
+      store: '#2ee84d',
+      skatepark: '#ffffff',
+      street_spot: '#c3cfc6',
+      event_venue: '#9cff48'
+    };
+    const color = colors[type] || '#c3cfc6';
+    const halo = selected ? '#2ee84d' : color;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="68" viewBox="0 0 52 68"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${selected ? 7 : 5}" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path filter="url(#g)" fill="${color}" stroke="${halo}" stroke-width="${selected ? 3 : 0}" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/><circle cx="26" cy="24" r="8.5" fill="#061009"/></svg>`;
+    const size = selected ? 54 : 42;
+    const h = selected ? 71 : 55;
     return {
       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: new google.maps.Size(42, 55),
-      anchor: new google.maps.Point(21, 52)
+      scaledSize: new google.maps.Size(size, h),
+      anchor: new google.maps.Point(size / 2, h - 3)
     };
+  }
+
+  function selectMarker(marker){
+    if(selectedMarker && selectedMarker !== marker && selectedMarker.getMap()){
+      selectedMarker.setIcon(markerIcon(selectedMarker.__spotraType, false));
+      selectedMarker.setZIndex(1);
+    }
+    selectedMarker = marker || null;
+    if(marker){
+      marker.setIcon(markerIcon(marker.__spotraType, true));
+      marker.setZIndex(999);
+    }
+  }
+
+  function setRow(rowId, spanId, value){
+    const row = document.getElementById(rowId);
+    const span = document.getElementById(spanId);
+    if(!row || !span) return row;
+    if(value){ span.textContent = value; row.style.display = ''; }
+    else { row.style.display = 'none'; }
+    return row;
+  }
+
+  function normalizeUrl(url){
+    if(!url) return '';
+    return /^https?:\/\//i.test(url) ? url : 'https://' + url;
+  }
+
+  function instagramInfo(value){
+    if(!value) return null;
+    const raw = String(value).trim();
+    const m = raw.match(/instagram\.com\/([A-Za-z0-9._]+)/i);
+    const user = m ? m[1] : raw.replace(/^@/, '');
+    if(!user) return null;
+    return { label: '@' + user, url: 'https://instagram.com/' + user };
   }
 
   function updateDetail(place){
@@ -69,21 +117,34 @@
     const type = document.getElementById('spotType');
     const name = document.getElementById('spotName');
     const meta = document.getElementById('spotMeta');
-    const s1 = document.getElementById('spotS1');
-    const s2 = document.getElementById('spotS2');
-    const s3 = document.getElementById('spotS3');
     const cover = document.getElementById('spotCover');
     const directions = document.getElementById('spotDirectionsBtn');
     if(type) type.textContent = place.label || window.SpotraBackend.labelForType(place.type);
     if(name) name.textContent = place.name;
     if(meta) meta.textContent = place.meta || place.address || '';
-    if(s1) s1.textContent = place.stats?.[0] || (place.rating ? String(place.rating) : '--');
-    if(s2) s2.textContent = place.stats?.[1] || '--';
-    if(s3) s3.textContent = place.stats?.[2] || 'OK';
     if(cover){
       cover.style.background = `url('${place.imageUrl || 'assets/banners/banner-skatepark-4.webp'}') center/cover`;
       cover.style.boxShadow = 'inset 0 -90px 70px rgba(0,0,0,.82)';
     }
+    const desc = document.getElementById('spotDesc');
+    if(desc){
+      if(place.description){ desc.textContent = place.description; desc.style.display = ''; }
+      else desc.style.display = 'none';
+    }
+    setRow('spotAddressRow', 'spotAddress', place.address || '');
+    setRow('spotRatingRow', 'spotRating', place.rating ? String(place.rating) + ' · Google' : '');
+    const phoneRow = setRow('spotPhoneRow', 'spotPhone', place.contactPhone || '');
+    if(phoneRow && place.contactPhone) phoneRow.href = 'tel:' + String(place.contactPhone).replace(/[^+\d]/g, '');
+    let webLabel = '';
+    if(place.website){
+      try { webLabel = new URL(normalizeUrl(place.website)).hostname.replace(/^www\./, ''); }
+      catch { webLabel = place.website; }
+    }
+    const webRow = setRow('spotWebRow', 'spotWeb', webLabel);
+    if(webRow && place.website) webRow.href = normalizeUrl(place.website);
+    const ig = instagramInfo(place.instagram);
+    const igRow = setRow('spotIgRow', 'spotIg', ig ? ig.label : '');
+    if(igRow && ig) igRow.href = ig.url;
     if(directions){
       directions.dataset.directions = place.directionsUrl || window.SpotraBackend.googleDirectionsUrl(place);
       directions.removeAttribute('data-toast');
@@ -100,6 +161,7 @@
   function clearMarkers(){
     markers.forEach(marker => marker.setMap(null));
     markers = [];
+    selectedMarker = null;
   }
 
   async function refresh(type = activeType){
@@ -114,13 +176,18 @@
         map,
         position: { lat: place.lat, lng: place.lng },
         title: place.name,
-        icon: markerIcon(place.type)
+        icon: markerIcon(place.type, false)
       });
-      marker.addListener('click', () => updateDetail(place));
+      marker.__spotraType = place.type;
+      marker.addListener('click', () => { selectMarker(marker); updateDetail(place); });
       markers.push(marker);
       bounds.extend(marker.getPosition());
     });
-    if(places[0]) updateDetail(places[0]);
+    selectedMarker = null;
+    if(places[0]){
+      if(markers[0]) selectMarker(markers[0]);
+      updateDetail(places[0]);
+    }
     if(markers.length > 1) map.fitBounds(bounds, 64);
     else if(markers.length === 1) {
       map.setCenter(markers[0].getPosition());
@@ -184,8 +251,55 @@
     canvas.closest('.map-stage')?.classList.add('google-live');
     initialized = true;
     setupSearch();
+    addLocateControl();
     await refresh(activeType);
   }
+  function userDotIcon(){
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 46 46"><circle cx="23" cy="23" r="14" fill="rgba(46,232,77,.22)"/><circle cx="23" cy="23" r="7" fill="#2ee84d" stroke="#061009" stroke-width="2.5"/></svg>`;
+    return {
+      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      scaledSize: new google.maps.Size(46, 46),
+      anchor: new google.maps.Point(23, 23)
+    };
+  }
+
+  function locateMe(btn){
+    if(!navigator.geolocation){
+      if(window.toast) window.toast('Tu dispositivo no permite ubicación.');
+      return;
+    }
+    if(btn) btn.classList.add('loading');
+    if(window.toast) window.toast('Buscando tu ubicación...');
+    navigator.geolocation.getCurrentPosition(pos => {
+      if(btn) btn.classList.remove('loading');
+      const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if(!map) return;
+      if(!userMarker){
+        userMarker = new google.maps.Marker({ map, position: ll, icon: userDotIcon(), clickable: false, zIndex: 998, title: 'Tu ubicación' });
+      } else {
+        userMarker.setPosition(ll);
+        userMarker.setMap(map);
+      }
+      map.panTo(ll);
+      map.setZoom(15);
+    }, () => {
+      if(btn) btn.classList.remove('loading');
+      if(window.toast) window.toast('No pudimos obtener tu ubicación. Revisá los permisos.');
+    }, { enableHighAccuracy: true, timeout: 9000 });
+  }
+
+  function addLocateControl(){
+    if(document.getElementById('mapLocateBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'mapLocateBtn';
+    btn.type = 'button';
+    btn.className = 'map-locate-btn';
+    btn.setAttribute('aria-label', 'Localizarme');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+    btn.addEventListener('click', () => locateMe(btn));
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(btn);
+  }
+
 
   function setFilter(type){
     activeType = window.SpotraBackend ? window.SpotraBackend.normalizeType(type) : type;
