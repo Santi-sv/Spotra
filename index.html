@@ -264,8 +264,17 @@ img{max-width:100%;display:block}
 .spot-detail .cover{height:205px;border-radius:22px;background:url('assets/banners/banner-skatepark-4.webp') center/cover;border:1px solid rgba(255,255,255,.1);box-shadow:inset 0 -90px 70px rgba(0,0,0,.82)}
 .spot-detail h2{font-family:var(--display);font-size:32px;margin-top:18px}
 .map-sheet-handle{width:54px;height:5px;border-radius:999px;background:rgba(255,255,255,.28);margin:0 auto 16px}
-.spot-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.spot-actions{display:flex;flex-direction:column;gap:10px;margin-top:16px}
 .spot-actions .primary-btn,.spot-actions .ghost-btn{width:100%;min-height:48px}
+.spot-desc{color:var(--muted);font-size:14px;line-height:1.55;margin-top:12px}
+.spot-info{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.spot-info-row{display:flex;align-items:center;gap:10px;padding:11px 13px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text);font-size:14px;min-height:44px;text-decoration:none}
+.spot-info-row svg{width:18px;height:18px;color:var(--green-hot);flex-shrink:0}
+.spot-info-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+a.spot-info-row:active{background:rgba(46,232,77,.12)}
+.map-locate-btn{width:46px;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.16);background:rgba(5,9,6,.88);backdrop-filter:blur(12px);color:var(--green-hot);display:grid;place-items:center;margin:0 12px 12px 0;box-shadow:0 6px 18px rgba(0,0,0,.45);cursor:pointer}
+.map-locate-btn svg{width:22px;height:22px}
+.map-locate-btn.loading{opacity:.55}
 .pin.hidden-map{opacity:.12;filter:none;pointer-events:none}
 .event-row,.sponsor-mini{display:flex;align-items:center;gap:13px;padding:14px;border-radius:18px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);margin-top:12px}
 .date{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;border:1px solid rgba(116,255,58,.42);color:var(--green-hot);font-family:var(--display);font-size:23px}
@@ -453,8 +462,6 @@ img{max-width:100%;display:block}
   .spot-detail{margin:-214px 12px 0;z-index:5;position:relative;border-radius:24px;padding:16px}
   .spot-detail .cover{height:138px}
   .spot-detail h2{font-size:28px;margin-top:8px}
-  .spot-detail .mini-stats,.spot-detail .section-head,.spot-detail .event-row{display:none}
-  .spot-actions{grid-template-columns:1fr 1fr}
   .feed-media,.product-img{height:220px}
   [data-view="market"] .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   [data-view="market"] .product-img{height:160px}
@@ -1171,20 +1178,19 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="kicker" id="spotType">Skatepark</div>
           <h2 id="spotName">Parque Rivadavia</h2>
           <div class="meta" id="spotMeta">Caballito, CABA · Skatepark verificado</div>
-          <div class="mini-stats">
-            <div class="mini-stat"><b id="spotS1">86</b><span>pulse live</span></div>
-            <div class="mini-stat"><b id="spotS2">18</b><span>riders ahora</span></div>
-            <div class="mini-stat"><b id="spotS3">OK</b><span>seguridad</span></div>
-          </div>
           <div class="spot-gallery" id="spotGallery" style="display:none"></div>
-          <div class="section-head"><h3>Próximos eventos</h3></div>
-          <div class="event-row"><div class="date">24</div><div><b>Skate Jam</b><div class="meta">Best trick · 18:00</div></div></div>
-          <div class="event-row"><div class="date">31</div><div><b>BMX Street</b><div class="meta">Clasificatoria regional</div></div></div>
+          <p class="spot-desc" id="spotDesc" style="display:none"></p>
+          <div class="spot-info" id="spotInfo">
+            <div class="spot-info-row" id="spotAddressRow" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><span id="spotAddress"></span></div>
+            <div class="spot-info-row" id="spotRatingRow" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6L12 16.8 6.6 19.6l1.1-6L3.2 9.4l6.1-.8L12 3Z"/></svg><span id="spotRating"></span></div>
+            <a class="spot-info-row" id="spotPhoneRow" style="display:none" href="#"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><span id="spotPhone"></span></a>
+            <a class="spot-info-row" id="spotWebRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span id="spotWeb"></span></a>
+            <a class="spot-info-row" id="spotIgRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg><span id="spotIg"></span></a>
+          </div>
           <div class="spot-actions">
-            <button class="primary-btn" data-route="map">Ver spot <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
-            <button class="ghost-btn" id="spotDirectionsBtn" data-toast="Cuando conectemos el mapa real, abriremos indicaciones desde tu ubicación.">Cómo llegar</button>
-            <button class="primary-btn" id="spotAddBtn" style="display:none;grid-column:1/-1">Agregar a SPOTRA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
-            <button class="ghost-btn" id="spotPhotoBtn" style="display:none;grid-column:1/-1">Subir foto</button>
+            <button class="primary-btn" id="spotDirectionsBtn">Cómo llegar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+            <button class="ghost-btn" id="spotPhotoBtn" style="display:none">Subir foto</button>
+            <button class="primary-btn" id="spotAddBtn" style="display:none">Agregar a SPOTRA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
             <input type="file" id="spotPhotoInput" accept="image/*" hidden>
           </div>
         </aside>
@@ -1774,8 +1780,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=7"></script>
-<script src="assets/js/spotra-google-map.js?v=7"></script>
+<script src="assets/js/spotra-backend.js?v=8"></script>
+<script src="assets/js/spotra-google-map.js?v=8"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
@@ -1870,9 +1876,6 @@ function showSpot(id){
   document.getElementById('spotType').textContent = s.type;
   document.getElementById('spotName').textContent = s.name;
   document.getElementById('spotMeta').textContent = s.meta;
-  document.getElementById('spotS1').textContent = s.s1;
-  document.getElementById('spotS2').textContent = s.s2;
-  document.getElementById('spotS3').textContent = s.s3;
   const cover = document.getElementById('spotCover');
   cover.style.background = `url('${s.img}') center/cover`;
   cover.style.boxShadow = 'inset 0 -90px 70px rgba(0,0,0,.82)';
