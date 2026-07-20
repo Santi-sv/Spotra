@@ -167,6 +167,10 @@
       googlePlaceId: row.google_place_id || row.googlePlaceId || '',
       imageUrl: row.image_url || row.imageUrl || 'assets/banners/banner-skatepark-4.webp',
       rating: row.rating,
+      description: row.description || '',
+      contactPhone: row.contact_phone || row.contactPhone || '',
+      website: row.website || '',
+      instagram: row.instagram || '',
       stats: row.stats || ['--', '--', 'OK'],
       directionsUrl: googleDirectionsUrl({
         lat,
@@ -210,7 +214,7 @@
     if(db){
       let query = db
         .from('places')
-        .select('id, google_place_id, type, name, description, city, country_code, address, latitude, longitude, image_url, rating, updated_at')
+        .select('id, google_place_id, type, name, description, city, country_code, address, latitude, longitude, image_url, rating, contact_phone, website, instagram, updated_at')
         .eq('status', 'approved')
         .order('updated_at', { ascending: false })
         .limit(120);
