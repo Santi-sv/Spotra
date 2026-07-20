@@ -185,6 +185,7 @@
       addBtn.textContent = 'Agregar a SPOTRA';
     }
     renderGallery(place);
+    if(window.SpotraEvents) window.SpotraEvents.renderSpotEvents(place);
   }
 
   function clearMarkers(){
