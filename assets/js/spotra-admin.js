@@ -55,6 +55,27 @@
     </div>`;
   }
 
+  const CAL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>';
+
+  function fmtEventDate(d){
+    if(!(d instanceof Date) || isNaN(d)) return '';
+    const hh = String(d.getHours()).padStart(2, '0');
+    const mm = String(d.getMinutes()).padStart(2, '0');
+    return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear() + ' · ' + hh + ':' + mm;
+  }
+
+  function eventRowHTML(ev){
+    return `<div class="approve-row" data-event-id="${esc(ev.id)}">
+      <div class="thumb" style="display:grid;place-items:center;color:var(--green-hot)">${CAL}</div>
+      <div><div class="kind">Evento</div><div class="name">${esc(ev.title)}</div>
+        <div class="ln">${PIN}${esc(ev.placeName || 'Spot')}${ev.placeCity ? ' · ' + esc(ev.placeCity) : ''}</div>
+        <div class="ln">${CAL}${esc(fmtEventDate(ev.startsAt))}${ev.discipline && ev.discipline !== 'todas' ? ' · ' + esc(ev.discipline.toUpperCase()) : ''}</div>
+        ${ev.description ? `<div class="ln">${esc(ev.description)}</div>` : ``}
+        <div class="ln">${USER}comunidad</div></div>
+      <div class="col"><button class="ok-btn">${OK}Aprobar</button><button class="no-btn">${NO}Rechazar</button></div>
+    </div>`;
+  }
+
   function noteHTML(text){
     return `<div class="admin-note panel" style="margin-top:14px;color:var(--muted)">${esc(text)}</div>`;
   }
@@ -83,13 +104,16 @@
 
       const subs = (window.SpotraBackend ? await window.SpotraBackend.listSubmissions() : []) || [];
       const photos = (window.SpotraBackend ? await window.SpotraBackend.listPendingPhotos() : []) || [];
-      const total = subs.length + photos.length;
+      const events = (window.SpotraBackend && window.SpotraBackend.listPendingEvents ? await window.SpotraBackend.listPendingEvents() : []) || [];
+      const kpis = v.querySelectorAll('.kpi .num');
+      if(kpis[2]) kpis[2].textContent = events.length;
+      const total = subs.length + photos.length + events.length;
       if(!total){
         if(subTabs) subTabs.insertAdjacentHTML('afterend', noteHTML('No hay envíos pendientes por ahora.'));
         setCount(v, 0);
         return;
       }
-      if(subTabs) subTabs.insertAdjacentHTML('afterend', subs.map(rowHTML).join('') + photos.map(photoRowHTML).join(''));
+      if(subTabs) subTabs.insertAdjacentHTML('afterend', subs.map(rowHTML).join('') + events.map(eventRowHTML).join('') + photos.map(photoRowHTML).join(''));
       setCount(v, total);
     } finally {
       loading = false;
@@ -99,6 +123,7 @@
   async function handleReview(row, decision){
     const photoId = row.dataset.photoId;
     const subId = row.dataset.subId;
+    const eventId = row.dataset.eventId;
     if(subId && decision === 'approved' && (!row.dataset.lat || !row.dataset.lng)){
       notify('Marcá la ubicación con "Ubicar" antes de aprobar este spot.');
       return;
@@ -108,9 +133,9 @@
 
     let result = { ok: false };
     if(window.SpotraBackend){
-      result = photoId
-        ? await window.SpotraBackend.reviewPhoto(photoId, decision)
-        : await window.SpotraBackend.reviewSubmission(subId, decision);
+      if(eventId) result = await window.SpotraBackend.reviewEvent(eventId, decision);
+      else if(photoId) result = await window.SpotraBackend.reviewPhoto(photoId, decision);
+      else result = await window.SpotraBackend.reviewSubmission(subId, decision);
     }
 
     if(!result.ok){
@@ -129,7 +154,7 @@
       const n = Math.max(0, (parseInt((chip && chip.textContent) || '0', 10) || 0) - 1);
       setCount(v, n);
     }
-    const what = photoId ? 'Foto' : 'Lugar';
+    const what = eventId ? 'Evento' : photoId ? 'Foto' : 'Lugar';
     notify(decision === 'approved'
       ? `${what} de "${name.trim()}" aprobado.`
       : `${what} de "${name.trim()}" rechazado.`);
@@ -215,7 +240,7 @@
 
   /* Intercepta Ubicar / Aprobar / Rechazar ANTES del handler legacy */
   document.addEventListener('click', function(e){
-    const row = e.target.closest('.approve-row[data-sub-id], .approve-row[data-photo-id]');
+    const row = e.target.closest('.approve-row[data-sub-id], .approve-row[data-photo-id], .approve-row[data-event-id]');
     if(!row) return;
     const loc = e.target.closest('.loc-btn');
     if(loc){
