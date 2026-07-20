@@ -4,10 +4,11 @@
   let searchBox;
   let markers = [];
   let initialized = false;
-  let activeType = 'skatepark';
+  let activeType = 'all';
   let currentDetail = null;
   let selectedMarker = null;
   let userMarker = null;
+  let userLocation = null;
 
   const darkStyle = [
     { elementType: 'geometry', stylers: [{ color: '#061009' }] },
@@ -56,8 +57,9 @@
     return canvas;
   }
 
-  /* Pines SPOTRA: verde = tiendas, blanco = skateparks, gris claro = spots, lima = eventos.
-     El seleccionado se agranda y suma halo verde. */
+  /* Pines estilo Waze: cada tipo tiene su icono para identificarlo de un vistazo.
+     skatepark = rampa (blanco), spot = escaleras (gris), tienda = local (verde), evento = calendario (lima).
+     El seleccionado se agranda y suma anillo verde. Sin glow pesado para no ensuciar el mapa. */
   function markerIcon(type, selected){
     const colors = {
       store: '#2ee84d',
@@ -65,15 +67,22 @@
       street_spot: '#c3cfc6',
       event_venue: '#9cff48'
     };
+    const glyphs = {
+      skatepark: '<path d="M4 16h16M5 16c2-7 5-7 7-2 2 4 5 4 7-2"/>',
+      street_spot: '<path d="M4 19h4v-4h4v-4h4V7h4"/>',
+      store: '<path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/>',
+      event_venue: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>'
+    };
     const color = colors[type] || '#c3cfc6';
-    const halo = selected ? '#2ee84d' : color;
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="68" viewBox="0 0 52 68"><defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="${selected ? 7 : 5}" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs><path filter="url(#g)" fill="${color}" stroke="${halo}" stroke-width="${selected ? 3 : 0}" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/><circle cx="26" cy="24" r="8.5" fill="#061009"/></svg>`;
-    const size = selected ? 54 : 42;
-    const h = selected ? 71 : 55;
+    const glyph = glyphs[type] || glyphs.street_spot;
+    const ring = selected ? '<path fill="none" stroke="#2ee84d" stroke-width="4" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/>' : '';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="68" viewBox="0 0 52 68"><path fill="${color}" stroke="#061009" stroke-width="1.5" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/>${ring}<circle cx="26" cy="24" r="13.5" fill="#061009"/><g transform="translate(13.8,11.8) scale(1.02)" fill="none" stroke="${color}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${glyph}</g></svg>`;
+    const w = selected ? 50 : 38;
+    const h = selected ? 65 : 50;
     return {
       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: new google.maps.Size(size, h),
-      anchor: new google.maps.Point(size / 2, h - 3)
+      scaledSize: new google.maps.Size(w, h),
+      anchor: new google.maps.Point(w / 2, h - 2)
     };
   }
 
@@ -87,6 +96,22 @@
       marker.setIcon(markerIcon(marker.__spotraType, true));
       marker.setZIndex(999);
     }
+  }
+
+
+  function distanceMeters(a, b){
+    const R = 6371000;
+    const rad = x => x * Math.PI / 180;
+    const dLat = rad(b.lat - a.lat);
+    const dLng = rad(b.lng - a.lng);
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+
+  function formatDistance(m){
+    if(!Number.isFinite(m)) return '';
+    if(m < 1000) return 'a ' + Math.round(m / 10) * 10 + ' m';
+    return 'a ' + (m / 1000).toFixed(1).replace('.', ',') + ' km';
   }
 
   function setRow(rowId, spanId, value){
@@ -132,6 +157,10 @@
       else desc.style.display = 'none';
     }
     setRow('spotAddressRow', 'spotAddress', place.address || '');
+    const dist = (userLocation && Number.isFinite(place.lat) && Number.isFinite(place.lng))
+      ? formatDistance(distanceMeters(userLocation, { lat: place.lat, lng: place.lng }))
+      : '';
+    setRow('spotDistRow', 'spotDist', dist);
     setRow('spotRatingRow', 'spotRating', place.rating ? String(place.rating) + ' · Google' : '');
     const phoneRow = setRow('spotPhoneRow', 'spotPhone', place.contactPhone || '');
     if(phoneRow && place.contactPhone) phoneRow.href = 'tel:' + String(place.contactPhone).replace(/[^+\d]/g, '');
@@ -179,7 +208,7 @@
         icon: markerIcon(place.type, false)
       });
       marker.__spotraType = place.type;
-      marker.addListener('click', () => { selectMarker(marker); updateDetail(place); });
+      marker.addListener('click', () => { selectMarker(marker); map.panTo(marker.getPosition()); updateDetail(place); });
       markers.push(marker);
       bounds.extend(marker.getPosition());
     });
@@ -280,8 +309,10 @@
         userMarker.setPosition(ll);
         userMarker.setMap(map);
       }
+      userLocation = ll;
       map.panTo(ll);
       map.setZoom(15);
+      if(currentDetail) updateDetail(currentDetail);
     }, () => {
       if(btn) btn.classList.remove('loading');
       if(window.toast) window.toast('No pudimos obtener tu ubicación. Revisá los permisos.');
