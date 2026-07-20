@@ -716,6 +716,32 @@ button:active{transform:scale(.96)}
 .seg button{height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.12);color:var(--muted);font-weight:800;font-size:13.5px;background:rgba(255,255,255,.03)}
 .seg button.active{color:var(--green-hot);border-color:var(--green-hot);background:rgba(46,232,77,.1)}
 .f-label{display:block;color:var(--muted);font-size:12px;margin:12px 0 6px}
+.ev-card{display:flex;gap:12px;padding:13px;border-radius:16px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);margin-top:10px;cursor:pointer;align-items:center}
+.ev-card:active{background:rgba(46,232,77,.07)}
+.ev-datebox{width:50px;height:50px;border-radius:13px;border:1px solid rgba(46,232,77,.5);display:grid;place-items:center;flex-shrink:0;text-align:center}
+.ev-datebox b{display:block;font-family:var(--display);font-size:19px;color:var(--green-hot);line-height:1}
+.ev-datebox span{font-size:10px;color:var(--muted)}
+.ev-datebox.pend{border-color:rgba(255,210,74,.4)}
+.ev-datebox.pend b{color:#ffd24a}
+.ev-body{flex:1;min-width:0}
+.ev-body b{font-size:14.5px;display:block}
+.ev-body .meta{font-size:12px;margin-top:2px}
+.ev-chips{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+.ev-chip{padding:3px 9px;border-radius:999px;font-size:10.5px;border:1px solid rgba(255,255,255,.14);color:var(--muted)}
+.ev-chip.on{background:rgba(46,232,77,.14);color:var(--green-hot);border-color:transparent}
+.ev-chip.warn{background:rgba(255,210,74,.12);color:#ffd24a;border-color:transparent}
+.ev-chip.off{background:rgba(255,122,122,.12);color:#ff7a7a;border-color:transparent}
+.ev-info-row{display:flex;align-items:center;gap:9px;padding:10px 12px;border-radius:13px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);margin-top:8px;font-size:13px}
+.ev-info-row svg{width:16px;height:16px;color:var(--green-hot);flex-shrink:0}
+.ev-info-row.rain{border-color:rgba(255,210,74,.35);background:rgba(255,210,74,.07);color:#ffd24a}
+.ev-info-row.rain svg{color:#ffd24a}
+.ev-cats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.ev-cat{padding:5px 12px;border-radius:999px;border:1px solid rgba(46,232,77,.5);color:var(--green-hot);font-size:12px}
+.ev-actions-2{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:9px}
+.ev-actions-2 .ghost-btn{min-height:46px;font-size:13.5px}
+.forum-preview-row{display:flex;gap:12px;align-items:flex-start;padding:13px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);margin-top:10px}
+.forum-preview-row .avatar{width:38px;height:38px;border-radius:12px;flex-shrink:0}
+.forum-preview-row p{font-size:13px;color:#c7d2c9;margin-top:3px;line-height:1.45}
 
 /* Menú crear */
 .create-menu{display:grid;gap:11px;margin-top:14px}
@@ -1011,6 +1037,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div data-role-nav="rider">
         <button class="nav-btn active" data-route="home">Inicio</button>
         <button class="nav-btn" data-route="map">Mapa</button>
+        <button class="nav-btn" data-route="events">Eventos</button>
         <button class="nav-btn" data-route="community">Comunidad</button>
         <button class="nav-btn" data-route="market">Market</button>
         <button class="nav-btn" data-route="sponsors">Sponsors</button>
@@ -1139,8 +1166,12 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         </article>
       </div>
 
-      <div class="section-head"><h2>Próximos eventos</h2><button data-route="map">Ver mapa</button></div>
+      <div class="section-head"><h2>Próximos eventos</h2><button data-route="events">Ver todos</button></div>
       <div id="homeEvents"><div class="meta">Cargando eventos...</div></div>
+
+      <div class="section-head"><h2>Foro</h2><button data-route="community">Ver foro</button></div>
+      <div class="forum-preview-row"><div class="avatar" style="background-image:url('assets/eventos/skater.webp')"></div><div><b style="font-size:13.5px">@lucas.flips</b><p>Sesión brutal hoy en el bowl. ¿Alguien se suma mañana a la tarde?</p></div></div>
+      <div class="forum-preview-row"><div class="avatar" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><b style="font-size:13.5px">@maru.bmx</b><p>Vendo aro trasero 36h casi nuevo. Detalles en el market.</p></div></div>
 
       <div class="section-head"><h2>Spots recomendados</h2><button data-route="map">Ver mapa</button></div>
       <div class="spot-list">
@@ -1204,6 +1235,15 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           </div>
         </aside>
       </div>
+    </section>
+
+    <section class="view" data-view="events">
+      <div class="kicker">Competencias y juntadas</div>
+      <div class="section-head" style="margin-top:2px"><h2 style="font-family:var(--display);font-size:30px;text-transform:none;letter-spacing:.02em">Eventos</h2></div>
+      <div class="tabs" id="eventsTabs" style="margin-top:10px"><button class="active" data-ev-tab="upcoming">Próximos</button><button data-ev-tab="mine">Mis eventos</button></div>
+      <div class="filter-row" id="eventsDisc" style="margin-top:2px"><button class="active" data-ev-disc="all">Todas</button><button data-ev-disc="skate">Skate</button><button data-ev-disc="bmx">BMX</button><button data-ev-disc="rollers">Rollers</button></div>
+      <div id="eventsList"><div class="meta" style="margin-top:14px">Cargando eventos...</div></div>
+      <div id="eventDetail" style="display:none"></div>
     </section>
 
     <section class="view" data-view="community">
@@ -1602,7 +1642,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   <nav class="bottom-nav" data-role-nav="rider" aria-label="Navegación rider">
     <button class="active" data-route="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v9h12v-9"/></svg>Inicio</button>
     <button data-route="map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Mapa</button>
-    <button data-route="community"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>Foro</button>
+    <button data-route="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>Eventos</button>
     <button data-route="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
     <button data-route="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
   </nav>
@@ -1686,15 +1726,30 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <span class="f-label">Nombre del evento</span>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input required id="eventTitle" placeholder="Best Trick Sábado"></div>
         <span class="f-label">Spot donde se hace</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><select required id="eventPlaceSelect"><option value="">Cargando spots...</option></select></div>
+        <input type="hidden" id="eventPlaceId">
+        <button type="button" id="eventPlacePick" class="field full" style="width:100%;text-align:left;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><span id="eventPlaceLabel" style="color:var(--muted)">Elegir spot en el mapa</span></button>
         <span class="f-label">Disciplina</span>
         <div class="seg" data-seg="eventDiscipline" style="grid-template-columns:repeat(4,1fr);margin-top:0"><button type="button" class="active" data-v="todas">Todas</button><button type="button" data-v="skate">Skate</button><button type="button" data-v="bmx">BMX</button><button type="button" data-v="rollers">Rollers</button></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <div><span class="f-label">Fecha</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input required id="eventDate" type="date"></div></div>
           <div><span class="f-label">Hora</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><input required id="eventTime" type="time" value="16:00"></div></div>
         </div>
-        <span class="f-label">Descripción (opcional)</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg><input id="eventDesc" placeholder="Modalidad, premios, inscripción..."></div>
+        <span class="f-label">Info del evento (opcional)</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg><input id="eventDesc" placeholder="Reglas, protecciones, qué hay en el spot..."></div>
+        <div class="kicker" style="font-size:10px;margin-top:18px">Para competencias <span style="color:var(--muted);letter-spacing:0;text-transform:none">(todo opcional)</span></div>
+        <span class="f-label">Categorías (separadas por coma)</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l8-8 8 8-8 8-8-8Z"/></svg><input id="eventCategories" placeholder="Amateur, Pro, Femenino, Sub-16"></div>
+        <span class="f-label">Inscripción</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16v8H4z"/><path d="M4 12h16"/></svg><input id="eventRegInfo" placeholder="Gratis / $200 en puerta"></div>
+        <span class="f-label">Premios</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input id="eventPrizes" placeholder="$5.000 + productos de tiendas"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><span class="f-label">Cupo máximo</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/></svg><input id="eventCapacity" type="number" min="1" placeholder="Sin cupo"></div></div>
+          <div><span class="f-label">Inscripción hasta</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input id="eventCloses" type="date"></div></div>
+        </div>
+        <span class="f-label">WhatsApp del organizador</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input id="eventContact" type="tel" placeholder="+598 99 123 456"></div>
+        <label style="display:flex;align-items:center;gap:10px;margin-top:14px;cursor:pointer;font-size:14px"><input type="checkbox" id="eventRain" style="width:19px;height:19px;accent-color:var(--green-hot)">Si llueve se reprograma</label>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="event">Enviar a aprobación</button>
       <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px">Un admin lo revisa antes de publicarse</div>
@@ -1798,7 +1853,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=9"></script>
+<script src="assets/js/spotra-backend.js?v=10"></script>
 <script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -1944,6 +1999,7 @@ document.addEventListener('click', event => {
   const mapFilter = event.target.closest('[data-map-filter]');
   if(mapFilter){
     const f = mapFilter.dataset.mapFilter;
+    if(f === 'event'){ setRoute('events'); return; }
     mapFilter.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
     mapFilter.classList.add('active');
     document.querySelectorAll('.pin[data-map-cat]').forEach(p => p.classList.toggle('hidden-map', f !== 'all' && p.dataset.mapCat !== f));
@@ -2286,7 +2342,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=5"></script>
 <script src="assets/js/spotra-admin.js?v=7"></script>
-<script src="assets/js/spotra-events.js?v=1"></script>
+<script src="assets/js/spotra-events.js?v=2"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
