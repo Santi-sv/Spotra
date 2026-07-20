@@ -375,6 +375,81 @@
     return { ok:true };
   }
 
+
+  /* ===== Eventos ===== */
+  function normalizeEvent(row){
+    const place = row.places || {};
+    return {
+      id: row.id,
+      placeId: row.place_id,
+      title: row.title,
+      description: row.description || '',
+      startsAt: row.starts_at ? new Date(row.starts_at) : null,
+      discipline: row.discipline || 'todas',
+      imageUrl: row.image_url || '',
+      placeName: place.name || '',
+      placeCity: place.city || '',
+      placeAddress: place.address || '',
+      createdAt: row.created_at || null
+    };
+  }
+
+  async function listEvents(options = {}){
+    const db = await client();
+    if(!db) return [];
+    let query = db
+      .from('events')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, places(name, city, address)')
+      .eq('status', 'approved')
+      .gte('starts_at', new Date(Date.now() - 3 * 3600 * 1000).toISOString())
+      .order('starts_at', { ascending: true })
+      .limit(options.limit || 30);
+    if(options.placeId) query = query.eq('place_id', options.placeId);
+    const { data, error } = await query;
+    if(error){ console.warn('[SPOTRA] listEvents:', error.message); return []; }
+    return (data || []).map(normalizeEvent);
+  }
+
+  async function createEvent(payload){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    const { error } = await db.from('events').insert({
+      place_id: payload.placeId,
+      title: payload.title,
+      description: payload.description || null,
+      starts_at: payload.startsAt,
+      discipline: payload.discipline || 'todas',
+      organizer_id: authData.user.id,
+      status: 'pending'
+    });
+    if(error){ console.warn('[SPOTRA] createEvent:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function listPendingEvents(){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('events')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, places(name, city, address)')
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    if(error){ console.warn('[SPOTRA] listPendingEvents:', error.message); return []; }
+    return (data || []).map(normalizeEvent);
+  }
+
+  async function reviewEvent(id, decision){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const status = decision === 'approved' ? 'approved' : 'rejected';
+    const { error } = await db.from('events').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+    if(error){ console.warn('[SPOTRA] reviewEvent:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -393,6 +468,10 @@
     normalizeType,
     labelForType,
     googleDirectionsUrl,
+    listEvents,
+    createEvent,
+    listPendingEvents,
+    reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
   };
 })();
