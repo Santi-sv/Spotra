@@ -390,6 +390,18 @@
       placeName: place.name || '',
       placeCity: place.city || '',
       placeAddress: place.address || '',
+      placeLat: Number(place.latitude),
+      placeLng: Number(place.longitude),
+      registrationInfo: row.registration_info || '',
+      prizes: row.prizes || '',
+      categories: Array.isArray(row.categories) ? row.categories : [],
+      capacity: row.capacity || null,
+      closesAt: row.closes_at ? new Date(row.closes_at) : null,
+      contactPhone: row.contact_phone || '',
+      rainReschedule: !!row.rain_reschedule,
+      organizerId: row.organizer_id || null,
+      status: row.status || 'approved',
+      regCount: Array.isArray(row.event_registrations) && row.event_registrations[0] ? Number(row.event_registrations[0].count) || 0 : 0,
       createdAt: row.created_at || null
     };
   }
@@ -399,7 +411,7 @@
     if(!db) return [];
     let query = db
       .from('events')
-      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, places(name, city, address)')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, places(name, city, address, latitude, longitude), event_registrations(count)')
       .eq('status', 'approved')
       .gte('starts_at', new Date(Date.now() - 3 * 3600 * 1000).toISOString())
       .order('starts_at', { ascending: true })
@@ -421,6 +433,13 @@
       description: payload.description || null,
       starts_at: payload.startsAt,
       discipline: payload.discipline || 'todas',
+      registration_info: payload.registrationInfo || null,
+      prizes: payload.prizes || null,
+      categories: Array.isArray(payload.categories) ? payload.categories : [],
+      capacity: payload.capacity || null,
+      closes_at: payload.closesAt || null,
+      contact_phone: payload.contactPhone || null,
+      rain_reschedule: !!payload.rainReschedule,
       organizer_id: authData.user.id,
       status: 'pending'
     });
@@ -433,7 +452,7 @@
     if(!db) return [];
     const { data, error } = await db
       .from('events')
-      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, places(name, city, address)')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, places(name, city, address, latitude, longitude), event_registrations(count)')
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(100);
@@ -448,6 +467,89 @@
     const { error } = await db.from('events').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
     if(error){ console.warn('[SPOTRA] reviewEvent:', error.message); return { ok: false, error: error.message }; }
     return { ok: true };
+  }
+
+
+  async function getUserId(){
+    const db = await client();
+    if(!db) return null;
+    const { data } = await db.auth.getUser();
+    return data?.user?.id || null;
+  }
+
+  async function registerToEvent(eventId, categories){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    let username = '';
+    const { data: prof } = await db.from('profiles').select('username, full_name').eq('id', authData.user.id).single();
+    if(prof) username = prof.username || prof.full_name || '';
+    const { error } = await db.from('event_registrations').insert({
+      event_id: eventId,
+      profile_id: authData.user.id,
+      username,
+      categories: Array.isArray(categories) ? categories : []
+    });
+    if(error){
+      if(String(error.code) === '23505') return { ok: false, error: 'ya-inscripto' };
+      console.warn('[SPOTRA] registerToEvent:', error.message);
+      return { ok: false, error: error.message };
+    }
+    return { ok: true };
+  }
+
+  async function unregisterFromEvent(eventId){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    const { error } = await db.from('event_registrations').delete().eq('event_id', eventId).eq('profile_id', authData.user.id);
+    if(error){ console.warn('[SPOTRA] unregister:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function listMyRegistrations(){
+    const db = await client();
+    if(!db) return [];
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return [];
+    const { data, error } = await db
+      .from('event_registrations')
+      .select('event_id, categories, events(id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, status, places(name, city, address, latitude, longitude), event_registrations(count))')
+      .eq('profile_id', authData.user.id);
+    if(error){ console.warn('[SPOTRA] listMyRegistrations:', error.message); return []; }
+    return (data || [])
+      .filter(r => r.events)
+      .map(r => ({ myCategories: Array.isArray(r.categories) ? r.categories : [], event: normalizeEvent(r.events) }));
+  }
+
+  async function listMyOrganizedEvents(){
+    const db = await client();
+    if(!db) return [];
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return [];
+    const { data, error } = await db
+      .from('events')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, status, places(name, city, address, latitude, longitude), event_registrations(count)')
+      .eq('organizer_id', authData.user.id)
+      .order('starts_at', { ascending: true })
+      .limit(50);
+    if(error){ console.warn('[SPOTRA] listMyOrganizedEvents:', error.message); return []; }
+    return (data || []).map(normalizeEvent);
+  }
+
+  async function listEventRegistrations(eventId){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('event_registrations')
+      .select('username, categories, created_at')
+      .eq('event_id', eventId)
+      .order('created_at', { ascending: true })
+      .limit(300);
+    if(error){ console.warn('[SPOTRA] listEventRegistrations:', error.message); return []; }
+    return data || [];
   }
 
   window.SpotraBackend = {
@@ -470,6 +572,12 @@
     googleDirectionsUrl,
     listEvents,
     createEvent,
+    getUserId,
+    registerToEvent,
+    unregisterFromEvent,
+    listMyRegistrations,
+    listMyOrganizedEvents,
+    listEventRegistrations,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
