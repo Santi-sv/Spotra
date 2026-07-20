@@ -715,6 +715,7 @@ button:active{transform:scale(.96)}
 .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:12px}
 .seg button{height:48px;border-radius:14px;border:1px solid rgba(255,255,255,.12);color:var(--muted);font-weight:800;font-size:13.5px;background:rgba(255,255,255,.03)}
 .seg button.active{color:var(--green-hot);border-color:var(--green-hot);background:rgba(46,232,77,.1)}
+.f-label{display:block;color:var(--muted);font-size:12px;margin:12px 0 6px}
 
 /* Menú crear */
 .create-menu{display:grid;gap:11px;margin-top:14px}
@@ -1138,6 +1139,9 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         </article>
       </div>
 
+      <div class="section-head"><h2>Próximos eventos</h2><button data-route="map">Ver mapa</button></div>
+      <div id="homeEvents"><div class="meta">Cargando eventos...</div></div>
+
       <div class="section-head"><h2>Spots recomendados</h2><button data-route="map">Ver mapa</button></div>
       <div class="spot-list">
         <article class="spot-card" style="background-image:url('assets/spots/spot-5.webp')"><h3>Plaza Italia</h3><div class="meta">Buenos Aires · 1.2 km</div><div class="tags"><span>Street</span><span>Manual</span><span>Gap</span></div></article>
@@ -1190,6 +1194,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <a class="spot-info-row" id="spotWebRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span id="spotWeb"></span></a>
             <a class="spot-info-row" id="spotIgRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg><span id="spotIg"></span></a>
           </div>
+          <div class="section-head" id="spotEventsHead" style="display:none"><h3>Próximos eventos</h3></div>
+          <div id="spotEvents"></div>
           <div class="spot-actions">
             <button class="primary-btn" id="spotDirectionsBtn">Cómo llegar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
             <button class="ghost-btn" id="spotPhotoBtn" style="display:none">Subir foto</button>
@@ -1676,13 +1682,22 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <!-- EVENTO -->
     <div class="modal-form" data-form="event">
       <p class="hint">El evento queda <b style="color:#ffd24a">pendiente de aprobación</b> y se publica en el spot elegido.</p>
-      <div class="form-grid" id="eventForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input required placeholder="Nombre del evento (ej. Best Trick Sábado)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><select required><option value="">Spot donde se hace</option><option>Parque Rivadavia</option><option>Plaza Italia</option><option>Bowl Palermo</option><option>Rambla Sur</option></select></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input required type="date"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><input required type="time" value="16:00"></div>
+      <div id="eventForm">
+        <span class="f-label">Nombre del evento</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input required id="eventTitle" placeholder="Best Trick Sábado"></div>
+        <span class="f-label">Spot donde se hace</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><select required id="eventPlaceSelect"><option value="">Cargando spots...</option></select></div>
+        <span class="f-label">Disciplina</span>
+        <div class="seg" data-seg="eventDiscipline" style="grid-template-columns:repeat(4,1fr);margin-top:0"><button type="button" class="active" data-v="todas">Todas</button><button type="button" data-v="skate">Skate</button><button type="button" data-v="bmx">BMX</button><button type="button" data-v="rollers">Rollers</button></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><span class="f-label">Fecha</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input required id="eventDate" type="date"></div></div>
+          <div><span class="f-label">Hora</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><input required id="eventTime" type="time" value="16:00"></div></div>
+        </div>
+        <span class="f-label">Descripción (opcional)</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg><input id="eventDesc" placeholder="Modalidad, premios, inscripción..."></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="event">Enviar a aprobación</button>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:10px">Un admin lo revisa antes de publicarse</div>
     </div>
 
     <!-- PRODUCTO -->
@@ -1783,8 +1798,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=8"></script>
-<script src="assets/js/spotra-google-map.js?v=10"></script>
+<script src="assets/js/spotra-backend.js?v=9"></script>
+<script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'home', brand:'brand-home', admin:'admin-approvals' };
@@ -2221,11 +2236,8 @@ async function handleCreate(type){
   }
   if(type === 'event'){
     if(!validateForm('eventForm')) return;
-    const f = document.getElementById('eventForm');
-    const name = f.querySelector('input').value;
-    const spot = f.querySelector('select').value;
-    resetForm('eventForm'); closeModal();
-    toast('Evento enviado a aprobación del admin.');
+    if(window.SpotraEvents) window.SpotraEvents.submitFromForm();
+    else toast('El módulo de eventos no cargó. Recargá la app.');
   }
   if(type === 'post'){
     if(!validateForm('postForm')) return;
@@ -2273,7 +2285,8 @@ window.addEventListener('popstate', () => setRoute(location.hash.replace('#','')
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=5"></script>
-<script src="assets/js/spotra-admin.js?v=6"></script>
+<script src="assets/js/spotra-admin.js?v=7"></script>
+<script src="assets/js/spotra-events.js?v=1"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
