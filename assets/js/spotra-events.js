@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v2)
+/* SPOTRA · Eventos (v3)
+   - v3: el organizador puede editar y cancelar sus eventos.
    - Sección Eventos: Próximos / Mis eventos, filtro por disciplina, detalle con inscripción.
    - Inscripción con categorías (multi), cupo, cierre, contacto del organizador.
    - Organizador: estado de sus eventos + lista de inscriptos por categoría.
@@ -8,7 +9,7 @@
   const DAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
   const MONTHS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
   const DISC_LABEL = { todas: '', skate: 'Skate', bmx: 'BMX', rollers: 'Rollers' };
-  const STATUS_LABEL = { pending: 'Pendiente de aprobación', approved: 'Aprobado', rejected: 'Rechazado', archived: 'Archivado' };
+  const STATUS_LABEL = { pending: 'Pendiente de aprobación', approved: 'Aprobado', rejected: 'Rechazado', archived: 'Cancelado' };
 
   let uid = null;
   let myRegs = {};            /* eventId -> [categorias] */
@@ -17,6 +18,7 @@
   let activeDisc = 'all';
   let currentEvent = null;
   let pickedPlace = null;
+  let editingId = null;
 
   function toast(m){ (window.toast || function(x){ console.log('[SPOTRA]', x); })(m); }
   function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -184,7 +186,15 @@
 
     let action = '';
     if(isOrganizer){
-      action = `<button class="primary-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:14px">Ver inscriptos (${ev.regCount})</button>`;
+      if(ev.status === 'archived'){
+        action = `<div class="ev-info-row off" style="border-color:rgba(255,122,122,.4);background:rgba(255,122,122,.08);color:#ff7a7a">Evento cancelado</div>
+          <button class="primary-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:9px">Ver inscriptos (${ev.regCount})</button>`;
+      } else {
+        action = `<button class="primary-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:14px">Ver inscriptos (${ev.regCount})</button>
+          <div class="ev-actions-2"><button class="ghost-btn" data-ev-edit="${esc(ev.id)}">Editar</button><button class="ghost-btn" data-ev-cancelev="${esc(ev.id)}" style="color:#ff7a7a;border-color:rgba(255,122,122,.4)">Cancelar evento</button></div>`;
+      }
+    } else if(ev.status === 'archived'){
+      action = `<div class="ev-info-row off" style="border-color:rgba(255,122,122,.4);background:rgba(255,122,122,.08);color:#ff7a7a">Este evento fue cancelado por el organizador.</div>`;
     } else if(mine){
       action = `<div class="ev-info-row" style="border-color:rgba(46,232,77,.5);color:var(--green-hot)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M4 12l5 5L20 6"/></svg>Inscripto${mine.length ? ' en: ' + esc(mine.join(', ')) : ''}</div>
         <button class="ghost-btn" data-ev-cancel="${esc(ev.id)}" style="width:100%;min-height:48px;margin-top:9px">Cancelar inscripción</button>`;
@@ -446,6 +456,53 @@
     });
   }
 
+
+  /* ================= Editar / cancelar (organizador) ================= */
+  function pad2(n){ return String(n).padStart(2, '0'); }
+
+  function openEdit(evd){
+    editingId = evd.id;
+    const set = (id, val) => { const el = document.getElementById(id); if(el) el.value = val == null ? '' : val; };
+    set('eventTitle', evd.title);
+    set('eventPlaceId', evd.placeId);
+    const label = document.getElementById('eventPlaceLabel');
+    if(label){ label.textContent = evd.placeName + (evd.placeCity ? ' · ' + evd.placeCity : ''); label.style.color = 'var(--text)'; }
+    if(evd.startsAt){
+      set('eventDate', `${evd.startsAt.getFullYear()}-${pad2(evd.startsAt.getMonth() + 1)}-${pad2(evd.startsAt.getDate())}`);
+      set('eventTime', `${pad2(evd.startsAt.getHours())}:${pad2(evd.startsAt.getMinutes())}`);
+    }
+    set('eventDesc', evd.description);
+    set('eventCategories', evd.categories.join(', '));
+    set('eventRegInfo', evd.registrationInfo);
+    set('eventPrizes', evd.prizes);
+    set('eventCapacity', evd.capacity || '');
+    if(evd.closesAt) set('eventCloses', `${evd.closesAt.getFullYear()}-${pad2(evd.closesAt.getMonth() + 1)}-${pad2(evd.closesAt.getDate())}`);
+    else set('eventCloses', '');
+    set('eventContact', evd.contactPhone);
+    const rain = document.getElementById('eventRain'); if(rain) rain.checked = !!evd.rainReschedule;
+    document.querySelectorAll('[data-seg="eventDiscipline"] button').forEach(b => b.classList.toggle('active', b.dataset.v === (evd.discipline || 'todas')));
+    const btn = document.querySelector('[data-submit="event"]');
+    if(btn) btn.textContent = 'Guardar cambios';
+    if(typeof window.openModal === 'function') window.openModal('event');
+  }
+
+  function resetEditState(){
+    editingId = null;
+    const btn = document.querySelector('[data-submit="event"]');
+    if(btn && btn.textContent !== 'Enviar a aprobación') btn.textContent = 'Enviar a aprobación';
+  }
+
+  async function doCancelEvent(evd){
+    if(!window.confirm('¿Cancelar "' + evd.title + '"? Los inscriptos lo verán como cancelado. Esto no se puede deshacer.')) return;
+    toast('Cancelando evento...');
+    const res = await B().organizerCancelEvent(evd.id);
+    if(!res.ok){ toast('No se pudo cancelar. Probá de nuevo.'); return; }
+    evd.status = 'archived';
+    toast('Evento cancelado.');
+    if(currentEvent && currentEvent.id === evd.id) openDetail(evd.id);
+    renderHomeEvents();
+  }
+
   /* ================= Crear evento ================= */
   async function submitFromForm(){
     const g = id => (document.getElementById(id) || {}).value || '';
@@ -482,12 +539,14 @@
       rainReschedule: !!(document.getElementById('eventRain') || {}).checked,
       startsAt: startsAt.toISOString()
     };
+    const isEdit = !!editingId;
+    if(isEdit) payload.id = editingId;
     const btn = document.querySelector('[data-submit="event"]');
     if(btn){ btn.disabled = true; btn.textContent = 'Enviando...'; }
-    const result = B() ? await B().createEvent(payload) : { ok: false };
+    const result = B() ? (isEdit ? await B().organizerUpdateEvent(payload) : await B().createEvent(payload)) : { ok: false };
     if(btn){ btn.disabled = false; btn.textContent = 'Enviar a aprobación'; }
     if(!result.ok){
-      toast(result.error === 'auth' ? 'Iniciá sesión para crear un evento.' : 'No se pudo enviar el evento. Probá de nuevo.');
+      toast(result.error === 'auth' ? 'Iniciá sesión para crear un evento.' : 'No se pudo guardar el evento. Probá de nuevo.');
       return;
     }
     if(typeof window.resetForm === 'function') window.resetForm('eventForm');
@@ -497,7 +556,14 @@
     document.querySelectorAll('[data-seg="eventDiscipline"] button').forEach((b, i) => b.classList.toggle('active', i === 0));
     pickedPlace = null;
     if(typeof window.closeModal === 'function') window.closeModal();
-    toast('Evento enviado. Queda pendiente de aprobación.');
+    toast(isEdit ? 'Cambios guardados.' : 'Evento enviado. Queda pendiente de aprobación.');
+    if(isEdit){
+      const id = editingId;
+      resetEditState();
+      upcomingCache = [];
+      if(currentEvent && currentEvent.id === id){ await refreshState(); openDetail(id); }
+      renderHomeEvents();
+    }
     if(activeTab === 'mine') renderMine();
   }
 
@@ -560,6 +626,11 @@
     if(can && currentEvent){ doCancel(currentEvent); return; }
     const att = e.target.closest('[data-ev-attendlist]');
     if(att && currentEvent){ openAttendList(currentEvent); return; }
+    const edt = e.target.closest('[data-ev-edit]');
+    if(edt && currentEvent){ openEdit(currentEvent); return; }
+    const cev = e.target.closest('[data-ev-cancelev]');
+    if(cev && currentEvent){ doCancelEvent(currentEvent); return; }
+    if(e.target.closest('[data-open-modal]') || e.target.closest('[data-close-modal]')){ resetEditState(); }
     if(e.target.closest('#eventPlacePick')){ e.preventDefault(); openSpotPicker(); return; }
   });
 
