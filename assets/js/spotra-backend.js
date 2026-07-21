@@ -878,6 +878,33 @@
     return { ok: true, url: pub.publicUrl };
   }
 
+
+  /* ===== Push ===== */
+  async function savePushSubscription(sub){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    const json = sub.toJSON ? sub.toJSON() : sub;
+    const { error } = await db.from('push_subscriptions').upsert({
+      profile_id: authData.user.id,
+      endpoint: json.endpoint,
+      p256dh: json.keys && json.keys.p256dh,
+      auth: json.keys && json.keys.auth,
+      user_agent: navigator.userAgent.slice(0, 200)
+    }, { onConflict: 'endpoint' });
+    if(error){ console.warn('[SPOTRA] savePushSubscription:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function deletePushSubscription(endpoint){
+    const db = await client();
+    if(!db) return { ok: false };
+    const { error } = await db.from('push_subscriptions').delete().eq('endpoint', endpoint);
+    if(error) return { ok: false, error: error.message };
+    return { ok: true };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -925,6 +952,8 @@
     addPostComment,
     deletePostComment,
     uploadPostImage,
+    savePushSubscription,
+    deletePushSubscription,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
