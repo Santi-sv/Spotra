@@ -552,6 +552,37 @@
     return data || [];
   }
 
+
+  async function organizerUpdateEvent(payload){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.rpc('organizer_update_event', {
+      p_event_id: payload.id,
+      p_title: payload.title,
+      p_starts_at: payload.startsAt,
+      p_description: payload.description || null,
+      p_discipline: payload.discipline || 'todas',
+      p_categories: Array.isArray(payload.categories) ? payload.categories : [],
+      p_registration_info: payload.registrationInfo || null,
+      p_prizes: payload.prizes || null,
+      p_capacity: payload.capacity || null,
+      p_closes_at: payload.closesAt || null,
+      p_contact_phone: payload.contactPhone || null,
+      p_rain: !!payload.rainReschedule,
+      p_place_id: payload.placeId || null
+    });
+    if(error){ console.warn('[SPOTRA] organizerUpdateEvent:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function organizerCancelEvent(id){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.rpc('organizer_cancel_event', { p_event_id: id });
+    if(error){ console.warn('[SPOTRA] organizerCancelEvent:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -578,6 +609,8 @@
     listMyRegistrations,
     listMyOrganizedEvents,
     listEventRegistrations,
+    organizerUpdateEvent,
+    organizerCancelEvent,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
