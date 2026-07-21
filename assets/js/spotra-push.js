@@ -1,4 +1,5 @@
-/* SPOTRA · Notificaciones push (v2)
+/* SPOTRA · Notificaciones push (v3)
+   - v3: el control vive en Perfil > Configuración (siempre visible).
    - v2: el botón se muestra siempre primero; la consulta al service worker no bloquea la interfaz.
    - Solo funciona con la app INSTALADA en el celular (requisito de iOS).
    - Pide permiso con un toque del usuario, se suscribe y guarda la suscripción en Supabase.
@@ -81,10 +82,9 @@
     const sub = await currentSubscription();
     const btn = document.getElementById('pushBtn');
     if(btn){
-      btn.textContent = sub ? 'Desactivar notificaciones' : 'Activar notificaciones';
+      const label = btn.querySelector('[data-push-label]') || btn;
+      label.textContent = sub ? 'Desactivar notificaciones' : 'Activar notificaciones';
       btn.dataset.on = sub ? '1' : '';
-      btn.classList.toggle('primary-btn', !sub);
-      btn.classList.toggle('ghost-btn', !!sub);
     }
   }
 
@@ -132,7 +132,7 @@
   document.addEventListener('click', e => {
     const btn = e.target.closest('#pushBtn');
     if(btn){ btn.dataset.on ? disable() : enable(); return; }
-    if(e.target.closest('.notif-wrap')) setTimeout(refreshUI, 60);
+    if(e.target.closest('[data-open-modal="settings"]') || e.target.closest('.notif-wrap')) setTimeout(refreshUI, 120);
   });
 
   function boot(){
