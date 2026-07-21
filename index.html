@@ -760,6 +760,16 @@ button:active{transform:scale(.96)}
 .ml-row .thumb{width:54px;height:46px;border-radius:11px;background:#15251b center/cover;flex-shrink:0}
 .ml-row.sold{opacity:.6}
 .ml-row.sold b{text-decoration:line-through}
+.cmt-box{margin-top:10px;border-top:1px solid rgba(255,255,255,.08);padding-top:10px}
+.cmt-row{display:flex;gap:9px;align-items:flex-start;padding:8px 10px;border-radius:12px;background:rgba(255,255,255,.04);margin-top:6px;font-size:13px}
+.cmt-row b{color:var(--green-hot);font-size:12.5px}
+.cmt-row .del{margin-left:auto;color:var(--muted);cursor:pointer;font-size:14px;line-height:1}
+.cmt-input{display:flex;gap:8px;margin-top:8px}
+.cmt-input input{flex:1;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:var(--text);padding:0 12px;font-size:13.5px;outline:0}
+.cmt-input button{height:42px;padding:0 16px;border-radius:12px;background:var(--green-hot);color:#06130a;border:0;font-weight:800;font-size:13px;cursor:pointer}
+.feed-del{margin-left:auto;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.feed-actions button.liked{color:var(--green-hot)}
+.feed-actions button.liked svg{fill:var(--green-hot);stroke:var(--green-hot)}
 
 /* Menú crear */
 .create-menu{display:grid;gap:11px;margin-top:14px}
@@ -1189,8 +1199,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div id="homeEvents"><div class="meta">Cargando eventos...</div></div>
 
       <div class="section-head"><h2>Foro</h2><button data-route="community">Ver foro</button></div>
-      <div class="forum-preview-row"><div class="avatar" style="background-image:url('assets/eventos/skater.webp')"></div><div><b style="font-size:13.5px">@lucas.flips</b><p>Sesión brutal hoy en el bowl. ¿Alguien se suma mañana a la tarde?</p></div></div>
-      <div class="forum-preview-row"><div class="avatar" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><b style="font-size:13.5px">@maru.bmx</b><p>Vendo aro trasero 36h casi nuevo. Detalles en el market.</p></div></div>
+      <div id="homeForum"><div class="meta">Cargando el foro...</div></div>
 
       <div class="section-head"><h2>Spots recomendados</h2><button data-route="map">Ver mapa</button></div>
       <div class="spot-list">
@@ -1266,56 +1275,14 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     </section>
 
     <section class="view" data-view="community">
-      <div class="tabs" data-filter-target="feed"><button class="active" data-f="all">Todos</button><button data-f="skate">Skate</button><button data-f="bmx">BMX</button><button data-f="spots">Spots</button><button data-f="venta">Compra/Venta</button></div>
+      <div class="kicker">Comunidad</div>
+      <div class="section-head" style="margin-top:2px"><h2 style="font-family:var(--display);font-size:30px;text-transform:none;letter-spacing:.02em">Foro</h2></div>
       <div class="forum-composer">
         <div class="composer-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>¿Qué estás haciendo?</div>
         <button class="primary-btn" data-open-modal="post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Crear publicación</button>
       </div>
       <div class="feed-grid">
-        <div id="feed">
-          <article class="feed-card" data-cat="skate">
-            <div class="feed-head"><div class="avatar" style="background-image:url('assets/eventos/skater.webp')"></div><div><b>@lucas.flips</b><div class="meta">Skate · Buenos Aires · Hace 2 h</div></div></div>
-            <p class="lead" style="font-size:15px">Por fin clavé el 360 flip en Plaza Italia. Tres meses de intentos. ¿Quién se prende a una sesión el finde?</p>
-            <div class="feed-media" style="background-image:url('assets/eventos/skater-bowl.webp')"></div>
-            <div class="feed-actions">
-              <button data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg><span>248</span></button>
-              <button data-toast="Comentarios disponibles cuando conectemos el backend."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><span>32</span></button>
-              <button data-toast="Enlace del post copiado."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>
-            </div>
-          </article>
-          <article class="feed-card" data-cat="bmx spots">
-            <div class="feed-head"><div class="avatar" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><b>@maru.bmx</b><div class="meta">BMX · Córdoba · Hace 5 h</div></div></div>
-            <p class="lead" style="font-size:15px">Reporto spot nuevo atrás del Buen Pastor. Lo cargué al mapa y queda esperando aprobación.</p>
-            <div class="feed-actions">
-              <button data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg><span>91</span></button>
-              <button data-toast="Comentarios disponibles cuando conectemos el backend."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><span>14</span></button>
-              <button data-toast="Enlace del post copiado."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>
-            </div>
-          </article>
-          <article class="feed-card" data-cat="venta">
-            <div class="feed-head"><div class="avatar" style="background-image:url('assets/tiendas/exterior-tienda.webp')"></div><div><b>@underground.mv</b><div class="meta">Tienda · Montevideo · Hace 1 d</div></div></div>
-            <p class="lead" style="font-size:15px">Llegaron tablas nuevas y ruedas. Riders verificados de SPOTRA tienen 15% off mostrando el perfil.</p>
-            <div class="feed-actions">
-              <button data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg><span>176</span></button>
-              <button data-toast="Comentarios disponibles cuando conectemos el backend."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><span>22</span></button>
-              <button data-toast="Enlace del post copiado."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"/></svg></button>
-            </div>
-          </article>
-          <div class="empty-state" data-empty="feed">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h16v11H9l-4 4V5Z"/></svg>
-            <b>Nada por acá todavía</b>
-            Sé el primero en publicar en esta categoría.
-          </div>
-        </div>
-        <aside class="panel">
-          <div class="kicker">Comunidad activa</div>
-          <div class="id-title">La sesión no termina en el spot</div>
-          <div class="mini-stats">
-            <div class="mini-stat"><b>248</b><span>likes hoy</span></div>
-            <div class="mini-stat"><b>32</b><span>debates</span></div>
-            <div class="mini-stat"><b>14</b><span>spots nuevos</span></div>
-          </div>
-        </aside>
+        <div id="feed"><div class="meta" style="margin-top:12px">Cargando el foro...</div></div>
       </div>
     </section>
 
@@ -1721,13 +1688,13 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 
     <!-- POST -->
     <div class="modal-form" data-form="post">
-      <p class="hint">Compartí una sesión, una pregunta, un clip o un nuevo hallazgo para la comunidad.</p>
+      <p class="hint">Se publica <b style="color:var(--green-hot)">al instante</b>. Compartí una sesión, una pregunta o un hallazgo. Respetá a la comunidad: el admin puede eliminar publicaciones.</p>
       <div class="form-grid" id="postForm" style="grid-template-columns:1fr">
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input required placeholder="¿Qué querés compartir?"></div>
       </div>
       <label class="dropzone" id="dzPost">
-        <input type="file" accept="image/*,video/*">
-        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Subí foto o video<br><b style="color:var(--green-hot)">Tocá o arrastrá el archivo</b></div>
+        <input type="file" accept="image/*">
+        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Foto (opcional)<br><b style="color:var(--green-hot)">Tocá o arrastrá la imagen</b></div>
         <div class="dz-preview"></div><span class="dz-badge">Archivo listo</span>
       </label>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="post">Publicar en foro</button>
@@ -1883,7 +1850,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=13"></script>
+<script src="assets/js/spotra-backend.js?v=14"></script>
 <script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2327,18 +2294,8 @@ async function handleCreate(type){
   }
   if(type === 'post'){
     if(!validateForm('postForm')) return;
-    const text = escapeHTML(document.querySelector('#postForm input').value);
-    const card = document.createElement('article');
-    card.className = 'feed-card';
-    card.dataset.cat = 'skate';
-    card.innerHTML = `<div class="feed-head"><div class="avatar" style="background-image:url('assets/eventos/skater-2.webp')"></div><div><b>@santi.sk8</b><div class="meta">Skate · Canelones · Ahora</div></div></div>
-      <p class="lead" style="font-size:15px">${text}</p>
-      <div class="feed-media" style="background-image:url('${dzImage('dzPost','assets/eventos/skater-bowl.webp')}')"></div>
-      <div class="feed-actions"><button data-like><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg><span>0</span></button><button data-toast="Comentarios disponibles cuando conectemos el backend.">Comentar</button><button data-toast="Enlace del post copiado.">Compartir</button></div>`;
-    document.getElementById('feed').prepend(card);
-    resetForm('postForm','dzPost'); closeModal();
-    setRoute('community');
-    toast('Publicación creada en el foro.');
+    if(window.SpotraForum) window.SpotraForum.submitFromForm();
+    else toast('El módulo del foro no cargó. Recargá la app.');
   }
   if(type === 'product'){
     if(window.SpotraMarket) window.SpotraMarket.submitFromForm();
@@ -2363,6 +2320,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-admin.js?v=8"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-market.js?v=1"></script>
+<script src="assets/js/spotra-forum.js?v=1"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
