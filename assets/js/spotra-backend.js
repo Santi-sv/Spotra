@@ -544,7 +544,7 @@
     if(!db) return [];
     const { data, error } = await db
       .from('event_registrations')
-      .select('username, categories, created_at')
+      .select('profile_id, username, categories, created_at')
       .eq('event_id', eventId)
       .order('created_at', { ascending: true })
       .limit(300);
@@ -583,6 +583,47 @@
     return { ok: true };
   }
 
+
+  async function saveEventResults(eventId, category, podium){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.rpc('save_event_results', {
+      p_event_id: eventId,
+      p_category: category || 'General',
+      p_first: podium[0] || null,
+      p_second: podium[1] || null,
+      p_third: podium[2] || null
+    });
+    if(error){ console.warn('[SPOTRA] saveEventResults:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function listEventResults(eventId){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('event_results')
+      .select('category, username, position, points, discipline')
+      .eq('event_id', eventId)
+      .order('category', { ascending: true })
+      .order('position', { ascending: true });
+    if(error){ console.warn('[SPOTRA] listEventResults:', error.message); return []; }
+    return data || [];
+  }
+
+  async function listRanking(discipline){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('rider_rankings')
+      .select('username, total_points, golds, podiums')
+      .eq('discipline', discipline)
+      .order('total_points', { ascending: false })
+      .limit(50);
+    if(error){ console.warn('[SPOTRA] listRanking:', error.message); return []; }
+    return data || [];
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -611,6 +652,9 @@
     listEventRegistrations,
     organizerUpdateEvent,
     organizerCancelEvent,
+    saveEventResults,
+    listEventResults,
+    listRanking,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
