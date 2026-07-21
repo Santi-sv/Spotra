@@ -751,6 +751,133 @@
     return { ok: true, url: pub.publicUrl };
   }
 
+
+  /* ===== Foro ===== */
+  function normalizePost(row){
+    return {
+      id: row.id,
+      authorId: row.author_id,
+      username: row.username || 'rider',
+      avatarUrl: row.avatar_url || '',
+      content: row.content || '',
+      imageUrl: row.image_url || '',
+      createdAt: row.created_at ? new Date(row.created_at) : null,
+      likes: Array.isArray(row.post_likes) && row.post_likes[0] ? Number(row.post_likes[0].count) || 0 : 0,
+      comments: Array.isArray(row.post_comments) && row.post_comments[0] ? Number(row.post_comments[0].count) || 0 : 0,
+      likedByMe: false
+    };
+  }
+
+  async function listPosts(options = {}){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('posts')
+      .select('id, author_id, username, avatar_url, content, image_url, created_at, post_likes(count), post_comments(count)')
+      .order('created_at', { ascending: false })
+      .limit(options.limit || 40);
+    if(error){ console.warn('[SPOTRA] listPosts:', error.message); return []; }
+    const posts = (data || []).map(normalizePost);
+    const { data: authData } = await db.auth.getUser();
+    if(authData?.user?.id && posts.length){
+      const { data: likes } = await db
+        .from('post_likes')
+        .select('post_id')
+        .eq('profile_id', authData.user.id)
+        .in('post_id', posts.map(p => p.id));
+      const mine = new Set((likes || []).map(l => l.post_id));
+      posts.forEach(p => { p.likedByMe = mine.has(p.id); });
+    }
+    return posts;
+  }
+
+  async function createPost(payload){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    let username = '', avatar = '';
+    const { data: prof } = await db.from('profiles').select('username, full_name, avatar_url').eq('id', authData.user.id).single();
+    if(prof){ username = prof.username || prof.full_name || ''; avatar = prof.avatar_url || ''; }
+    const { error } = await db.from('posts').insert({
+      author_id: authData.user.id,
+      username,
+      avatar_url: avatar,
+      content: payload.content,
+      image_url: payload.imageUrl || null
+    });
+    if(error){ console.warn('[SPOTRA] createPost:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function deletePost(id){
+    const db = await client();
+    if(!db) return { ok: false };
+    const { error } = await db.from('posts').delete().eq('id', id);
+    if(error){ console.warn('[SPOTRA] deletePost:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function togglePostLike(postId, liked){
+    const db = await client();
+    if(!db) return { ok: false };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    const uid = authData.user.id;
+    const { error } = liked
+      ? await db.from('post_likes').delete().eq('post_id', postId).eq('profile_id', uid)
+      : await db.from('post_likes').insert({ post_id: postId, profile_id: uid });
+    if(error && String(error.code) !== '23505'){ console.warn('[SPOTRA] togglePostLike:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function listPostComments(postId){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db
+      .from('post_comments')
+      .select('id, author_id, username, content, created_at')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: true })
+      .limit(100);
+    if(error){ console.warn('[SPOTRA] listPostComments:', error.message); return []; }
+    return data || [];
+  }
+
+  async function addPostComment(postId, content){
+    const db = await client();
+    if(!db) return { ok: false };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    let username = '';
+    const { data: prof } = await db.from('profiles').select('username, full_name').eq('id', authData.user.id).single();
+    if(prof) username = prof.username || prof.full_name || '';
+    const { error } = await db.from('post_comments').insert({ post_id: postId, author_id: authData.user.id, username, content });
+    if(error){ console.warn('[SPOTRA] addPostComment:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function deletePostComment(id){
+    const db = await client();
+    if(!db) return { ok: false };
+    const { error } = await db.from('post_comments').delete().eq('id', id);
+    if(error){ console.warn('[SPOTRA] deletePostComment:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function uploadPostImage(blob, ext){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: u } = await db.auth.getUser();
+    if(!(u && u.user)) return { ok: false, error: 'iniciá sesión' };
+    const rand = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+    const path = 'posts/' + rand + '.' + ext;
+    const up = await db.storage.from('place-images').upload(path, blob, { contentType: blob.type, upsert: false });
+    if(up.error) return { ok: false, error: up.error.message };
+    const { data: pub } = db.storage.from('place-images').getPublicUrl(path);
+    return { ok: true, url: pub.publicUrl };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -790,6 +917,14 @@
     listPendingListings,
     reviewListing,
     uploadListingImage,
+    listPosts,
+    createPost,
+    deletePost,
+    togglePostLike,
+    listPostComments,
+    addPostComment,
+    deletePostComment,
+    uploadPostImage,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
