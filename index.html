@@ -750,6 +750,16 @@ button:active{transform:scale(.96)}
 .rk-name .meta{font-weight:400;font-size:11.5px;margin-top:1px}
 .rk-pts{font-family:var(--display);font-size:17px;color:var(--green-hot)}
 .rk-pts span{font-size:10px;color:var(--muted);display:block;text-align:right;font-family:var(--font, inherit)}
+#mktDist button{display:inline-flex;align-items:center;gap:6px}
+#mktDist svg{width:15px;height:15px}
+.ml-thumb{width:72px;height:62px;border-radius:13px;background-size:cover;background-position:center;border:1px solid rgba(255,255,255,.16);position:relative}
+.ml-thumb b{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:999px;background:#ff5f5f;color:#0a0a0a;font-size:12px;display:grid;place-items:center;cursor:pointer}
+.mkt-dist-badge{color:var(--green-hot);font-size:11px}
+.product-card .price{margin-top:2px}
+.ml-row{display:flex;gap:11px;padding:11px;border-radius:15px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);margin-top:8px;align-items:center}
+.ml-row .thumb{width:54px;height:46px;border-radius:11px;background:#15251b center/cover;flex-shrink:0}
+.ml-row.sold{opacity:.6}
+.ml-row.sold b{text-decoration:line-through}
 
 /* Menú crear */
 .create-menu{display:grid;gap:11px;margin-top:14px}
@@ -1312,24 +1322,19 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <section class="view" data-view="market">
       <div class="market-head">
         <div>
-          <h1 class="h1">Marketplace</h1>
-          <p class="lead">Compra y vende equipamiento deportivo.</p>
+          <div class="kicker">Usados entre riders</div>
+          <h1 class="h1">Market</h1>
         </div>
         <button class="ghost-btn publish-btn" data-open-modal="product">Publicar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
       </div>
-      <div class="search market-search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar productos, marcas o usuarios...</div>
-      <div class="tabs" data-filter-target="mkt"><button class="active" data-f="all">Todos</button><button data-f="tabla">Tablas</button><button data-f="bici">Bicicletas</button><button data-f="ropa">Ropa</button><button data-f="acc">Accesorios</button></div>
-      <div class="product-grid" id="mkt">
-        <article class="product-card" data-cat="tabla"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/marketplace/skate-completo.webp')"></div><div class="product-body"><b>Tabla completa SPOTRA</b><div class="price">$85.000</div><div class="meta">Buenos Aires, CABA</div><div class="seller"><span style="background-image:url('assets/eventos/skater-2.webp')"></span>SantiSk8</div><button class="ghost-btn" data-open-chat="SantiSk8" data-product="Tabla completa SPOTRA">Contactar</button></div></article>
-        <article class="product-card" data-cat="bici"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/marketplace/bmx-usada.webp')"></div><div class="product-body"><b>BMX WeThePeople Justice</b><div class="price">$320.000</div><div class="meta">Rosario, Santa Fe</div><div class="seller"><span style="background-image:url('assets/eventos/biker-1.webp')"></span>RodriBMX</div><button class="ghost-btn" data-open-chat="RodriBMX" data-product="BMX WeThePeople Justice">Contactar</button></div></article>
-        <article class="product-card" data-cat="acc"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/marketplace/kit-rodillerasycoderas.webp')"></div><div class="product-body"><b>Casco TSG Evolution</b><div class="price">$45.000</div><div class="meta">Córdoba, Córdoba</div><div class="seller"><span style="background-image:url('assets/perfiles/ChatGPT Image 7 jun 2026, 07_36_58 a.m. (9).webp')"></span>MicaProtect</div><button class="ghost-btn" data-open-chat="MicaProtect" data-product="Casco TSG Evolution">Contactar</button></div></article>
-        <article class="product-card" data-cat="ropa"><button class="save-btn" aria-label="Guardar producto">♡</button><div class="product-img" style="background-image:url('assets/tiendas/championes-vans-negros.webp')"></div><div class="product-body"><b>Zapatillas Vans Old Skool</b><div class="price">$65.000</div><div class="meta">Buenos Aires, CABA</div><div class="seller"><span style="background-image:url('assets/eventos/skater.webp')"></span>Underground</div><button class="ghost-btn" data-open-chat="Underground" data-product="Zapatillas Vans Old Skool">Contactar</button></div></article>
-        <div class="empty-state" data-empty="mkt" style="grid-column:1/-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
-          <b>Sin publicaciones en esta categoría</b>
-          Publicá lo que ya no uses y dale una segunda vida.
-        </div>
+      <div class="tabs" id="mktTabs" style="margin-top:8px"><button class="active" data-mkt-tab="explore">Explorar</button><button data-mkt-tab="mine">Mis publicaciones</button></div>
+      <div class="filter-row" id="mktCats" style="margin-top:2px"><button class="active" data-mkt-cat="all">Todo</button><button data-mkt-cat="tablas">Tablas</button><button data-mkt-cat="ruedas">Ruedas</button><button data-mkt-cat="bicis">Bicis</button><button data-mkt-cat="protecciones">Protecc.</button><button data-mkt-cat="ropa">Ropa</button><button data-mkt-cat="otros">Otros</button></div>
+      <div class="filter-row" id="mktDist" style="margin-top:2px">
+        <button id="mktNearBtn" data-mkt-near><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Cerca de mí</button>
+        <span id="mktDistChips" style="display:none"><button data-mkt-dist="5">5 km</button><button data-mkt-dist="20">20 km</button><button data-mkt-dist="50">50 km</button><button class="active" data-mkt-dist="0">Todos</button></span>
       </div>
+      <div class="product-grid" id="mktGrid"><div class="meta" style="grid-column:1/-1;margin-top:10px">Cargando publicaciones...</div></div>
+      <div id="mktDetail" style="display:none"></div>
     </section>
 
     <section class="view" data-view="sponsors">
@@ -1766,20 +1771,36 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 
     <!-- PRODUCTO -->
     <div class="modal-form" data-form="product">
-      <p class="hint">Tu publicación aparece al instante en el marketplace. El admin puede retirarla si recibe reportes.</p>
-      <div class="seg" data-seg="prodCat"><button class="active" data-v="tabla">Tabla</button><button data-v="bici">Bici</button><button data-v="ropa">Ropa</button></div>
-      <div class="form-grid" id="productForm" style="grid-template-columns:1fr 1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><input required placeholder="Título (ej. Tabla 8.0 con trucks)"></div>
-        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M7 7h7a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h9"/></svg><input required type="number" min="1" placeholder="Precio ($)"></div>
-        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Ciudad"></div>
+      <p class="hint">Tu publicación pasa por <b style="color:#ffd24a">aprobación del admin</b>. La venta se coordina por WhatsApp, sin pagos en la app.</p>
+      <div id="productForm">
+        <span class="f-label">Fotos (hasta 3)</span>
+        <div id="mlPhotoRow" style="display:flex;gap:8px;flex-wrap:wrap">
+          <label style="width:72px;height:62px;border-radius:13px;border:1.5px dashed rgba(46,232,77,.5);display:grid;place-items:center;color:var(--green-hot);cursor:pointer"><input type="file" id="mlPhotos" accept="image/*" multiple hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg></label>
+          <span id="mlPhotoPreview" style="display:flex;gap:8px;flex-wrap:wrap"></span>
+        </div>
+        <span class="f-label">Título</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><input required id="mlTitle" placeholder="Tabla 8.0 casi nueva"></div>
+        <span class="f-label">Precio</span>
+        <div style="display:grid;grid-template-columns:96px 1fr;gap:8px">
+          <div class="field full" style="padding-right:6px"><select required id="mlCurrency" style="min-width:0"><option value="UYU">$U</option><option value="USD">US$</option><option value="ARS">AR$</option><option value="BRL">R$</option></select></div>
+          <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M7 7h7a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h9"/></svg><input required id="mlPrice" type="number" min="1" inputmode="numeric" placeholder="3500"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><span class="f-label">Categoría</span><div class="field full"><select required id="mlCategory"><option value="tablas">Tablas</option><option value="ruedas">Ruedas</option><option value="bicis">Bicis</option><option value="protecciones">Protecciones</option><option value="ropa">Ropa</option><option value="otros" selected>Otros</option></select></div></div>
+          <div><span class="f-label">Estado</span><div class="field full"><select required id="mlCondition"><option value="nuevo">Nuevo</option><option value="como-nuevo">Usado — como nuevo</option><option value="bueno" selected>Usado — bueno</option><option value="con-detalles">Usado — con detalles</option></select></div></div>
+        </div>
+        <span class="f-label">Descripción</span>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg><input id="mlDesc" placeholder="Detalles, uso, qué incluye, dónde entregás..."></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><span class="f-label">Ciudad</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required id="mlCity" placeholder="Canelones"></div></div>
+          <div><span class="f-label">Tu WhatsApp</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input required id="mlWhatsapp" type="tel" placeholder="+598 99 123 456"></div></div>
+        </div>
+        <input type="hidden" id="mlLat"><input type="hidden" id="mlLng">
+        <button type="button" class="ghost-btn" id="mlLocBtn" style="width:100%;min-height:46px;margin-top:14px">Usar mi ubicación (para "cerca de mí")</button>
       </div>
-      <label class="dropzone" id="dzProd">
-        <input type="file" accept="image/*">
-        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Foto del producto<br><b style="color:var(--green-hot)">Tocá o arrastrá la imagen</b></div>
-        <div class="dz-preview"></div><span class="dz-badge">Foto lista</span>
-      </label>
-      <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="product">Publicar ahora</button>
+      <button class="primary-btn" style="width:100%;margin-top:16px;height:54px" data-submit="product">Enviar a aprobación</button>
     </div>
+
 
     <!-- PERFIL / CONFIG -->
     <div class="modal-form" data-form="settings">
@@ -1862,7 +1883,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=12"></script>
+<script src="assets/js/spotra-backend.js?v=13"></script>
 <script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2320,19 +2341,8 @@ async function handleCreate(type){
     toast('Publicación creada en el foro.');
   }
   if(type === 'product'){
-    if(!validateForm('productForm')) return;
-    const ins = document.querySelectorAll('#productForm input');
-    const cat = document.querySelector('[data-seg="prodCat"] .active').dataset.v;
-    const card = document.createElement('article');
-    card.className = 'product-card';
-    card.dataset.cat = cat;
-    card.innerHTML = `<div class="product-img" style="background-image:url('${dzImage('dzProd','assets/marketplace/skate-completo.webp')}')"></div>
-      <div class="product-body"><b>${escapeHTML(ins[0].value)}</b><div class="price">$${parseInt(ins[1].value,10).toLocaleString('es-AR')}</div>
-      <div class="meta">${escapeHTML(ins[2].value)} · Publicado por vos</div><span class="pending-tag">Tu publicación</span></div>`;
-    document.getElementById('mkt').prepend(card);
-    resetForm('productForm','dzProd'); closeModal();
-    setRoute('market');
-    toast('Publicado. Tu producto ya está en el marketplace.');
+    if(window.SpotraMarket) window.SpotraMarket.submitFromForm();
+    else toast('El módulo del market no cargó. Recargá la app.');
   }
 }
 
@@ -2350,8 +2360,9 @@ window.addEventListener('popstate', () => setRoute(location.hash.replace('#','')
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=5"></script>
-<script src="assets/js/spotra-admin.js?v=7"></script>
+<script src="assets/js/spotra-admin.js?v=8"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
+<script src="assets/js/spotra-market.js?v=1"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
