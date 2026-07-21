@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v3)
+/* SPOTRA · Eventos (v4)
+   - v4: resultados por categoría (organizador) + ranking por disciplina.
    - v3: el organizador puede editar y cancelar sus eventos.
    - Sección Eventos: Próximos / Mis eventos, filtro por disciplina, detalle con inscripción.
    - Inscripción con categorías (multi), cupo, cierre, contacto del organizador.
@@ -91,6 +92,7 @@
     if(!wrap) return;
     showList();
     if(activeTab === 'upcoming') await renderUpcoming();
+    else if(activeTab === 'ranking') await renderRanking();
     else await renderMine();
   }
 
@@ -132,7 +134,33 @@
     const l = listEl(); if(l) l.style.display = '';
     const tabs = document.getElementById('eventsTabs'); if(tabs) tabs.style.display = '';
     const disc = document.getElementById('eventsDisc'); if(disc) disc.style.display = activeTab === 'upcoming' ? '' : 'none';
+    /* el ranking dibuja su propio selector de disciplina */
     currentEvent = null;
+  }
+
+
+  /* ================= Ranking ================= */
+  let rankDisc = 'skate';
+
+  async function renderRanking(){
+    const wrap = listEl();
+    if(!wrap || !B()) return;
+    const segs = ['skate', 'bmx', 'rollers'];
+    const segHtml = `<div class="filter-row" style="margin-top:12px">${segs.map(s =>
+      `<button class="${s === rankDisc ? 'active' : ''}" data-rank-disc="${s}">${DISC_LABEL[s]}</button>`).join('')}</div>`;
+    wrap.innerHTML = segHtml + '<div class="meta" style="margin-top:12px">Cargando ranking...</div>';
+    const rows = await B().listRanking(rankDisc);
+    const seg = wrap.querySelector('.filter-row').outerHTML;
+    if(!rows.length){
+      wrap.innerHTML = seg + '<div class="meta" style="margin-top:14px">Todavía no hay puntos en ' + DISC_LABEL[rankDisc] + '. Los podios de los eventos SPOTRA suman acá: 1º 100 pts · 2º 60 · 3º 30.</div>';
+      return;
+    }
+    wrap.innerHTML = seg + rows.map((r, i) =>
+      `<div class="rk-row top${i + 1}">
+        <div class="rk-pos">${i + 1}</div>
+        <div class="rk-name">${esc(r.username || 'rider')}<div class="meta">${r.podiums} podio${r.podiums === 1 ? '' : 's'}${r.golds ? ' · ' + r.golds + ' oro' + (r.golds === 1 ? '' : 's') : ''}</div></div>
+        <div class="rk-pts">${r.total_points}<span>pts</span></div>
+      </div>`).join('');
   }
 
   /* ================= Detalle ================= */
@@ -157,6 +185,7 @@
     d.style.display = '';
     d.innerHTML = detailHTML(ev);
     renderAttendees(ev);
+    renderResults(ev);
   }
 
   function detailHTML(ev){
@@ -189,6 +218,9 @@
       if(ev.status === 'archived'){
         action = `<div class="ev-info-row off" style="border-color:rgba(255,122,122,.4);background:rgba(255,122,122,.08);color:#ff7a7a">Evento cancelado</div>
           <button class="primary-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:9px">Ver inscriptos (${ev.regCount})</button>`;
+      } else if(past){
+        action = `<button class="primary-btn" data-ev-results="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:14px">Cargar resultados</button>
+          <button class="ghost-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:48px;margin-top:9px">Ver inscriptos (${ev.regCount})</button>`;
       } else {
         action = `<button class="primary-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:14px">Ver inscriptos (${ev.regCount})</button>
           <div class="ev-actions-2"><button class="ghost-btn" data-ev-edit="${esc(ev.id)}">Editar</button><button class="ghost-btn" data-ev-cancelev="${esc(ev.id)}" style="color:#ff7a7a;border-color:rgba(255,122,122,.4)">Cancelar evento</button></div>`;
@@ -225,6 +257,7 @@
       <h2 style="font-family:var(--display);font-size:27px;margin-top:8px">${esc(ev.title)}</h2>
       ${rows.join('')}
       ${cats}
+      <div id="evResultsBlock"></div>
       <div class="f-label" style="margin-top:14px" id="evAttendHead" hidden>Van</div>
       <div class="ev-chips" id="evAttendList"></div>
       ${desc}
@@ -243,6 +276,91 @@
     const names = regs.slice(0, 12).map(r => `<span class="ev-chip">${esc(r.username || 'rider')}</span>`);
     if(regs.length > 12) names.push(`<span class="ev-chip">+${regs.length - 12} más</span>`);
     wrap.innerHTML = names.join('');
+  }
+
+
+  const MEDALS = ['1º', '2º', '3º'];
+
+  async function renderResults(ev){
+    const box = document.getElementById('evResultsBlock');
+    if(!box || !B()) return;
+    const rows = await B().listEventResults(ev.id);
+    if(!rows.length || !currentEvent || currentEvent.id !== ev.id) return;
+    const groups = {};
+    rows.forEach(r => { (groups[r.category] = groups[r.category] || []).push(r); });
+    box.innerHTML = '<div class="f-label" style="margin-top:14px">Resultados</div>' +
+      Object.keys(groups).map(cat =>
+        `<div class="ev-info-row" style="flex-direction:column;align-items:stretch;gap:6px">
+          <b style="font-size:12px;letter-spacing:.12em;color:var(--green-hot);text-transform:uppercase">${esc(cat)}</b>
+          ${groups[cat].map(r => `<div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(MEDALS[r.position - 1] || r.position)} ${esc(r.username || 'rider')}</span><span style="color:var(--green-hot)">${r.points} pts</span></div>`).join('')}
+        </div>`).join('');
+  }
+
+  /* ================= Cargar resultados (organizador) ================= */
+  async function openResults(ev){
+    const regs = await B().listEventRegistrations(ev.id);
+    if(!regs.length){ toast('No hay inscriptos para cargar resultados.'); return; }
+    ensureResOverlay();
+    const o = document.getElementById('evResOverlay');
+    document.getElementById('evResTitle').textContent = 'Resultados · ' + ev.title;
+    const cats = ev.categories.length ? ev.categories : ['General'];
+    const body = document.getElementById('evResBody');
+    body.innerHTML = cats.map((cat, ci) => {
+      const pool = ev.categories.length ? regs.filter(r => (r.categories || []).includes(cat)) : regs;
+      if(!pool.length) return `<div style="margin-top:14px"><b style="font-size:12px;letter-spacing:.12em;color:#2ee84d;text-transform:uppercase">${esc(cat)}</b><div style="color:#9aa69f;font-size:12.5px;margin-top:4px">Sin inscriptos en esta categoría.</div></div>`;
+      const opts = '<option value="">—</option>' + pool.map(r => `<option value="${esc(r.profile_id)}">${esc(r.username || 'rider')}</option>`).join('');
+      return `<div data-res-cat="${esc(cat)}" style="margin-top:14px">
+        <b style="font-size:12px;letter-spacing:.12em;color:#2ee84d;text-transform:uppercase">${esc(cat)}</b>
+        ${[0, 1, 2].map(p => `<div style="display:flex;align-items:center;gap:9px;margin-top:7px">
+          <span style="width:30px;color:#9aa69f;font-size:13px">${MEDALS[p]}</span>
+          <select data-res-pos="${p}" style="flex:1;height:42px;border-radius:11px;border:1px solid rgba(255,255,255,.16);background:#101712;color:#fff;padding:0 10px;font-size:13.5px">${opts}</select>
+        </div>`).join('')}
+      </div>`;
+    }).join('');
+    o.dataset.eventId = ev.id;
+    o.style.display = 'flex';
+  }
+
+  function ensureResOverlay(){
+    if(document.getElementById('evResOverlay')) return;
+    const o = document.createElement('div');
+    o.id = 'evResOverlay';
+    o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center';
+    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(46,232,77,.4);border-radius:24px 24px 0 0;padding:20px 18px;max-height:88vh;overflow-y:auto">
+      <div style="width:52px;height:5px;border-radius:999px;background:rgba(255,255,255,.25);margin:0 auto 14px"></div>
+      <b id="evResTitle" style="font-size:17px;color:#fff;display:block"></b>
+      <div style="color:#9aa69f;font-size:12.5px;margin:4px 0 2px">Elegí el podio de cada categoría. Puntos al ranking: 1º 100 · 2º 60 · 3º 30. Guardar reemplaza resultados anteriores.</div>
+      <div id="evResBody"></div>
+      <button id="evResSave" style="width:100%;height:52px;border-radius:15px;background:#2ee84d;color:#06130a;border:0;font-weight:800;font-size:15px;cursor:pointer;margin-top:16px">Guardar resultados</button>
+      <button id="evResClose" style="width:100%;height:46px;border-radius:15px;background:transparent;color:#dce3dd;border:1px solid rgba(255,255,255,.18);font-weight:700;font-size:13.5px;cursor:pointer;margin-top:9px">Cerrar</button>
+    </div>`;
+    document.body.appendChild(o);
+    o.addEventListener('click', e => { if(e.target === o) o.style.display = 'none'; });
+    document.getElementById('evResClose').addEventListener('click', () => { o.style.display = 'none'; });
+    document.getElementById('evResSave').addEventListener('click', saveResults);
+  }
+
+  async function saveResults(){
+    const o = document.getElementById('evResOverlay');
+    const evId = o.dataset.eventId;
+    const blocks = Array.from(o.querySelectorAll('[data-res-cat]'));
+    let saved = 0, skipped = 0;
+    for(const block of blocks){
+      const cat = block.dataset.resCat;
+      const podium = [0, 1, 2].map(p => (block.querySelector(`[data-res-pos="${p}"]`) || {}).value || null);
+      if(!podium[0]){ skipped++; continue; }
+      if((podium[1] && podium[1] === podium[0]) || (podium[2] && (podium[2] === podium[0] || podium[2] === podium[1]))){
+        toast('Hay riders repetidos en el podio de ' + cat + '.');
+        return;
+      }
+      const res = await B().saveEventResults(evId, cat, podium);
+      if(!res.ok){ toast('No se pudo guardar ' + cat + ': revisá e intentá de nuevo.'); return; }
+      saved++;
+    }
+    if(!saved){ toast('Elegí al menos el 1º puesto de alguna categoría.'); return; }
+    o.style.display = 'none';
+    toast('Resultados guardados. Ya suman al ranking.');
+    if(currentEvent && currentEvent.id === evId) openDetail(evId);
   }
 
   /* ================= Inscripción ================= */
@@ -626,6 +744,10 @@
     if(can && currentEvent){ doCancel(currentEvent); return; }
     const att = e.target.closest('[data-ev-attendlist]');
     if(att && currentEvent){ openAttendList(currentEvent); return; }
+    const rk = e.target.closest('[data-rank-disc]');
+    if(rk){ rankDisc = rk.dataset.rankDisc; renderRanking(); return; }
+    const res = e.target.closest('[data-ev-results]');
+    if(res && currentEvent){ openResults(currentEvent); return; }
     const edt = e.target.closest('[data-ev-edit]');
     if(edt && currentEvent){ openEdit(currentEvent); return; }
     const cev = e.target.closest('[data-ev-cancelev]');
