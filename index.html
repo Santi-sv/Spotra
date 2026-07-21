@@ -770,6 +770,9 @@ button:active{transform:scale(.96)}
 .feed-del{margin-left:auto;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
 .feed-actions button.liked{color:var(--green-hot)}
 .feed-actions button.liked svg{fill:var(--green-hot);stroke:var(--green-hot)}
+@media (max-width:720px){
+  .notif-panel{position:fixed;top:auto;left:10px;right:10px;bottom:92px;width:auto;max-height:60vh;overflow-y:auto}
+}
 
 /* Menú crear */
 .create-menu{display:grid;gap:11px;margin-top:14px}
@@ -1068,15 +1071,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <button class="nav-btn" data-route="events">Eventos</button>
         <button class="nav-btn" data-route="community">Comunidad</button>
         <button class="nav-btn" data-route="market">Market</button>
-        <button class="nav-btn" data-route="sponsors">Sponsors</button>
         <button class="nav-btn" data-route="profile">Perfil</button>
-      </div>
-      <div data-role-nav="brand">
-        <button class="nav-btn" data-route="brand-home">Panel</button>
-        <button class="nav-btn" data-route="scout">Descubrir</button>
-        <button class="nav-btn" data-route="applications">Postulaciones</button>
-        <button class="nav-btn" data-route="brand-store">Tienda</button>
-        <button class="nav-btn" data-route="brand-profile">Marca</button>
       </div>
       <div data-role-nav="admin">
         <button class="nav-btn" data-route="admin-approvals">Aprobaciones</button>
@@ -1087,19 +1082,21 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <div class="actions">
       <div class="role-switch" aria-label="Vista de demostración por rol">
         <button class="active" data-role-set="rider">Rider</button>
-        <button data-role-set="brand">Marca</button>
         <button data-role-set="admin">Admin</button>
       </div>
       <div class="notif-wrap">
         <button class="icon-btn" id="notifBtn" aria-label="Notificaciones" aria-expanded="false">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
-          <span class="notif-dot" id="notifDot">3</span>
+          
         </button>
         <div class="notif-panel" id="notifPanel">
           <h4>Notificaciones</h4>
-          <div class="notif-item"><div class="dot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg></div><div><p><b>Nómada Skate Co.</b> abrió una campaña que matchea con tu perfil.</p><span>Hace 20 min</span></div></div>
-          <div class="notif-item"><div class="dot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></div><div><p>Tu spot <b>"Rambla Sur ledges"</b> fue aprobado y ya aparece en el mapa.</p><span>Hace 2 h</span></div></div>
-          <div class="notif-item"><div class="dot-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div><p><b>Skate Jam</b> confirmó tu inscripción para el 24 de mayo.</p><span>Ayer</span></div></div>
+          <div id="pushBox" style="display:none">
+            <p style="color:var(--muted);font-size:13px;line-height:1.5;margin-bottom:10px">Activá los avisos para enterarte de eventos nuevos cerca tuyo y de tus spots aprobados.</p>
+            <button class="primary-btn" id="pushBtn" style="width:100%;min-height:46px">Activar notificaciones</button>
+          </div>
+          <div id="pushHint" style="display:none;color:var(--muted);font-size:12.5px;line-height:1.5"></div>
+          <div id="notifList"><div style="color:var(--muted);font-size:13px;padding:6px 2px">Sin novedades por ahora.</div></div>
         </div>
       </div>
       <button class="profile-mini" data-route="profile" aria-label="Abrir perfil"></button>
@@ -1304,20 +1301,6 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div id="mktDetail" style="display:none"></div>
     </section>
 
-    <section class="view" data-view="sponsors">
-      <div class="section-head"><h2>Sponsors activos</h2><button class="ghost-btn" data-toast="Tus beneficios: 15% off en Underground y producto trimestral RideX.">Beneficios</button></div>
-      <div class="sponsor-grid">
-        <article class="sponsor-card"><div class="sponsor-logo"><b>U</b></div><div><h2>Underground</h2><div class="tags"><span>Activo</span><span>15% off</span></div></div><button class="primary-btn" data-toast="Mostrá tu SPOTRA ID en el local para usar el 15% off.">Ver</button></article>
-        <article class="sponsor-card"><div class="sponsor-logo"><b>RX</b></div><div><h2>RideX Wheels</h2><div class="tags"><span>Activo</span><span>Producto</span></div></div><button class="primary-btn" data-toast="RideX te envía producto cada trimestre. Próximo drop: julio.">Ver</button></article>
-      </div>
-      <div class="section-head"><h2>Postulaciones abiertas</h2></div>
-      <article class="application-card">
-        <div class="sponsor-logo"><b>N</b></div>
-        <div><div class="kicker">Destacada</div><h2 class="id-title">Nómada Skate Co.</h2><p class="lead" style="font-size:16px">Busca <span class="green">3 riders</span> de street para temporada <span class="green">2026</span>.</p></div>
-        <button class="primary-btn" data-apply>Postularme <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
-      </article>
-    </section>
-
     <section class="view" data-view="profile">
       <section class="profile-screen">
         <div class="profile-hero">
@@ -1399,11 +1382,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             </div>
             <span class="signup-chip">SPOTRA ID</span>
           </div>
-          <div class="type-grid">
+          <div class="type-grid" style="grid-template-columns:1fr">
             <button class="type-card active"><span class="card-photo"><img src="assets/eventos/skater-2.webp" alt=""></span><span class="card-label">Rider</span></button>
-            <button class="type-card"><span class="card-photo"><img src="assets/tiendas/interior-tienda.webp" alt=""></span><span class="card-label">Tienda</span></button>
-            <button class="type-card"><span class="card-photo"><img src="assets/banners/banner-marca.webp" alt=""></span><span class="card-label">Marca / Sponsor</span></button>
-            <button class="type-card"><span class="card-photo"><img src="assets/banners/banner-skatepark-4.webp" alt=""></span><span class="card-label">Organizador</span></button>
           </div>
           <div class="form-grid" id="signupForm">
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required placeholder="Nombre completo" autocomplete="name"></div>
@@ -1444,117 +1424,6 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     </section>
 
     <!-- ============ MARCA / SPONSOR ============ -->
-    <section class="view" data-view="brand-home">
-      <div class="banner-cta">
-        <div class="kicker">Panel de marca</div>
-        <h1 class="h1" style="font-size:42px;margin-top:8px">Nómada <span class="green">Skate Co.</span></h1>
-        <p class="lead" style="font-size:16px">Patrociná riders, publicá campañas y medí el alcance de tu marca en el Cono Sur.</p>
-        <div class="hero-actions" style="margin-top:18px">
-          <button class="primary-btn" data-route="scout">Descubrir riders</button>
-          <button class="ghost-btn" data-route="applications">Ver postulaciones</button>
-        </div>
-      </div>
-      <div class="kpi-grid">
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/></svg></div><div class="num">34</div><div class="lbl">Riders patrocinados</div><div class="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17l6-6 4 4 8-8M21 7v5M21 7h-5"/></svg>+6 este mes</div></div>
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg></div><div class="num">128k</div><div class="lbl">Alcance de marca</div><div class="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 17l6-6 4 4 8-8M21 7v5M21 7h-5"/></svg>+18%</div></div>
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div><div class="num">7</div><div class="lbl">Productos publicados</div></div>
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg></div><div class="num">12</div><div class="lbl">Postulaciones nuevas</div><div class="trend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h13M13 6l6 6-6 6"/></svg>Revisar</div></div>
-      </div>
-      <div class="section-head"><h2>Postulaciones recientes</h2><a data-route="applications">Ver todas</a></div>
-      <div class="rider-row"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div class="who"><b>@santi.sk8 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Street · Canelones, UY · 1.2k seguidores</div></div><div class="score-badge"><b>92</b><span>SCORE</span></div></div>
-      <div class="rider-row"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div class="who"><b>@lucas.flips <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Street · Buenos Aires · 3.4k seguidores</div></div><div class="score-badge"><b>88</b><span>SCORE</span></div></div>
-      <div class="rider-row"><div class="av" style="background-image:url('assets/eventos/skater-bowl.webp')"></div><div class="who"><b>@vitoria.sk <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Bowl · São Paulo, BR · 5.1k seguidores</div></div><div class="score-badge"><b>95</b><span>SCORE</span></div></div>
-    </section>
-
-    <section class="view" data-view="scout">
-      <div class="section-head"><h2>Descubrir riders</h2></div>
-      <div class="search" style="margin-bottom:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="scoutSearch" placeholder="Buscar por nombre, @usuario o disciplina" style="flex:1;background:transparent;border:0;outline:0;color:var(--text)"></div>
-      <div class="filter-row" data-filter-target="scoutList">
-        <button class="active" data-f="all">Todos</button><button data-f="skate">Skate</button><button data-f="bmx">BMX</button><button data-f="uy">Uruguay</button><button data-f="ar">Argentina</button><button data-f="br">Brasil</button><button data-f="s90">Score 90+</button>
-      </div>
-      <div style="margin-top:18px" id="scoutList">
-        <div class="rider-row" data-cat="skate br" data-score="95" data-name="@vitoria.sk bowl sao paulo"><div class="av" style="background-image:url('assets/eventos/skater-bowl.webp')"></div><div class="who"><b>@vitoria.sk <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Bowl · São Paulo · 5.1k · 4 podios</div><div class="tags"><span>Bowl</span><span>Vert</span></div></div><div class="score-badge"><b>95</b><span>SCORE</span></div></div>
-        <div class="rider-row" data-cat="skate uy" data-score="92" data-name="@santi.sk8 street canelones"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div class="who"><b>@santi.sk8 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Street · Canelones · 1.2k · 3 podios</div><div class="tags"><span>Street</span><span>Tech</span></div></div><div class="score-badge"><b>92</b><span>SCORE</span></div></div>
-        <div class="rider-row" data-cat="skate ar" data-score="88" data-name="@lucas.flips street buenos aires"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div class="who"><b>@lucas.flips <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Street · Buenos Aires · 3.4k</div><div class="tags"><span>Street</span><span>Gap</span></div></div><div class="score-badge"><b>88</b><span>SCORE</span></div></div>
-        <div class="rider-row" data-cat="bmx ar" data-score="81" data-name="@tomi.bmx park rosario"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div class="who"><b>@tomi.bmx</b><div class="meta">BMX · Rosario · 980 seguidores</div><div class="tags"><span>BMX</span><span>Park</span></div></div><div class="score-badge"><b>81</b><span>SCORE</span></div></div>
-        <div class="rider-row" data-cat="bmx uy" data-score="79" data-name="@flor.ride street montevideo"><div class="av" style="background-image:url('assets/eventos/bajando-rampa.webp')"></div><div class="who"><b>@flor.ride</b><div class="meta">BMX · Montevideo · 1.7k seguidores</div><div class="tags"><span>BMX</span><span>Street</span></div></div><div class="score-badge"><b>79</b><span>SCORE</span></div></div>
-        <div class="empty-state" data-empty="scoutList">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
-          <b>Sin resultados</b>
-          Probá con otros filtros o ampliá el rango de score.
-        </div>
-      </div>
-    </section>
-
-    <section class="view" data-view="applications">
-      <div class="banner-cta">
-        <div class="kicker">Campaña activa</div>
-        <h2 class="id-title" style="font-size:26px">Team Street 2026 · 3 cupos</h2>
-        <div class="meta" style="font-size:14px">Cierra en 12 días · 12 postulaciones recibidas</div>
-      </div>
-      <div class="sub-tabs">
-        <button class="active">Nuevas <span class="count-chip">12</span></button>
-        <button>En revisión</button>
-        <button>Aceptadas</button>
-      </div>
-      <div class="rider-row" style="display:block">
-        <div style="display:flex;align-items:center;gap:14px"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div class="who"><b>@santi.sk8 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Street · Canelones, UY · 3 podios verificados</div></div><div class="score-badge"><b>92</b><span>SCORE</span></div></div>
-        <div class="row-actions"><button class="btn-accept"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aceptar</button><button class="btn-line" data-route="profile">Ver perfil</button></div>
-      </div>
-      <div class="rider-row" style="display:block">
-        <div style="display:flex;align-items:center;gap:14px"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div class="who"><b>@lucas.flips <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l4 4 10-10"/></svg></b><div class="meta">Street · Buenos Aires · 5 clips destacados</div></div><div class="score-badge"><b>88</b><span>SCORE</span></div></div>
-        <div class="row-actions"><button class="btn-accept"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aceptar</button><button class="btn-line" data-route="profile">Ver perfil</button></div>
-      </div>
-      <div class="rider-row" style="display:block">
-        <div style="display:flex;align-items:center;gap:14px"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div class="who"><b>@tomi.bmx</b><div class="meta">BMX · Rosario · 980 seguidores</div></div><div class="score-badge"><b>81</b><span>SCORE</span></div></div>
-        <div class="row-actions"><button class="btn-accept"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aceptar</button><button class="btn-line" data-route="profile">Ver perfil</button></div>
-      </div>
-    </section>
-
-    <section class="view" data-view="brand-store">
-      <div class="section-head"><h2>Tienda de la marca</h2><button class="primary-btn" data-open-modal="product">Publicar producto</button></div>
-      <div class="tabs"><button class="active">Todos</button><button>Tablas</button><button>Ruedas</button><button>Indumentaria</button></div>
-      <div class="product-grid">
-        <article class="product-card"><div class="product-img" style="background-image:url('assets/marketplace/skate-completo.webp')"></div><div class="product-body"><b>Tabla Nómada Pro</b><div class="price">$92.000</div><div class="meta">Nuevo · Stock 14</div></div></article>
-        <article class="product-card"><div class="product-img" style="background-image:url('assets/marketplace/ruedas-skate.webp')"></div><div class="product-body"><b>Ruedas Nómada 54mm</b><div class="price">$38.000</div><div class="meta">Nuevo · Stock 30</div></div></article>
-        <article class="product-card"><div class="product-img" style="background-image:url('assets/tiendas/truks-skate.webp')"></div><div class="product-body"><b>Trucks Nómada Forged</b><div class="price">$46.000</div><div class="meta">Nuevo · Stock 9</div></div></article>
-        <article class="product-card"><div class="product-img" style="background-image:url('assets/tiendas/championes-vans-negros.webp')"></div><div class="product-body"><b>Zapatillas Team Edition</b><div class="price">$61.000</div><div class="meta">Nuevo · Stock 22</div></div></article>
-      </div>
-    </section>
-
-    <section class="view" data-view="brand-profile">
-      <div class="profile-layout">
-        <aside class="panel">
-          <div class="sponsor-logo" style="margin-bottom:16px"><b>N</b></div>
-          <h2 style="font-family:var(--display);font-size:30px">Nómada Skate Co.</h2>
-          <div class="meta">Marca · Montevideo, UY · Desde 2019</div>
-          <div class="mini-stats">
-            <div class="mini-stat"><b>34</b><span>riders</span></div>
-            <div class="mini-stat"><b>7</b><span>productos</span></div>
-            <div class="mini-stat"><b>2</b><span>campañas</span></div>
-          </div>
-          <button class="ghost-btn" style="width:100%;margin-top:16px">Editar marca</button>
-        </aside>
-        <div>
-          <div class="id-card">
-            <div class="kicker">Verificación</div>
-            <div class="id-title">Marca verificada</div>
-            <p class="lead" style="font-size:15px">Los riders ven tu insignia verde y pueden postularse a tus campañas con su SPOTRA ID.</p>
-          </div>
-          <div class="section-head"><h2>Riders del team</h2><a data-route="scout">Sumar más</a></div>
-          <div class="gallery">
-            <div style="background-image:url('assets/eventos/skater-2.webp')"></div>
-            <div style="background-image:url('assets/eventos/skater.webp')"></div>
-            <div style="background-image:url('assets/eventos/skater-bowl.webp')"></div>
-            <div style="background-image:url('assets/eventos/biker-1.webp')"></div>
-            <div style="background-image:url('assets/eventos/bajando-rampa.webp')"></div>
-            <div style="background-image:url('assets/eventos/skater-cajon.webp')"></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ============ ADMIN ============ -->
     <section class="view" data-view="admin-approvals">
       <div class="section-head" style="margin-top:0"><h2 style="letter-spacing:.05em;text-transform:none;font-family:var(--display);font-size:30px"><span class="green">Admin</span> SPOTRA</h2></div>
       <div class="meta" style="margin:-6px 0 20px">Panel de aprobaciones y gestión</div>
@@ -1626,12 +1495,6 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <button data-route="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>Eventos</button>
     <button data-route="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
     <button data-route="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
-  </nav>
-  <nav class="bottom-nav cols-4" data-role-nav="brand" aria-label="Navegación marca">
-    <button class="active" data-route="brand-home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 13h7V4H4v9ZM13 20h7V4h-7v16ZM4 20h7v-4H4v4Z"/></svg>Panel</button>
-    <button data-route="scout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Descubrir</button>
-    <button data-route="applications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3l2.5 5 5.5.8-4 4 1 5.4L12 16l-5 2.2 1-5.4-4-4 5.5-.8L12 3Z"/></svg>Postulac.</button>
-    <button data-route="brand-store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Tienda</button>
   </nav>
   <nav class="bottom-nav cols-4" data-role-nav="admin" aria-label="Navegación admin">
     <button class="active" data-route="admin-approvals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Aprobar</button>
@@ -1850,7 +1713,15 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=14"></script>
+<script>
+window.SPOTRA_VAPID_PUBLIC_KEY = 'BM-PX91SylFCb7P2pVWt8G5sKNK3jj94BXkrP-cN_YP764VD_-2sZrDl4YzCBN5OO4v4A4GW10H89oLk9GUqJ8M';
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('[SPOTRA] SW:', err));
+  });
+}
+</script>
+<script src="assets/js/spotra-backend.js?v=15"></script>
 <script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2321,6 +2192,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-market.js?v=1"></script>
 <script src="assets/js/spotra-forum.js?v=1"></script>
+<script src="assets/js/spotra-push.js?v=1"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
