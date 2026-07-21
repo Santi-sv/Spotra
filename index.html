@@ -742,6 +742,14 @@ button:active{transform:scale(.96)}
 .forum-preview-row{display:flex;gap:12px;align-items:flex-start;padding:13px;border-radius:16px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.04);margin-top:10px}
 .forum-preview-row .avatar{width:38px;height:38px;border-radius:12px;flex-shrink:0}
 .forum-preview-row p{font-size:13px;color:#c7d2c9;margin-top:3px;line-height:1.45}
+.rk-row{display:flex;align-items:center;gap:12px;padding:12px 13px;border-radius:15px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.04);margin-top:8px}
+.rk-pos{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-family:var(--display);font-size:16px;color:var(--muted);border:1px solid rgba(255,255,255,.14);flex-shrink:0}
+.rk-row.top1 .rk-pos{background:var(--green-hot);color:#06130a;border-color:transparent}
+.rk-row.top2 .rk-pos,.rk-row.top3 .rk-pos{color:var(--green-hot);border-color:rgba(46,232,77,.5)}
+.rk-name{flex:1;min-width:0;font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk-name .meta{font-weight:400;font-size:11.5px;margin-top:1px}
+.rk-pts{font-family:var(--display);font-size:17px;color:var(--green-hot)}
+.rk-pts span{font-size:10px;color:var(--muted);display:block;text-align:right;font-family:var(--font, inherit)}
 
 /* Menú crear */
 .create-menu{display:grid;gap:11px;margin-top:14px}
@@ -1241,7 +1249,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     <section class="view" data-view="events">
       <div class="kicker">Competencias y juntadas</div>
       <div class="section-head" style="margin-top:2px"><h2 style="font-family:var(--display);font-size:30px;text-transform:none;letter-spacing:.02em">Eventos</h2></div>
-      <div class="tabs" id="eventsTabs" style="margin-top:10px"><button class="active" data-ev-tab="upcoming">Próximos</button><button data-ev-tab="mine">Mis eventos</button></div>
+      <div class="tabs" id="eventsTabs" style="margin-top:10px"><button class="active" data-ev-tab="upcoming">Próximos</button><button data-ev-tab="mine">Mis eventos</button><button data-ev-tab="ranking">Ranking</button></div>
       <div class="filter-row" id="eventsDisc" style="margin-top:2px"><button class="active" data-ev-disc="all">Todas</button><button data-ev-disc="skate">Skate</button><button data-ev-disc="bmx">BMX</button><button data-ev-disc="rollers">Rollers</button></div>
       <div id="eventsList"><div class="meta" style="margin-top:14px">Cargando eventos...</div></div>
       <div id="eventDetail" style="display:none"></div>
@@ -1854,7 +1862,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
 <script src="config.js"></script>
-<script src="assets/js/spotra-backend.js?v=11"></script>
+<script src="assets/js/spotra-backend.js?v=12"></script>
 <script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2343,7 +2351,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=5"></script>
 <script src="assets/js/spotra-admin.js?v=7"></script>
-<script src="assets/js/spotra-events.js?v=3"></script>
+<script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
 </body>
