@@ -624,6 +624,133 @@
     return data || [];
   }
 
+
+  /* ===== Marketplace (usados entre riders) ===== */
+  function normalizeListing(row){
+    return {
+      id: row.id,
+      sellerId: row.seller_id,
+      username: row.username || 'rider',
+      whatsapp: row.whatsapp || '',
+      title: row.title,
+      description: row.description || '',
+      category: row.category || 'otros',
+      condition: row.condition || 'bueno',
+      price: Number(row.price),
+      currency: row.currency || 'UYU',
+      city: row.city || '',
+      lat: row.latitude != null ? Number(row.latitude) : null,
+      lng: row.longitude != null ? Number(row.longitude) : null,
+      photos: Array.isArray(row.photos) ? row.photos : [],
+      status: row.status || 'pending',
+      sold: !!row.sold,
+      createdAt: row.created_at ? new Date(row.created_at) : null
+    };
+  }
+
+  const LISTING_COLS = 'id, seller_id, username, whatsapp, title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at';
+
+  async function listListings(options = {}){
+    const db = await client();
+    if(!db) return [];
+    let query = db.from('listings').select(LISTING_COLS)
+      .eq('status', 'approved').eq('sold', false)
+      .order('created_at', { ascending: false })
+      .limit(options.limit || 100);
+    if(options.category && options.category !== 'all') query = query.eq('category', options.category);
+    const { data, error } = await query;
+    if(error){ console.warn('[SPOTRA] listListings:', error.message); return []; }
+    return (data || []).map(normalizeListing);
+  }
+
+  async function listMyListings(){
+    const db = await client();
+    if(!db) return [];
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return [];
+    const { data, error } = await db.from('listings').select(LISTING_COLS)
+      .eq('seller_id', authData.user.id)
+      .order('created_at', { ascending: false }).limit(100);
+    if(error){ console.warn('[SPOTRA] listMyListings:', error.message); return []; }
+    return (data || []).map(normalizeListing);
+  }
+
+  async function createListing(payload){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: authData } = await db.auth.getUser();
+    if(!authData?.user?.id) return { ok: false, error: 'auth' };
+    let username = '';
+    const { data: prof } = await db.from('profiles').select('username, full_name').eq('id', authData.user.id).single();
+    if(prof) username = prof.username || prof.full_name || '';
+    const { error } = await db.from('listings').insert({
+      seller_id: authData.user.id,
+      username,
+      whatsapp: payload.whatsapp,
+      title: payload.title,
+      description: payload.description || null,
+      category: payload.category,
+      condition: payload.condition,
+      price: payload.price,
+      currency: payload.currency,
+      city: payload.city || null,
+      latitude: payload.lat != null ? payload.lat : null,
+      longitude: payload.lng != null ? payload.lng : null,
+      photos: Array.isArray(payload.photos) ? payload.photos : [],
+      status: 'pending'
+    });
+    if(error){ console.warn('[SPOTRA] createListing:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function markListingSold(id){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.rpc('mark_listing_sold', { p_listing_id: id });
+    if(error){ console.warn('[SPOTRA] markListingSold:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function deleteListing(id){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.from('listings').delete().eq('id', id);
+    if(error){ console.warn('[SPOTRA] deleteListing:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function listPendingListings(){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db.from('listings').select(LISTING_COLS)
+      .eq('status', 'pending')
+      .order('created_at', { ascending: false }).limit(100);
+    if(error){ console.warn('[SPOTRA] listPendingListings:', error.message); return []; }
+    return (data || []).map(normalizeListing);
+  }
+
+  async function reviewListing(id, decision){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const status = decision === 'approved' ? 'approved' : 'rejected';
+    const { error } = await db.from('listings').update({ status, updated_at: new Date().toISOString() }).eq('id', id);
+    if(error){ console.warn('[SPOTRA] reviewListing:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function uploadListingImage(blob, ext){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { data: u } = await db.auth.getUser();
+    if(!(u && u.user)) return { ok: false, error: 'iniciá sesión' };
+    const rand = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + '-' + Math.random().toString(36).slice(2));
+    const path = 'listings/' + rand + '.' + ext;
+    const up = await db.storage.from('place-images').upload(path, blob, { contentType: blob.type, upsert: false });
+    if(up.error) return { ok: false, error: up.error.message };
+    const { data: pub } = db.storage.from('place-images').getPublicUrl(path);
+    return { ok: true, url: pub.publicUrl };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -655,6 +782,14 @@
     saveEventResults,
     listEventResults,
     listRanking,
+    listListings,
+    listMyListings,
+    createListing,
+    markListingSold,
+    deleteListing,
+    listPendingListings,
+    reviewListing,
+    uploadListingImage,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
