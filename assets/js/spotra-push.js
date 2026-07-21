@@ -1,4 +1,5 @@
-/* SPOTRA · Notificaciones push (v1)
+/* SPOTRA · Notificaciones push (v2)
+   - v2: el botón se muestra siempre primero; la consulta al service worker no bloquea la interfaz.
    - Solo funciona con la app INSTALADA en el celular (requisito de iOS).
    - Pide permiso con un toque del usuario, se suscribe y guarda la suscripción en Supabase.
    - Pensado para mobile: el panel se adapta y los mensajes explican qué hacer. */
@@ -36,10 +37,26 @@
     else el.style.display = 'none';
   }
 
+  function swReady(ms){
+    return Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise(resolve => setTimeout(() => resolve(null), ms || 4000))
+    ]);
+  }
+
+  async function ensureRegistration(){
+    if(!supported()) return null;
+    let reg = await swReady(4000);
+    if(reg) return reg;
+    try { reg = await navigator.serviceWorker.register('sw.js'); } catch(e){ console.warn('[SPOTRA] SW register:', e); return null; }
+    return await swReady(6000);
+  }
+
   async function currentSubscription(){
     if(!supported()) return null;
-    const reg = await navigator.serviceWorker.ready;
-    return await reg.pushManager.getSubscription();
+    const reg = await swReady(3000);
+    if(!reg) return null;
+    try { return await reg.pushManager.getSubscription(); } catch(e){ return null; }
   }
 
   async function refreshUI(){
@@ -58,10 +75,11 @@
       hint('Bloqueaste las notificaciones. Podés habilitarlas desde los ajustes del navegador para SPOTRA.');
       return;
     }
-    const sub = await currentSubscription();
-    const btn = document.getElementById('pushBtn');
+    /* mostramos el botón de inmediato: no dependemos del service worker para pintarlo */
     showBox(true);
     hint('');
+    const sub = await currentSubscription();
+    const btn = document.getElementById('pushBtn');
     if(btn){
       btn.textContent = sub ? 'Desactivar notificaciones' : 'Activar notificaciones';
       btn.dataset.on = sub ? '1' : '';
@@ -79,7 +97,8 @@
     const perm = await Notification.requestPermission();
     if(perm !== 'granted'){ toast('No se activaron las notificaciones.'); refreshUI(); return; }
     try {
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await ensureRegistration();
+      if(!reg){ toast('El servicio de notificaciones no está listo. Cerrá y abrí la app.'); return; }
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(key)
@@ -116,8 +135,16 @@
     if(e.target.closest('.notif-wrap')) setTimeout(refreshUI, 60);
   });
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', refreshUI);
-  else refreshUI();
+  function boot(){
+    refreshUI();
+    /* segundo intento cuando el service worker ya se registró */
+    setTimeout(refreshUI, 1500);
+    if('serviceWorker' in navigator){
+      navigator.serviceWorker.ready.then(() => refreshUI()).catch(() => {});
+    }
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 
   window.SpotraPush = { refreshUI, enable, disable };
 })();
