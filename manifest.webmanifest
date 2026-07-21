@@ -1,7 +1,7 @@
 {
   "name": "SPOTRA",
   "short_name": "SPOTRA",
-  "description": "Mapa, comunidad, marketplace y sponsors para skaters y bikers.",
+  "description": "Mapa de spots, eventos, ranking, market y foro para riders de skate, BMX y rollers.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
