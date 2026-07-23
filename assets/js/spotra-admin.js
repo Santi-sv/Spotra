@@ -9,6 +9,16 @@
   const NO   = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>';
 
   function notify(msg){ (window.toast || function(m){ console.log('[SPOTRA]', m); })(msg); }
+
+  /* Envia una push sin bloquear ni romper el flujo. to = profileId; sin to va a todos. */
+  function push(title, body, to){
+    try {
+      if(!(window.SpotraBackend && window.SpotraBackend.sendPush)) return;
+      const payload = { title: title, body: body || '', url: '/' };
+      if(to) payload.profileIds = [to];
+      Promise.resolve(window.SpotraBackend.sendPush(payload)).catch(function(){});
+    } catch(err){ console.warn('[SPOTRA] push:', err); }
+  }
   function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
   async function db(){
@@ -33,7 +43,7 @@
 
   function rowHTML(s){
     const missing = !hasCoords(s);
-    return `<div class="approve-row" data-sub-id="${esc(s.id)}" data-lat="${missing ? '' : s.lat}" data-lng="${missing ? '' : s.lng}">
+    return `<div class="approve-row" data-sub-id="${esc(s.id)}" data-author="${esc(s.submittedBy || '')}" data-lat="${missing ? '' : s.lat}" data-lng="${missing ? '' : s.lng}">
       <div class="thumb" style="background-image:url('${esc(s.imageUrl)}')"></div>
       <div><div class="kind">${esc(s.label)}</div><div class="name">${esc(s.name)}</div>
         <div class="ln">${PIN}${esc(s.address)}</div>
@@ -46,7 +56,7 @@
   }
 
   function photoRowHTML(p){
-    return `<div class="approve-row" data-photo-id="${esc(p.id)}">
+    return `<div class="approve-row" data-photo-id="${esc(p.id)}" data-author="${esc(p.uploadedBy || '')}">
       <div class="thumb" style="background-image:url('${esc(p.url)}')"></div>
       <div><div class="kind">Foto</div><div class="name">${esc(p.placeName)}</div>
         <div class="ln">${PIN}Imagen enviada para este lugar</div>
@@ -65,7 +75,7 @@
   }
 
   function eventRowHTML(ev){
-    return `<div class="approve-row" data-event-id="${esc(ev.id)}">
+    return `<div class="approve-row" data-event-id="${esc(ev.id)}" data-author="${esc(ev.organizerId || '')}" data-place="${esc(ev.placeName || '')}">
       <div class="thumb" style="display:grid;place-items:center;color:var(--green-hot)">${CAL}</div>
       <div><div class="kind">Evento</div><div class="name">${esc(ev.title)}</div>
         <div class="ln">${PIN}${esc(ev.placeName || 'Spot')}${ev.placeCity ? ' · ' + esc(ev.placeCity) : ''}</div>
@@ -80,7 +90,7 @@
 
   function listingRowHTML(l){
     const cur = { UYU: '$U', USD: 'US$', ARS: 'AR$', BRL: 'R$' }[l.currency] || l.currency;
-    return `<div class="approve-row" data-listing-id="${esc(l.id)}">
+    return `<div class="approve-row" data-listing-id="${esc(l.id)}" data-author="${esc(l.sellerId || '')}">
       <div class="thumb" style="background-image:url('${esc(l.photos && l.photos[0] || '')}')"></div>
       <div><div class="kind">Producto</div><div class="name">${esc(l.title)}</div>
         <div class="ln">${TAG}${esc(cur)} ${esc(String(l.price))} · ${esc(l.category)} · ${esc(l.condition)}</div>
@@ -100,6 +110,42 @@
     if(chip) chip.textContent = n;
     const kpis = v.querySelectorAll('.kpi .num');
     if(kpis[1]) kpis[1].textContent = n;
+  }
+
+  /* ---- Enviar aviso a todos (manual) ---- */
+  function ensureBroadcast(v){
+    if(document.getElementById('admBroadcast')) return;
+    const box = document.createElement('div');
+    box.id = 'admBroadcast';
+    box.style.cssText = 'margin-top:26px;padding:18px;border:1px solid rgba(116,255,58,.28);border-radius:20px;background:rgba(8,12,9,.7)';
+    box.innerHTML = '<b style="display:block;color:#fff;font-family:var(--display);font-size:20px;margin-bottom:4px">Enviar aviso a todos</b>' +
+      '<div style="color:var(--muted);font-size:13px;margin-bottom:14px">Le llega a todos los riders con notificaciones activadas.</div>' +
+      '<input id="admBcTitle" maxlength="60" placeholder="Titulo (ej. Nueva competencia)" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:13px;color:#fff;font-size:15px;margin-bottom:10px">' +
+      '<input id="admBcBody" maxlength="120" placeholder="Texto del aviso" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);border-radius:13px;padding:13px;color:#fff;font-size:15px;margin-bottom:12px">' +
+      '<button id="admBcSend" style="width:100%;background:var(--green-hot);color:#06100a;border:0;border-radius:13px;padding:14px;font-weight:800;font-size:15px;cursor:pointer">Enviar a todos</button>';
+    v.appendChild(box);
+    document.getElementById('admBcSend').addEventListener('click', sendBroadcast);
+  }
+
+  async function sendBroadcast(){
+    const t = document.getElementById('admBcTitle');
+    const b = document.getElementById('admBcBody');
+    const btn = document.getElementById('admBcSend');
+    const title = (t.value || '').trim();
+    if(!title){ notify('Escribi un titulo para el aviso.'); t.focus(); return; }
+    if(!window.confirm('Se va a enviar a TODOS los riders suscriptos. Confirmas?')) return;
+    btn.disabled = true; btn.textContent = 'Enviando...';
+    let res = { ok: false };
+    if(window.SpotraBackend && window.SpotraBackend.sendPush){
+      res = await window.SpotraBackend.sendPush({ title: title, body: (b.value || '').trim(), url: '/' });
+    }
+    btn.disabled = false; btn.textContent = 'Enviar a todos';
+    if(res && res.ok){
+      t.value = ''; b.value = '';
+      notify('Aviso enviado a ' + (res.sent || 0) + ' de ' + (res.total || 0) + ' dispositivos.');
+    } else {
+      notify('No se pudo enviar. ' + ((res && res.error) || 'Probá de nuevo.'));
+    }
   }
 
   let loading = false;
@@ -127,10 +173,12 @@
       if(!total){
         if(subTabs) subTabs.insertAdjacentHTML('afterend', noteHTML('No hay envíos pendientes por ahora.'));
         setCount(v, 0);
+        ensureBroadcast(v);
         return;
       }
       if(subTabs) subTabs.insertAdjacentHTML('afterend', subs.map(rowHTML).join('') + events.map(eventRowHTML).join('') + listings.map(listingRowHTML).join('') + photos.map(photoRowHTML).join(''));
       setCount(v, total);
+      ensureBroadcast(v);
     } finally {
       loading = false;
     }
@@ -172,6 +220,23 @@
       const n = Math.max(0, (parseInt((chip && chip.textContent) || '0', 10) || 0) - 1);
       setCount(v, n);
     }
+    /* --- notificaciones automaticas --- */
+    const author = row.dataset.author || '';
+    const clean = name.trim();
+    if(decision === 'approved'){
+      if(listingId){ if(author) push('Tu publicacion ya esta en el Market', clean, author); }
+      else if(eventId){
+        const place = row.dataset.place || '';
+        push('Nuevo evento en SPOTRA', clean + (place ? ' · ' + place : ''));
+      }
+      else if(photoId){ if(author) push('Tu foto ya se ve en el spot', clean, author); }
+      else if(author){ push('Tu spot ya esta en el mapa', clean, author); }
+    } else if(author){
+      if(listingId) push('Tu publicacion no fue aprobada', clean + ' — revisa las fotos y la descripcion.', author);
+      else if(eventId) push('Tu evento no fue aprobado', clean + ' — escribinos si queres saber por que.', author);
+      else if(!photoId) push('Tu spot no fue aprobado', clean + ' — revisa la info y la ubicacion.', author);
+    }
+
     const what = listingId ? 'Producto' : eventId ? 'Evento' : photoId ? 'Foto' : 'Lugar';
     notify(decision === 'approved'
       ? `${what} de "${name.trim()}" aprobado.`
