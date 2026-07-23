@@ -261,7 +261,7 @@
     if(!db) return [];
     const { data, error } = await db
       .from('place_submissions')
-      .select('id, candidate_google_place_id, type, name, description, country_code, city, address, latitude, longitude, image_url, created_at')
+      .select('id, candidate_google_place_id, type, name, description, country_code, city, address, latitude, longitude, image_url, created_at, submitted_by')
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(100);
@@ -278,6 +278,7 @@
       lng: Number(row.longitude),
       imageUrl: row.image_url || 'assets/banners/banner-skatepark-4.webp',
       googlePlaceId: row.candidate_google_place_id || '',
+      submittedBy: row.submitted_by || null,
       createdAt: row.created_at
     }));
   }
@@ -348,11 +349,12 @@
     const db = await client();
     if(!db) return [];
     const { data, error } = await db.from('place_photos')
-      .select('id, url, created_at, place_id, places(name, type)')
+      .select('id, url, created_at, place_id, uploaded_by, places(name, type)')
       .eq('status','pending').order('created_at', { ascending:false }).limit(100);
     if(error){ console.warn('[SPOTRA] listPendingPhotos:', error.message); return []; }
     return (data || []).map(r => ({
       id: r.id, url: r.url, placeId: r.place_id,
+      uploadedBy: r.uploaded_by || null,
       placeName: r.places ? r.places.name : 'Lugar',
       placeType: r.places ? normalizeType(r.places.type) : ''
     }));
@@ -905,6 +907,42 @@
     return { ok: true };
   }
 
+  /* ===== Push: enviar notificaciones (solo admin) ===== */
+  // payload: { title, body, url, profileIds }
+  // Sin profileIds -> va a todos los suscriptos.
+  // Nunca lanza: si falla, devuelve { ok:false } y no rompe el flujo que la llamo.
+  async function sendPush(payload){
+    try {
+      if(!payload || !payload.title) return { ok: false, error: 'falta title' };
+      const db = await client();
+      if(!db) return { ok: false, error: 'sin conexion' };
+      const { data: sess } = await db.auth.getSession();
+      const token = sess && sess.session && sess.session.access_token;
+      if(!token) return { ok: false, error: 'auth' };
+      const ids = Array.isArray(payload.profileIds) ? payload.profileIds.filter(Boolean) : [];
+      const body = { title: payload.title, body: payload.body || '', url: payload.url || '/' };
+      if(ids.length) body.profileIds = ids;
+      const res = await fetch(String(cfg.SUPABASE_URL).replace(/\/+$/, '') + '/functions/v1/send-push', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': cfg.SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify(body)
+      });
+      const out = await res.json().catch(() => ({}));
+      if(!res.ok){
+        console.warn('[SPOTRA] sendPush:', out.error || res.status);
+        return { ok: false, error: out.error || String(res.status) };
+      }
+      return { ok: true, sent: out.sent || 0, total: out.total || 0, removed: out.removed || 0 };
+    } catch(err){
+      console.warn('[SPOTRA] sendPush:', err);
+      return { ok: false, error: String(err) };
+    }
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -954,6 +992,7 @@
     uploadPostImage,
     savePushSubscription,
     deletePushSubscription,
+    sendPush,
     listPendingEvents,
     reviewEvent,
     seedPlaces: seedPlaces.map(normalizePlace)
