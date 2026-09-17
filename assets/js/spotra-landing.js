@@ -155,40 +155,18 @@
   + '.sg-sec-title{text-align:center;margin:34px 0 4px;font-family:"Clash Display","General Sans",sans-serif;font-size:19px;font-weight:600;}'
   + '.sg-sec-sub{text-align:center;color:#9aa39a;font-size:13px;margin:0 0 16px;}'
   /* demo phone */
-  + '.sg-phone{width:280px;margin:0 auto;background:#0b0f0c;border:8px solid #1b211c;border-radius:34px;box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;}'
-  + '.sg-screen{height:470px;position:relative;overflow:hidden;background:#070907;}'
-  + '.sg-view{position:absolute;inset:0;padding:14px 12px 62px;overflow:hidden;display:none;}'
-  + '.sg-view.on{display:block;}'
-  + '.sg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}'
-  + '.sg-top b{font-family:"Clash Display","General Sans",sans-serif;font-size:14px;letter-spacing:.12em;}'
-  + '.sg-top b i{font-style:normal;color:#2ee84d;}'
-  + '.sg-dot{width:22px;height:22px;border-radius:50%;background:#1d261f;border:1px solid rgba(255,255,255,.12);}'
-  + '.sg-chips{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}'
-  + '.sg-chip{font-size:10px;padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14);color:#9aa39a;}'
-  + '.sg-chip.on{background:#2ee84d;color:#06210c;border-color:#2ee84d;font-weight:700;}'
-  + '.sg-box{background:#101610;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:10px;margin-bottom:9px;}'
-  + '.sg-box h4{margin:0 0 3px;font-size:12px;font-weight:600;}'
-  + '.sg-box p{margin:0;font-size:10px;color:#8d968d;line-height:1.4;}'
-  + '.sg-tag{display:inline-block;font-size:9px;color:#2ee84d;border:1px solid rgba(46,232,77,.4);border-radius:999px;padding:2px 7px;margin-bottom:5px;letter-spacing:.06em;}'
-  + '.sg-thumb{height:56px;border-radius:9px;background:linear-gradient(135deg,#1b2a1d,#0f1710);border:1px solid rgba(255,255,255,.07);margin-bottom:6px;}'
-  + '.sg-mapbg{position:absolute;inset:0;background:#0a0f0b;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:34px 34px;}'
-  + '.sg-road{position:absolute;background:rgba(255,255,255,.07);}'
-  + '.sg-pin{position:absolute;width:26px;height:26px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#2ee84d;box-shadow:0 4px 10px rgba(0,0,0,.5);}'
-  + '.sg-pin.alt{background:#fff;}'
-  + '.sg-pin.dim{background:#3f4a41;}'
-  + '.sg-sheet{position:absolute;left:10px;right:10px;bottom:70px;background:#101610;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;}'
-  + '.sg-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}'
-  + '.sg-price{color:#2ee84d;font-weight:700;font-size:11px;}'
-  + '.sg-nav{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;background:#0b110c;border-top:1px solid rgba(255,255,255,.1);}'
-  + '.sg-nav button{flex:1;background:none;border:0;color:#6e776e;font-size:9px;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:0;}'
-  + '.sg-nav button i{width:16px;height:16px;border-radius:4px;border:1.6px solid currentColor;display:block;}'
-  + '.sg-nav button.on{color:#2ee84d;font-weight:700;}'
-  + '.sg-avatar{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#2ee84d,#19b335);margin:0 auto 8px;}'
-  + '.sg-stats{display:flex;gap:8px;margin-top:10px;}'
-  + '.sg-stats div{flex:1;background:#101610;border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:8px 4px;text-align:center;}'
-  + '.sg-stats b{display:block;font-size:14px;color:#2ee84d;}'
-  + '.sg-stats span{font-size:9px;color:#8d968d;}'
-  + '.sg-demo-hint{text-align:center;color:#606960;font-size:12px;margin-top:12px;}'
+  + '.sg-phone{width:296px;margin:0 auto;background:#0b0f0c;border:8px solid #1b211c;border-radius:34px;box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;}'
+  + '.sg-screenbox{width:280px;height:497px;overflow:hidden;position:relative;background:#070907;border-radius:26px;margin:0 auto;}'
+  + '.sg-rail{display:flex;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}'
+  + '.sg-rail::-webkit-scrollbar{display:none;}'
+  + '.sg-rail figure{flex:0 0 280px;margin:0;scroll-snap-align:center;}'
+  + '.sg-rail img{width:280px;height:497px;object-fit:cover;object-position:top center;display:block;}'
+  + '.sg-dots{display:flex;gap:7px;justify-content:center;margin-top:14px;}'
+  + '.sg-dots button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#2a332b;cursor:pointer;}'
+  + '.sg-dots button.on{background:#2ee84d;width:20px;border-radius:999px;}'
+  + '.sg-caption{text-align:center;color:#9aa39a;font-size:13px;margin:10px 0 0;min-height:19px;}'
+  + '.sg-demo-hint{text-align:center;color:#606960;font-size:12px;margin-top:8px;}'
+  + '@media(max-width:360px){.sg-phone{width:266px}.sg-screenbox{width:250px;height:444px}.sg-rail figure{flex-basis:250px}.sg-rail img{width:250px;height:444px}}'
   + '.sg-access{margin-top:30px;text-align:center;}'
   + '.sg-access summary{color:#9aa39a;font-size:13px;cursor:pointer;list-style:none;}'
   + '.sg-access summary::-webkit-details-marker{display:none;}'
@@ -202,74 +180,60 @@
   st.textContent = css;
   document.head.appendChild(st);
 
-  /* ---------- pantallas del demo ---------- */
-  function viewHome(){
-    return ''
-    + '<div class="sg-top"><b>SPOT<i>RA</i></b><span class="sg-dot"></span></div>'
-    + '<div class="sg-box"><span class="sg-tag">CERCA TUYO</span><h4>12 spots a menos de 5 km</h4><p>Skateparks, street spots y tiendas cargados por riders.</p></div>'
-    + '<div class="sg-thumb"></div>'
-    + '<div class="sg-box"><h4>Foro</h4><p>@nico_bmx: alguien va al park de Malvin hoy a la tarde?</p><p style="margin-top:5px;color:#2ee84d">14 me gusta · 6 comentarios</p></div>'
-    + '<div class="sg-box"><span class="sg-tag">PROXIMO EVENTO</span><h4>Game of SKATE · Parque Rodo</h4><p>Sab 12 · inscripcion abierta</p></div>';
-  }
-  function viewMap(){
-    return ''
-    + '<div class="sg-mapbg"></div>'
-    + '<div class="sg-road" style="left:0;right:0;top:120px;height:8px"></div>'
-    + '<div class="sg-road" style="left:90px;top:0;bottom:0;width:8px"></div>'
-    + '<div class="sg-pin" style="left:52px;top:96px"></div>'
-    + '<div class="sg-pin alt" style="left:150px;top:64px"></div>'
-    + '<div class="sg-pin dim" style="left:190px;top:170px"></div>'
-    + '<div class="sg-pin dim" style="left:70px;top:210px"></div>'
-    + '<div class="sg-sheet"><span class="sg-tag">SKATEPARK</span><h4 style="margin:0 0 3px;font-size:13px">Parque Seregni</h4>'
-    + '<p style="margin:0;font-size:10px;color:#8d968d">Montevideo · a 2,3 km · 18 fotos</p>'
-    + '<div style="display:flex;gap:6px;margin-top:9px"><span class="sg-chip on">Como llegar</span><span class="sg-chip">Subir foto</span></div></div>';
-  }
-  function viewEvents(){
-    return ''
-    + '<div class="sg-top"><b>Eventos</b><span class="sg-dot"></span></div>'
-    + '<div class="sg-chips"><span class="sg-chip on">Todas</span><span class="sg-chip">Skate</span><span class="sg-chip">BMX</span><span class="sg-chip">Rollers</span></div>'
-    + '<div class="sg-box"><span class="sg-tag">SAB 12 · 15:00</span><h4>Game of SKATE · Parque Rodo</h4><p>Categorias: Open, Junior, Femenino · 14/30 anotados</p><div style="display:flex;gap:6px;margin-top:8px"><span class="sg-chip on">Anotarme</span><span class="sg-chip">Ver detalle</span></div></div>'
-    + '<div class="sg-box"><span class="sg-tag">DOM 27</span><h4>Best Trick BMX · La Paz</h4><p>Premio en efectivo · inscripcion hasta el 25</p></div>'
-    + '<div class="sg-box"><h4>Ranking Skate</h4><p>1. @tomi_sk8 — 260 pts</p><p>2. @juli.rides — 190 pts</p><p>3. @nacho — 130 pts</p></div>';
-  }
-  function viewMarket(){
-    return ''
-    + '<div class="sg-top"><b>Market</b><span class="sg-dot"></span></div>'
-    + '<div class="sg-chips"><span class="sg-chip on">Cerca de mi</span><span class="sg-chip">Tablas</span><span class="sg-chip">Ruedas</span><span class="sg-chip">Bicis</span></div>'
-    + '<div class="sg-grid2">'
-    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>Tabla Element 8.0</h4><span class="sg-price">$ 2.500</span><p>Usada · a 1,8 km</p></div>'
-    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>BMX Wethepeople</h4><span class="sg-price">USD 340</span><p>Muy buena · a 4 km</p></div>'
-    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>Rollers talle 42</h4><span class="sg-price">$ 3.900</span><p>Como nueva · a 6 km</p></div>'
-    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>Casco + rodilleras</h4><span class="sg-price">$ 1.200</span><p>Usado · a 900 m</p></div>'
-    + '</div>';
-  }
-  function viewProfile(){
-    return ''
-    + '<div class="sg-top"><b>Perfil</b><span class="sg-dot"></span></div>'
-    + '<div style="text-align:center"><div class="sg-avatar"></div>'
-    + '<h4 style="margin:0;font-size:14px">Santi V.</h4>'
-    + '<p style="margin:3px 0 0;font-size:10px;color:#8d968d">@santi.sk8 · Skate · El Pinar</p></div>'
-    + '<div class="sg-stats"><div><b>7</b><span>spots</span></div><div><b>3</b><span>eventos</span></div><div><b>260</b><span>puntos</span></div></div>'
-    + '<div class="sg-box" style="margin-top:12px"><h4>Mis publicaciones</h4><p>Tabla Element 8.0 · publicada</p></div>'
-    + '<div class="sg-box"><h4>Configuracion</h4><p>Notificaciones activadas</p></div>';
-  }
-
-  var VIEWS = [
-    { id:'home', label:'Inicio', html:viewHome },
-    { id:'map', label:'Mapa', html:viewMap },
-    { id:'events', label:'Eventos', html:viewEvents },
-    { id:'market', label:'Market', html:viewMarket },
-    { id:'profile', label:'Perfil', html:viewProfile }
+  /* ---------- demo: capturas reales de la app ---------- */
+  var SHOTS = [
+    { src:'assets/preview/p1-inicio.webp',  cap:'Inicio: tu red rider, spots cercanos y accesos rapidos' },
+    { src:'assets/preview/p2-mapa.webp',    cap:'Mapa: skateparks, spots y tiendas cargados por riders' },
+    { src:'assets/preview/p3-spot.webp',    cap:'Ficha del spot: fotos, descripcion y como llegar' },
+    { src:'assets/preview/p4-eventos.webp', cap:'Eventos: competencias, inscripciones y ranking' },
+    { src:'assets/preview/p7-market.webp',  cap:'Market: usados entre riders, contacto directo por WhatsApp' },
+    { src:'assets/preview/p8-foro.webp',    cap:'Foro: la escena hablando, con fotos, likes y comentarios' },
+    { src:'assets/preview/p5-perfil.webp',  cap:'Perfil: tu muro, tus podios y tus redes' }
   ];
 
+
   function demoHTML(){
-    var views = VIEWS.map(function(v,i){
-      return '<div class="sg-view' + (i===0?' on':'') + '" data-view="' + v.id + '">' + v.html() + '</div>';
+    var slides = SHOTS.map(function(s, i){
+      return '<figure><img src="' + s.src + '" alt="Pantalla de SPOTRA" ' + (i ? 'loading="lazy"' : '') + '></figure>';
     }).join('');
-    var nav = VIEWS.map(function(v,i){
-      return '<button type="button" data-go="' + v.id + '" class="' + (i===0?'on':'') + '"><i></i>' + v.label + '</button>';
+    var dots = SHOTS.map(function(s, i){
+      return '<button type="button" data-shot="' + i + '" class="' + (i === 0 ? 'on' : '') + '" aria-label="Pantalla ' + (i+1) + '"></button>';
     }).join('');
-    return '<div class="sg-phone"><div class="sg-screen">' + views + '<div class="sg-nav">' + nav + '</div></div></div>';
+    return '<div class="sg-phone"><div class="sg-screenbox"><div class="sg-rail" id="sgRail">' + slides + '</div></div></div>'
+      + '<div class="sg-dots" id="sgDots">' + dots + '</div>'
+      + '<p class="sg-caption" id="sgCap">' + SHOTS[0].cap + '</p>';
+  }
+
+  function wireGallery(){
+    var rail = gate.querySelector('#sgRail');
+    var dots = gate.querySelector('#sgDots');
+    var cap = gate.querySelector('#sgCap');
+    if(!rail || !dots) return;
+
+    function current(){
+      var fig = rail.querySelector('figure');
+      var w = fig ? fig.offsetWidth : 280;
+      return Math.round(rail.scrollLeft / w);
+    }
+    function paint(){
+      var i = Math.max(0, Math.min(SHOTS.length - 1, current()));
+      Array.prototype.forEach.call(dots.children, function(b, n){
+        b.classList.toggle('on', n === i);
+      });
+      if(cap) cap.textContent = SHOTS[i].cap;
+    }
+    var t;
+    rail.addEventListener('scroll', function(){
+      clearTimeout(t);
+      t = setTimeout(paint, 80);
+    });
+    dots.addEventListener('click', function(ev){
+      var b = ev.target.closest('[data-shot]');
+      if(!b) return;
+      var fig = rail.querySelector('figure');
+      var w = fig ? fig.offsetWidth : 280;
+      rail.scrollTo({ left: w * parseInt(b.getAttribute('data-shot'), 10), behavior:'smooth' });
+    });
   }
 
   /* ---------- overlay ---------- */
@@ -293,9 +257,9 @@
   +     '<div class="sg-msg" id="sgMsg"></div>'
   +   '</div>'
   +   '<h3 class="sg-sec-title">Mira como va a ser por dentro</h3>'
-  +   '<p class="sg-sec-sub">Tocá los botones de abajo del celular y recorré las pantallas.</p>'
+  +   '<p class="sg-sec-sub">Capturas reales de SPOTRA. Desliza para ver las pantallas.</p>'
   +   demoHTML()
-  +   '<p class="sg-demo-hint">Demo de muestra. Los datos son de ejemplo.</p>'
+  +   '<p class="sg-demo-hint">Version en desarrollo. Algunas pantallas van a cambiar.</p>'
   +   '<p class="sg-foot">SPOTRA · Uruguay<br><a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com</p>'
   + '</div>';
 
@@ -305,19 +269,7 @@
   }
 
   function wire(){
-    /* demo nav */
-    gate.querySelectorAll('.sg-nav button').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        var id = btn.getAttribute('data-go');
-        gate.querySelectorAll('.sg-view').forEach(function(v){
-          v.classList.toggle('on', v.getAttribute('data-view') === id);
-        });
-        gate.querySelectorAll('.sg-nav button').forEach(function(b){
-          b.classList.toggle('on', b === btn);
-        });
-      });
-    });
-
+    wireGallery();
     /* lista de espera */
     var form = gate.querySelector('#sgForm');
     var msg = gate.querySelector('#sgMsg');
