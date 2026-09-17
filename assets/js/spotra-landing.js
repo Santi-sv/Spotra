@@ -1,0 +1,327 @@
+/* SPOTRA — Capa de lanzamiento (landing + lista de espera + demo + clave de acceso)
+   No toca nada de la app: se dibuja encima. Si el visitante tiene acceso, no se muestra.
+   ------------------------------------------------------------------
+   PARA CAMBIAR LA CLAVE DE ACCESO: editá la línea de abajo (CLAVE_ACCESO).
+   ------------------------------------------------------------------ */
+(function(){
+  'use strict';
+
+  var CLAVE_ACCESO = 'rider2026';           // <-- tu clave para entrar a la app
+  var WHATSAPP_FALLBACK = '59896452060';    // si falla el guardado, se ofrece WhatsApp
+  var STORAGE_KEY = 'spotra_access';
+
+  var cfg = window.SPOTRA_CONFIG || {};
+
+  function unlock(){
+    try { localStorage.setItem(STORAGE_KEY, 'ok'); } catch(e){}
+  }
+  function hasAccess(){
+    try { return localStorage.getItem(STORAGE_KEY) === 'ok'; } catch(e){ return false; }
+  }
+  function releaseLock(){
+    document.documentElement.classList.remove('gate-lock');
+  }
+
+  // Acceso directo por URL: spotra.onrender.com/?acceso=TUCLAVE
+  try {
+    var q = new URLSearchParams(location.search);
+    if(q.get('acceso') && q.get('acceso') === CLAVE_ACCESO){ unlock(); }
+  } catch(e){}
+
+  if(hasAccess()){ releaseLock(); return; }
+
+  document.documentElement.classList.add('gate-lock');
+
+  /* ---------- estilos ---------- */
+  var css = ''
+  + '.spotra-gate{position:fixed;inset:0;z-index:99999;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(120% 80% at 50% 0%,#121a13 0%,#070907 60%);color:#f5f7f4;font-family:"General Sans",system-ui,-apple-system,sans-serif;}'
+  + '.sg-wrap{max-width:560px;margin:0 auto;padding:28px 18px 56px;}'
+  + '.sg-logo{font-family:"Clash Display","General Sans",sans-serif;font-weight:700;font-size:26px;letter-spacing:.14em;color:#fff;text-align:center;}'
+  + '.sg-logo span{color:#2ee84d;}'
+  + '.sg-kicker{text-align:center;color:#2ee84d;font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin-top:6px;font-weight:600;}'
+  + '.sg-h1{font-family:"Clash Display","General Sans",sans-serif;font-weight:700;font-size:28px;line-height:1.15;text-align:center;margin:26px 0 10px;}'
+  + '.sg-h1 em{font-style:normal;color:#2ee84d;}'
+  + '.sg-sub{text-align:center;color:#9aa39a;font-size:15px;line-height:1.5;margin:0 auto 22px;max-width:420px;}'
+  + '.sg-card{background:rgba(16,22,18,.9);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;}'
+  + '.sg-card h2{font-family:"Clash Display","General Sans",sans-serif;font-size:17px;margin:0 0 4px;font-weight:600;}'
+  + '.sg-card p.hint{color:#9aa39a;font-size:13px;margin:0 0 14px;}'
+  + '.sg-field{margin-bottom:10px;}'
+  + '.sg-field label{display:block;font-size:12px;color:#9aa39a;margin-bottom:5px;letter-spacing:.04em;}'
+  + '.sg-field input,.sg-field select{width:100%;box-sizing:border-box;background:#0d110e;border:1px solid rgba(255,255,255,.14);border-radius:12px;color:#f5f7f4;font-size:16px;padding:12px 13px;font-family:inherit;outline:none;}'
+  + '.sg-field input:focus,.sg-field select:focus{border-color:#2ee84d;}'
+  + '.sg-btn{width:100%;border:0;border-radius:12px;background:#2ee84d;color:#06210c;font-weight:700;font-size:16px;padding:14px;font-family:inherit;cursor:pointer;letter-spacing:.01em;}'
+  + '.sg-btn:active{transform:translateY(1px);}'
+  + '.sg-btn[disabled]{opacity:.6;}'
+  + '.sg-msg{margin-top:12px;font-size:14px;line-height:1.45;display:none;}'
+  + '.sg-msg.ok{display:block;color:#2ee84d;}'
+  + '.sg-msg.err{display:block;color:#ff8a7a;}'
+  + '.sg-msg a{color:#2ee84d;}'
+  + '.sg-sec-title{text-align:center;margin:34px 0 4px;font-family:"Clash Display","General Sans",sans-serif;font-size:19px;font-weight:600;}'
+  + '.sg-sec-sub{text-align:center;color:#9aa39a;font-size:13px;margin:0 0 16px;}'
+  /* demo phone */
+  + '.sg-phone{width:280px;margin:0 auto;background:#0b0f0c;border:8px solid #1b211c;border-radius:34px;box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;}'
+  + '.sg-screen{height:470px;position:relative;overflow:hidden;background:#070907;}'
+  + '.sg-view{position:absolute;inset:0;padding:14px 12px 62px;overflow:hidden;display:none;}'
+  + '.sg-view.on{display:block;}'
+  + '.sg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}'
+  + '.sg-top b{font-family:"Clash Display","General Sans",sans-serif;font-size:14px;letter-spacing:.12em;}'
+  + '.sg-top b i{font-style:normal;color:#2ee84d;}'
+  + '.sg-dot{width:22px;height:22px;border-radius:50%;background:#1d261f;border:1px solid rgba(255,255,255,.12);}'
+  + '.sg-chips{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}'
+  + '.sg-chip{font-size:10px;padding:5px 9px;border-radius:999px;border:1px solid rgba(255,255,255,.14);color:#9aa39a;}'
+  + '.sg-chip.on{background:#2ee84d;color:#06210c;border-color:#2ee84d;font-weight:700;}'
+  + '.sg-box{background:#101610;border:1px solid rgba(255,255,255,.09);border-radius:12px;padding:10px;margin-bottom:9px;}'
+  + '.sg-box h4{margin:0 0 3px;font-size:12px;font-weight:600;}'
+  + '.sg-box p{margin:0;font-size:10px;color:#8d968d;line-height:1.4;}'
+  + '.sg-tag{display:inline-block;font-size:9px;color:#2ee84d;border:1px solid rgba(46,232,77,.4);border-radius:999px;padding:2px 7px;margin-bottom:5px;letter-spacing:.06em;}'
+  + '.sg-thumb{height:56px;border-radius:9px;background:linear-gradient(135deg,#1b2a1d,#0f1710);border:1px solid rgba(255,255,255,.07);margin-bottom:6px;}'
+  + '.sg-mapbg{position:absolute;inset:0;background:#0a0f0b;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:34px 34px;}'
+  + '.sg-road{position:absolute;background:rgba(255,255,255,.07);}'
+  + '.sg-pin{position:absolute;width:26px;height:26px;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#2ee84d;box-shadow:0 4px 10px rgba(0,0,0,.5);}'
+  + '.sg-pin.alt{background:#fff;}'
+  + '.sg-pin.dim{background:#3f4a41;}'
+  + '.sg-sheet{position:absolute;left:10px;right:10px;bottom:70px;background:#101610;border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px;}'
+  + '.sg-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}'
+  + '.sg-price{color:#2ee84d;font-weight:700;font-size:11px;}'
+  + '.sg-nav{position:absolute;left:0;right:0;bottom:0;height:56px;display:flex;background:#0b110c;border-top:1px solid rgba(255,255,255,.1);}'
+  + '.sg-nav button{flex:1;background:none;border:0;color:#6e776e;font-size:9px;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;padding:0;}'
+  + '.sg-nav button i{width:16px;height:16px;border-radius:4px;border:1.6px solid currentColor;display:block;}'
+  + '.sg-nav button.on{color:#2ee84d;font-weight:700;}'
+  + '.sg-avatar{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,#2ee84d,#19b335);margin:0 auto 8px;}'
+  + '.sg-stats{display:flex;gap:8px;margin-top:10px;}'
+  + '.sg-stats div{flex:1;background:#101610;border:1px solid rgba(255,255,255,.09);border-radius:10px;padding:8px 4px;text-align:center;}'
+  + '.sg-stats b{display:block;font-size:14px;color:#2ee84d;}'
+  + '.sg-stats span{font-size:9px;color:#8d968d;}'
+  + '.sg-demo-hint{text-align:center;color:#606960;font-size:12px;margin-top:12px;}'
+  + '.sg-access{margin-top:30px;text-align:center;}'
+  + '.sg-access summary{color:#9aa39a;font-size:13px;cursor:pointer;list-style:none;}'
+  + '.sg-access summary::-webkit-details-marker{display:none;}'
+  + '.sg-access .sg-card{margin-top:12px;text-align:left;}'
+  + '.sg-foot{text-align:center;color:#4e564e;font-size:11px;margin-top:26px;line-height:1.6;}'
+  + '.sg-foot a{color:#8d968d;text-decoration:none;}'
+  + '@media(max-width:360px){.sg-phone{width:250px}.sg-screen{height:440px}}';
+
+  var st = document.createElement('style');
+  st.textContent = css;
+  document.head.appendChild(st);
+
+  /* ---------- pantallas del demo ---------- */
+  function viewHome(){
+    return ''
+    + '<div class="sg-top"><b>SPOT<i>RA</i></b><span class="sg-dot"></span></div>'
+    + '<div class="sg-box"><span class="sg-tag">CERCA TUYO</span><h4>12 spots a menos de 5 km</h4><p>Skateparks, street spots y tiendas cargados por riders.</p></div>'
+    + '<div class="sg-thumb"></div>'
+    + '<div class="sg-box"><h4>Foro</h4><p>@nico_bmx: alguien va al park de Malvin hoy a la tarde?</p><p style="margin-top:5px;color:#2ee84d">14 me gusta · 6 comentarios</p></div>'
+    + '<div class="sg-box"><span class="sg-tag">PROXIMO EVENTO</span><h4>Game of SKATE · Parque Rodo</h4><p>Sab 12 · inscripcion abierta</p></div>';
+  }
+  function viewMap(){
+    return ''
+    + '<div class="sg-mapbg"></div>'
+    + '<div class="sg-road" style="left:0;right:0;top:120px;height:8px"></div>'
+    + '<div class="sg-road" style="left:90px;top:0;bottom:0;width:8px"></div>'
+    + '<div class="sg-pin" style="left:52px;top:96px"></div>'
+    + '<div class="sg-pin alt" style="left:150px;top:64px"></div>'
+    + '<div class="sg-pin dim" style="left:190px;top:170px"></div>'
+    + '<div class="sg-pin dim" style="left:70px;top:210px"></div>'
+    + '<div class="sg-sheet"><span class="sg-tag">SKATEPARK</span><h4 style="margin:0 0 3px;font-size:13px">Parque Seregni</h4>'
+    + '<p style="margin:0;font-size:10px;color:#8d968d">Montevideo · a 2,3 km · 18 fotos</p>'
+    + '<div style="display:flex;gap:6px;margin-top:9px"><span class="sg-chip on">Como llegar</span><span class="sg-chip">Subir foto</span></div></div>';
+  }
+  function viewEvents(){
+    return ''
+    + '<div class="sg-top"><b>Eventos</b><span class="sg-dot"></span></div>'
+    + '<div class="sg-chips"><span class="sg-chip on">Todas</span><span class="sg-chip">Skate</span><span class="sg-chip">BMX</span><span class="sg-chip">Rollers</span></div>'
+    + '<div class="sg-box"><span class="sg-tag">SAB 12 · 15:00</span><h4>Game of SKATE · Parque Rodo</h4><p>Categorias: Open, Junior, Femenino · 14/30 anotados</p><div style="display:flex;gap:6px;margin-top:8px"><span class="sg-chip on">Anotarme</span><span class="sg-chip">Ver detalle</span></div></div>'
+    + '<div class="sg-box"><span class="sg-tag">DOM 27</span><h4>Best Trick BMX · La Paz</h4><p>Premio en efectivo · inscripcion hasta el 25</p></div>'
+    + '<div class="sg-box"><h4>Ranking Skate</h4><p>1. @tomi_sk8 — 260 pts</p><p>2. @juli.rides — 190 pts</p><p>3. @nacho — 130 pts</p></div>';
+  }
+  function viewMarket(){
+    return ''
+    + '<div class="sg-top"><b>Market</b><span class="sg-dot"></span></div>'
+    + '<div class="sg-chips"><span class="sg-chip on">Cerca de mi</span><span class="sg-chip">Tablas</span><span class="sg-chip">Ruedas</span><span class="sg-chip">Bicis</span></div>'
+    + '<div class="sg-grid2">'
+    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>Tabla Element 8.0</h4><span class="sg-price">$ 2.500</span><p>Usada · a 1,8 km</p></div>'
+    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>BMX Wethepeople</h4><span class="sg-price">USD 340</span><p>Muy buena · a 4 km</p></div>'
+    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>Rollers talle 42</h4><span class="sg-price">$ 3.900</span><p>Como nueva · a 6 km</p></div>'
+    + '<div class="sg-box"><div class="sg-thumb" style="height:50px"></div><h4>Casco + rodilleras</h4><span class="sg-price">$ 1.200</span><p>Usado · a 900 m</p></div>'
+    + '</div>';
+  }
+  function viewProfile(){
+    return ''
+    + '<div class="sg-top"><b>Perfil</b><span class="sg-dot"></span></div>'
+    + '<div style="text-align:center"><div class="sg-avatar"></div>'
+    + '<h4 style="margin:0;font-size:14px">Santi V.</h4>'
+    + '<p style="margin:3px 0 0;font-size:10px;color:#8d968d">@santi.sk8 · Skate · El Pinar</p></div>'
+    + '<div class="sg-stats"><div><b>7</b><span>spots</span></div><div><b>3</b><span>eventos</span></div><div><b>260</b><span>puntos</span></div></div>'
+    + '<div class="sg-box" style="margin-top:12px"><h4>Mis publicaciones</h4><p>Tabla Element 8.0 · publicada</p></div>'
+    + '<div class="sg-box"><h4>Configuracion</h4><p>Notificaciones activadas</p></div>';
+  }
+
+  var VIEWS = [
+    { id:'home', label:'Inicio', html:viewHome },
+    { id:'map', label:'Mapa', html:viewMap },
+    { id:'events', label:'Eventos', html:viewEvents },
+    { id:'market', label:'Market', html:viewMarket },
+    { id:'profile', label:'Perfil', html:viewProfile }
+  ];
+
+  function demoHTML(){
+    var views = VIEWS.map(function(v,i){
+      return '<div class="sg-view' + (i===0?' on':'') + '" data-view="' + v.id + '">' + v.html() + '</div>';
+    }).join('');
+    var nav = VIEWS.map(function(v,i){
+      return '<button type="button" data-go="' + v.id + '" class="' + (i===0?'on':'') + '"><i></i>' + v.label + '</button>';
+    }).join('');
+    return '<div class="sg-phone"><div class="sg-screen">' + views + '<div class="sg-nav">' + nav + '</div></div></div>';
+  }
+
+  /* ---------- overlay ---------- */
+  var gate = document.createElement('div');
+  gate.className = 'spotra-gate';
+  gate.innerHTML = ''
+  + '<div class="sg-wrap">'
+  +   '<div class="sg-logo">SPOT<span>RA</span></div>'
+  +   '<div class="sg-kicker">Proximamente</div>'
+  +   '<h1 class="sg-h1">Estamos creando la mejor app para <em>skaters de Latinoamerica</em></h1>'
+  +   '<p class="sg-sub">Mapa colaborativo de spots, eventos con ranking, market de usados entre riders y foro. Todo en un solo lugar.</p>'
+  +   '<div class="sg-card">'
+  +     '<h2>Queres ser parte?</h2>'
+  +     '<p class="hint">Dejanos tu nombre y tu numero. Te avisamos primero cuando abramos.</p>'
+  +     '<form id="sgForm" novalidate>'
+  +       '<div class="sg-field"><label for="sgName">Nombre</label><input id="sgName" name="nombre" type="text" autocomplete="name" placeholder="Tu nombre" required></div>'
+  +       '<div class="sg-field"><label for="sgPhone">Telefono (WhatsApp)</label><input id="sgPhone" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="099 123 456" required></div>'
+  +       '<div class="sg-field"><label for="sgDisc">Que andas</label><select id="sgDisc" name="disciplina"><option value="skate">Skate</option><option value="bmx">BMX</option><option value="rollers">Rollers</option><option value="otro">Otro / solo miro</option></select></div>'
+  +       '<button class="sg-btn" type="submit" id="sgSubmit">Quiero estar en la lista</button>'
+  +     '</form>'
+  +     '<div class="sg-msg" id="sgMsg"></div>'
+  +   '</div>'
+  +   '<h3 class="sg-sec-title">Mira como va a ser por dentro</h3>'
+  +   '<p class="sg-sec-sub">Tocá los botones de abajo del celular y recorré las pantallas.</p>'
+  +   demoHTML()
+  +   '<p class="sg-demo-hint">Demo de muestra. Los datos son de ejemplo.</p>'
+  +   '<details class="sg-access">'
+  +     '<summary>Tenes clave de acceso? Entrar a la app</summary>'
+  +     '<div class="sg-card">'
+  +       '<div class="sg-field"><label for="sgKey">Clave</label><input id="sgKey" type="password" autocomplete="off" placeholder="Clave de acceso"></div>'
+  +       '<button class="sg-btn" type="button" id="sgEnter">Entrar</button>'
+  +       '<div class="sg-msg" id="sgKeyMsg"></div>'
+  +     '</div>'
+  +   '</details>'
+  +   '<p class="sg-foot">SPOTRA · Uruguay<br><a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com</p>'
+  + '</div>';
+
+  function mount(){
+    document.body.appendChild(gate);
+    wire();
+  }
+
+  function wire(){
+    /* demo nav */
+    gate.querySelectorAll('.sg-nav button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.getAttribute('data-go');
+        gate.querySelectorAll('.sg-view').forEach(function(v){
+          v.classList.toggle('on', v.getAttribute('data-view') === id);
+        });
+        gate.querySelectorAll('.sg-nav button').forEach(function(b){
+          b.classList.toggle('on', b === btn);
+        });
+      });
+    });
+
+    /* lista de espera */
+    var form = gate.querySelector('#sgForm');
+    var msg = gate.querySelector('#sgMsg');
+    var submit = gate.querySelector('#sgSubmit');
+
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var nombre = gate.querySelector('#sgName').value.trim();
+      var telefono = gate.querySelector('#sgPhone').value.trim();
+      var disciplina = gate.querySelector('#sgDisc').value;
+
+      msg.className = 'sg-msg';
+      if(nombre.length < 2){ show('err', 'Escribi tu nombre.'); return; }
+      if(telefono.replace(/\D/g,'').length < 7){ show('err', 'Escribi un telefono valido.'); return; }
+
+      submit.disabled = true;
+      submit.textContent = 'Guardando...';
+
+      saveLead({ nombre:nombre, telefono:telefono, disciplina:disciplina })
+        .then(function(res){
+          submit.disabled = false;
+          submit.textContent = 'Quiero estar en la lista';
+          if(res.ok){
+            form.style.display = 'none';
+            show('ok', 'Listo ' + nombre + '. Ya estas en la lista. Te escribimos cuando abramos.');
+          } else if(res.duplicate){
+            show('ok', 'Ese numero ya estaba anotado. Tranquilo, te avisamos igual.');
+          } else {
+            show('err', 'No pudimos guardarlo ahora. Mandanos los datos por WhatsApp: '
+              + '<a href="https://wa.me/' + WHATSAPP_FALLBACK + '?text='
+              + encodeURIComponent('Hola SPOTRA, quiero estar en la lista. Nombre: ' + nombre + ' - Tel: ' + telefono + ' - ' + disciplina)
+              + '" target="_blank" rel="noopener">abrir WhatsApp</a>');
+          }
+        });
+    });
+
+    function show(kind, html){
+      msg.className = 'sg-msg ' + kind;
+      msg.innerHTML = html;
+    }
+
+    /* clave de acceso */
+    var keyInput = gate.querySelector('#sgKey');
+    var keyMsg = gate.querySelector('#sgKeyMsg');
+    var enterBtn = gate.querySelector('#sgEnter');
+
+    function tryEnter(){
+      if(keyInput.value.trim() === CLAVE_ACCESO){
+        unlock();
+        keyMsg.className = 'sg-msg ok';
+        keyMsg.textContent = 'Acceso ok. Abriendo la app...';
+        setTimeout(function(){ location.reload(); }, 400);
+      } else {
+        keyMsg.className = 'sg-msg err';
+        keyMsg.textContent = 'Clave incorrecta.';
+      }
+    }
+    enterBtn.addEventListener('click', tryEnter);
+    keyInput.addEventListener('keydown', function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); tryEnter(); } });
+  }
+
+  /* ---------- guardado en Supabase (tabla waitlist) ---------- */
+  function saveLead(data){
+    if(!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY){
+      return Promise.resolve({ ok:false });
+    }
+    return fetch(cfg.SUPABASE_URL + '/rest/v1/waitlist', {
+      method: 'POST',
+      headers: {
+        'apikey': cfg.SUPABASE_ANON_KEY,
+        'Authorization': 'Bearer ' + cfg.SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        nombre: data.nombre,
+        telefono: data.telefono,
+        disciplina: data.disciplina,
+        origen: 'landing'
+      })
+    }).then(function(r){
+      if(r.ok) return { ok:true };
+      return r.text().then(function(t){
+        var dup = r.status === 409 || (t && t.indexOf('duplicate') !== -1) || (t && t.indexOf('23505') !== -1);
+        console.warn('[SPOTRA] waitlist:', r.status, t);
+        return { ok:false, duplicate:dup };
+      });
+    }).catch(function(err){
+      console.warn('[SPOTRA] waitlist error:', err);
+      return { ok:false };
+    });
+  }
+
+  if(document.body){ mount(); }
+  else { document.addEventListener('DOMContentLoaded', mount); }
+})();
