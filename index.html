@@ -1056,6 +1056,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 .spot-gallery-thumb.is-cover{border-color:var(--green-hot);box-shadow:0 0 0 1px var(--green-hot)}
 .spot-gallery-thumb .set-cover{position:absolute;right:4px;bottom:4px;font-size:10px;padding:3px 7px;border-radius:8px;background:rgba(0,0,0,.72);color:var(--green-hot);border:1px solid var(--green-hot)}
 </style>
+<style id="spotra-gate-lock">html.gate-lock body>*:not(.spotra-gate){display:none!important}html.gate-lock,html.gate-lock body{background:#070907!important}</style>
+<script>(function(){var open=false;try{if(sessionStorage.getItem('spotra_session')==='ok')open=true;else if(!localStorage.getItem('spotra_bio_id')&&localStorage.getItem('spotra_access')==='ok')open=true;}catch(e){open=false;}if(!open)document.documentElement.classList.add('gate-lock');})();</script>
 </head>
 <body data-role="rider">
 <div class="app">
@@ -2194,5 +2196,6 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
+<script src="assets/js/spotra-landing.js?v=2"></script>
 </body>
 </html>
