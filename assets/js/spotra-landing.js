@@ -1,15 +1,20 @@
-/* SPOTRA — Capa de lanzamiento (landing + lista de espera + demo + acceso Face ID / clave)
-   No toca nada de la app: se dibuja encima. Si el visitante tiene acceso, no se muestra.
+/* SPOTRA — Capa de lanzamiento (landing publica + lista de espera + demo)
+   El acceso a la app NO se muestra en la pantalla: se abre solo con el enlace secreto
+   y ademas pide Face ID / Touch ID.
    ------------------------------------------------------------------
-   PARA CAMBIAR LA CLAVE DE ACCESO: editá la línea de abajo (CLAVE_ACCESO).
-   Con Face ID activado, la app pide la cara/huella cada vez que se abre.
+   ENLACE DE ACCESO:  https://spotra.onrender.com/?k=TU-PALABRA
+   En el codigo solo vive el hash de la palabra (PBKDF2, 250.000 vueltas),
+   no la palabra. Para cambiarla: abri la consola del navegador en la landing,
+   escribi  spotraHash('tu-palabra-nueva')  y pega lo que devuelve en HASH_ACCESO.
    ------------------------------------------------------------------ */
 (function(){
   'use strict';
 
-  var CLAVE_ACCESO = 'rider2026';           // <-- tu clave para entrar a la app
+  var HASH_ACCESO = 'T6NAEk5OpQcxC441WeFdomJSqXr6OeY9bY1VPbIB+PQ=';  // hash del enlace secreto
+  var SALT = 'spotra-gate-v3';
+  var ITER = 250000;
   var WHATSAPP_FALLBACK = '59896452060';    // si falla el guardado, se ofrece WhatsApp
-  var KEY_ACCESS = 'spotra_access';         // acceso recordado (solo clave, sin Face ID)
+  var KEY_ACCESS = 'spotra_access';         // acceso recordado (sin Face ID)
   var KEY_BIO = 'spotra_bio_id';            // id de la llave Face ID / Touch ID
   var KEY_SESSION = 'spotra_session';       // acceso valido solo mientras la app este abierta
 
@@ -32,15 +37,40 @@
     document.documentElement.classList.remove('gate-lock');
   }
 
-  // Acceso directo por URL: spotra.onrender.com/?acceso=TUCLAVE
-  try {
-    var q = new URLSearchParams(location.search);
-    if(q.get('acceso') && q.get('acceso') === CLAVE_ACCESO){ unlockSession(); }
-  } catch(e){}
-
   if(hasAccess()){ releaseLock(); return; }
 
   document.documentElement.classList.add('gate-lock');
+
+  /* ---------- enlace secreto ---------- */
+  function derive(text){
+    var enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(text), 'PBKDF2', false, ['deriveBits'])
+      .then(function(key){
+        return crypto.subtle.deriveBits({
+          name:'PBKDF2', salt: enc.encode(SALT), iterations: ITER, hash:'SHA-256'
+        }, key, 256);
+      })
+      .then(function(bits){
+        var b = new Uint8Array(bits), s = '';
+        for(var i=0;i<b.length;i++) s += String.fromCharCode(b[i]);
+        return btoa(s);
+      });
+  }
+  // Ayuda para generar el hash de una palabra nueva desde la consola del navegador
+  window.spotraHash = function(text){
+    return derive(text).then(function(h){ console.log(h); return h; });
+  };
+
+  function secretFromUrl(){
+    try {
+      var v = new URLSearchParams(location.search).get('k');
+      return v ? v.trim() : '';
+    } catch(e){ return ''; }
+  }
+
+  function cleanUrl(){
+    try { history.replaceState(null, '', location.pathname); } catch(e){}
+  }
 
   /* ---------- Face ID / Touch ID (WebAuthn) ---------- */
   var bioSupported = !!(window.PublicKeyCredential && navigator.credentials && location.protocol === 'https:');
@@ -266,23 +296,6 @@
   +   '<p class="sg-sec-sub">Tocá los botones de abajo del celular y recorré las pantallas.</p>'
   +   demoHTML()
   +   '<p class="sg-demo-hint">Demo de muestra. Los datos son de ejemplo.</p>'
-  +   '<details class="sg-access"' + (hasBio() ? ' open' : '') + '>'
-  +     '<summary>Tenes acceso? Entrar a la app</summary>'
-  +     '<div class="sg-card">'
-  +       '<button class="sg-btn" type="button" id="sgBio" style="display:none;margin-bottom:12px">Entrar con Face ID</button>'
-  +       '<div id="sgKeyBox">'
-  +         '<div class="sg-field"><label for="sgKey">Clave</label><input id="sgKey" type="password" autocomplete="off" placeholder="Clave de acceso"></div>'
-  +         '<button class="sg-btn" type="button" id="sgEnter">Entrar</button>'
-  +       '</div>'
-  +       '<button class="sg-link" type="button" id="sgUseKey" style="display:none">Usar la clave en lugar de Face ID</button>'
-  +       '<div id="sgBioSetup" style="display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px">'
-  +         '<p class="hint" style="margin:0 0 10px">Activalo y la proxima vez entras con tu cara o tu huella, sin escribir la clave.</p>'
-  +         '<button class="sg-btn" type="button" id="sgBioAdd">Activar Face ID / Touch ID</button>'
-  +         '<button class="sg-link" type="button" id="sgSkipBio">Entrar sin activarlo</button>'
-  +       '</div>'
-  +       '<div class="sg-msg" id="sgKeyMsg"></div>'
-  +     '</div>'
-  +   '</details>'
   +   '<p class="sg-foot">SPOTRA · Uruguay<br><a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com</p>'
   + '</div>';
 
@@ -346,83 +359,6 @@
       msg.innerHTML = html;
     }
 
-    /* acceso: Face ID + clave */
-    var keyInput = gate.querySelector('#sgKey');
-    var keyMsg = gate.querySelector('#sgKeyMsg');
-    var enterBtn = gate.querySelector('#sgEnter');
-    var keyBox = gate.querySelector('#sgKeyBox');
-    var bioBtn = gate.querySelector('#sgBio');
-    var useKeyBtn = gate.querySelector('#sgUseKey');
-    var bioSetup = gate.querySelector('#sgBioSetup');
-    var bioAddBtn = gate.querySelector('#sgBioAdd');
-    var skipBioBtn = gate.querySelector('#sgSkipBio');
-
-    function say(kind, text){
-      keyMsg.className = 'sg-msg ' + kind;
-      keyMsg.textContent = text;
-    }
-    function enterApp(){
-      unlockSession();
-      say('ok', 'Acceso ok. Abriendo la app...');
-      setTimeout(function(){ location.reload(); }, 400);
-    }
-
-    if(hasBio() && bioSupported){
-      bioBtn.style.display = 'block';
-      keyBox.style.display = 'none';
-      useKeyBtn.style.display = 'block';
-      setTimeout(function(){ bioBtn.focus(); }, 200);
-    }
-
-    bioBtn.addEventListener('click', function(){
-      say('', '');
-      bioLogin().then(enterApp).catch(function(err){
-        console.warn('[SPOTRA] Face ID:', err);
-        say('err', 'No se pudo verificar. Proba de nuevo o entra con la clave.');
-        useKeyBtn.style.display = 'block';
-      });
-    });
-
-    useKeyBtn.addEventListener('click', function(){
-      keyBox.style.display = 'block';
-      useKeyBtn.style.display = 'none';
-      keyInput.focus();
-    });
-
-    function tryEnter(){
-      if(keyInput.value.trim() !== CLAVE_ACCESO){
-        say('err', 'Clave incorrecta.');
-        return;
-      }
-      if(bioSupported && !hasBio()){
-        keyBox.style.display = 'none';
-        bioSetup.style.display = 'block';
-        say('ok', 'Clave correcta.');
-        return;
-      }
-      unlockRemembered();
-      enterApp();
-    }
-    enterBtn.addEventListener('click', tryEnter);
-    keyInput.addEventListener('keydown', function(ev){ if(ev.key === 'Enter'){ ev.preventDefault(); tryEnter(); } });
-
-    bioAddBtn.addEventListener('click', function(){
-      bioAddBtn.disabled = true;
-      bioAddBtn.textContent = 'Esperando a Face ID...';
-      bioRegister().then(function(){
-        enterApp();
-      }).catch(function(err){
-        console.warn('[SPOTRA] registro Face ID:', err);
-        bioAddBtn.disabled = false;
-        bioAddBtn.textContent = 'Activar Face ID / Touch ID';
-        say('err', 'Este dispositivo no pudo registrar Face ID. Entra con la clave.');
-      });
-    });
-
-    skipBioBtn.addEventListener('click', function(){
-      unlockRemembered();
-      enterApp();
-    });
   }
 
   /* ---------- guardado en Supabase (tabla waitlist) ---------- */
@@ -457,6 +393,95 @@
     });
   }
 
-  if(document.body){ mount(); }
-  else { document.addEventListener('DOMContentLoaded', mount); }
+  /* ---------- pantalla privada de acceso (solo con el enlace correcto) ---------- */
+  function buildAccess(){
+    var el = document.createElement('div');
+    el.className = 'spotra-gate';
+    el.innerHTML = ''
+    + '<div class="sg-wrap" style="padding-top:22vh">'
+    +   '<div class="sg-logo">SPOT<span>RA</span></div>'
+    +   '<div class="sg-kicker">Acceso privado</div>'
+    +   '<div class="sg-card" style="margin-top:26px">'
+    +     '<button class="sg-btn" type="button" id="sgGo">Entrar</button>'
+    +     '<div id="sgSetup" style="display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px">'
+    +       '<p class="hint" style="margin:0 0 10px">Activa Face ID / Touch ID en este dispositivo. Despues, cada vez que abras el enlace te va a pedir la cara o la huella.</p>'
+    +       '<button class="sg-btn" type="button" id="sgAdd">Activar Face ID / Touch ID</button>'
+    +       '<button class="sg-link" type="button" id="sgSkip">Entrar sin activarlo</button>'
+    +     '</div>'
+    +     '<div class="sg-msg" id="sgAccMsg"></div>'
+    +   '</div>'
+    + '</div>';
+    return el;
+  }
+
+  function mountAccess(){
+    var el = buildAccess();
+    document.body.appendChild(el);
+    var go = el.querySelector('#sgGo');
+    var setup = el.querySelector('#sgSetup');
+    var addBtn = el.querySelector('#sgAdd');
+    var skipBtn = el.querySelector('#sgSkip');
+    var msg = el.querySelector('#sgAccMsg');
+
+    function say(kind, text){
+      msg.className = 'sg-msg ' + kind;
+      msg.textContent = text;
+    }
+    function enterApp(){
+      unlockSession();
+      say('ok', 'Abriendo la app...');
+      setTimeout(function(){ location.reload(); }, 350);
+    }
+
+    if(hasBio() && bioSupported){
+      go.textContent = 'Entrar con Face ID';
+    }
+
+    go.addEventListener('click', function(){
+      say('', '');
+      if(hasBio() && bioSupported){
+        bioLogin().then(enterApp).catch(function(err){
+          console.warn('[SPOTRA] Face ID:', err);
+          say('err', 'No se pudo verificar. Proba de nuevo.');
+        });
+        return;
+      }
+      if(bioSupported){
+        go.style.display = 'none';
+        setup.style.display = 'block';
+        return;
+      }
+      enterApp();
+    });
+
+    addBtn.addEventListener('click', function(){
+      addBtn.disabled = true;
+      addBtn.textContent = 'Esperando a Face ID...';
+      bioRegister().then(enterApp).catch(function(err){
+        console.warn('[SPOTRA] registro Face ID:', err);
+        addBtn.disabled = false;
+        addBtn.textContent = 'Activar Face ID / Touch ID';
+        say('err', 'Este dispositivo no pudo registrar Face ID.');
+      });
+    });
+
+    skipBtn.addEventListener('click', function(){
+      unlockRemembered();
+      enterApp();
+    });
+  }
+
+  /* ---------- arranque ---------- */
+  function start(){
+    var secret = secretFromUrl();
+    if(!secret){ mount(); return; }
+    cleanUrl();
+    derive(secret).then(function(h){
+      if(h === HASH_ACCESO){ mountAccess(); }
+      else { mount(); }
+    }).catch(function(){ mount(); });
+  }
+
+  if(document.body){ start(); }
+  else { document.addEventListener('DOMContentLoaded', start); }
 })();
