@@ -199,7 +199,56 @@
   + '.sg-audience{display:grid;gap:10px;margin-top:6px;}'
   + '.sg-audience button{display:block;width:100%;text-align:left;background:rgba(10,15,11,.82);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#f5f7f4;font-family:inherit;font-size:15.5px;font-weight:600;padding:16px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}'
   + '.sg-audience button span{display:block;font-size:12.5px;color:#9aa39a;font-weight:400;margin-top:3px;}'
-  + '.sg-audience button:active{border-color:#2ee84d;}';
+  + '.sg-audience button:active{border-color:#2ee84d;}'
+  /* ----- landing de marcas ----- */
+  + '.sg-brand{position:relative;z-index:1;}'
+  + '.sg-topnav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0 10px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:26px;}'
+  + '.sg-topnav .brandmark{font-family:\"Clash Display\",\"General Sans\",sans-serif;font-weight:700;font-size:19px;letter-spacing:.12em;}'
+  + '.sg-topnav .brandmark span{color:#2ee84d;}'
+  + '.sg-topnav nav{display:none;gap:22px;}'
+  + '.sg-topnav nav a{color:#9aa39a;font-size:13.5px;text-decoration:none;padding-bottom:4px;}'
+  + '.sg-topnav nav a.on{color:#f5f7f4;border-bottom:2px solid #2ee84d;}'
+  + '.sg-navcta{border:1px solid #2ee84d;color:#2ee84d;background:none;border-radius:999px;font-family:inherit;font-size:13px;font-weight:700;padding:9px 16px;cursor:pointer;white-space:nowrap;}'
+  + '.sg-hero{display:grid;gap:26px;}'
+  + '.sg-hero-h1{font-family:\"Clash Display\",\"General Sans\",sans-serif;font-weight:700;font-size:34px;line-height:1.08;margin:12px 0 14px;text-shadow:0 2px 18px rgba(0,0,0,.8);}'
+  + '.sg-hero-h1 em{font-style:normal;color:#2ee84d;display:block;}'
+  + '.sg-hero-lead{color:#b9c1b9;font-size:15.5px;line-height:1.55;margin:0 0 20px;max-width:520px;}'
+  + '.sg-ctas{display:flex;flex-wrap:wrap;gap:10px;}'
+  + '.sg-cta-main{background:#2ee84d;color:#06210c;border:0;border-radius:999px;font-family:inherit;font-weight:700;font-size:15px;padding:14px 22px;cursor:pointer;}'
+  + '.sg-cta-ghost{background:none;color:#f5f7f4;border:1px solid rgba(255,255,255,.25);border-radius:999px;font-family:inherit;font-weight:600;font-size:15px;padding:14px 22px;cursor:pointer;}'
+  + '.sg-quote{border-left:2px solid #2ee84d;padding-left:14px;margin-top:26px;color:#cfd6cf;font-size:14.5px;line-height:1.6;font-style:italic;}'
+  + '.sg-quote small{display:block;margin-top:10px;font-style:normal;color:#606960;font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;}'
+  + '.sg-cards{display:grid;gap:12px;margin:0;padding:0;list-style:none;}'
+  + '.sg-cards li{position:relative;display:grid;grid-template-columns:46px 1fr;gap:14px;align-items:start;background:rgba(10,15,11,.82);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}'
+  + '.sg-cards .ico{width:46px;height:46px;border-radius:14px;border:1px solid rgba(46,232,77,.35);display:flex;align-items:center;justify-content:center;background:rgba(46,232,77,.08);}'
+  + '.sg-cards .ico svg{width:22px;height:22px;color:#2ee84d;}'
+  + '.sg-cards .num{color:#606960;font-size:11px;letter-spacing:.18em;font-weight:700;}'
+  + '.sg-cards b{display:block;font-family:\"Clash Display\",\"General Sans\",sans-serif;font-size:16.5px;margin:2px 0 5px;}'
+  + '.sg-cards p{margin:0;color:#9aa39a;font-size:13.5px;line-height:1.5;}'
+  + '.sg-offerbar{display:grid;gap:14px;align-items:center;margin:30px 0 0;border:1px solid rgba(46,232,77,.45);background:linear-gradient(140deg,rgba(46,232,77,.16),rgba(10,15,11,.92));border-radius:20px;padding:22px;}'
+  + '.sg-offerbar .tag{color:#2ee84d;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;}'
+  + '.sg-offerbar .price{font-family:\"Clash Display\",\"General Sans\",sans-serif;font-size:38px;font-weight:700;line-height:1;margin:6px 0 0;}'
+  + '.sg-offerbar p{margin:0;color:#cfd6cf;font-size:14px;line-height:1.55;}'
+  + '.sg-final{display:grid;gap:24px;margin-top:34px;}'
+  + '.sg-bullets{display:grid;gap:14px;margin:18px 0 0;padding:0;list-style:none;}'
+  + '.sg-bullets li{display:grid;grid-template-columns:42px 1fr;gap:13px;align-items:start;}'
+  + '.sg-bullets .ico{width:42px;height:42px;border-radius:13px;border:1px solid rgba(46,232,77,.3);background:rgba(46,232,77,.07);display:flex;align-items:center;justify-content:center;}'
+  + '.sg-bullets .ico svg{width:20px;height:20px;color:#2ee84d;}'
+  + '.sg-bullets b{display:block;font-size:15px;margin-bottom:3px;}'
+  + '.sg-bullets p{margin:0;color:#9aa39a;font-size:13.5px;line-height:1.5;}'
+  + '@media(min-width:900px){'
+  +   '.sg-brand .sg-wrapinner{max-width:1100px;margin:0 auto;}'
+  +   '.sg-topnav nav{display:flex;}'
+  +   '.sg-hero{grid-template-columns:1.05fr 1fr;align-items:start;gap:42px;}'
+  +   '.sg-hero-h1{font-size:50px;}'
+  +   '.sg-offerbar{grid-template-columns:auto 1fr;gap:28px;}'
+  +   '.sg-final{grid-template-columns:1fr 1fr;align-items:start;gap:40px;}'
+  +   '.sg-brand .sg-card{margin-top:0;}'
+  + '}'
+  + '@media(min-width:900px){.sg-demo-grid{align-items:start}.sg-steps-wrap{margin-top:6px}}'
+  + '.sg-bg.brand{background-image:url(\"assets/preview/brand-hero-mobile.webp\");background-position:center top;}'
+  + '@media(min-width:900px){.sg-bg.brand{background-image:url(\"assets/preview/brand-hero.webp\");background-position:center top;background-size:100% auto;}}'
+  + '.sg-bg.brand::after{background:linear-gradient(180deg,rgba(7,9,7,.35) 0%,rgba(7,9,7,.72) 34%,rgba(7,9,7,.94) 62%,#070907 82%);}';
 
 
   /* ---------- idiomas ---------- */
@@ -381,6 +430,16 @@
       send:'Quiero probar SPOTRA',
       ok:'Listo. Te escribimos por WhatsApp para darte el acceso.',
       ig:'Seguinos en Instagram',
+      navBrands:"Para Marcas",
+      navDemo:"La app",
+      navJoin:"Sumate",
+      seeHow:"Ver como funciona",
+      quote:"Mas riders. Mas comunidad. Mas movimiento.",
+      quoteFoot:"Latinoamerica rueda aqui",
+      joinKicker:"Acceso anticipado para marcas y tiendas",
+      formCardTitle:"Completa tus datos",
+      formCardHint:"Te escribimos a la brevedad para darte el acceso y contarte como funciona.",
+      bullets:[["Acceso anticipado","Se de las primeras marcas en probar la plataforma."],["3 meses completos","Con acompañamiento nuestro mientras la usas."],["Sin permanencia","Si no te sirve, te das de baja y listo."],["Una comunidad real","Riders de Uruguay, Argentina y Brasil en un solo lugar."]],
       demoKicker:'Asi se ve por dentro',
       demoTitleA:'Mira ', demoTitleB:' por dentro',
       demoLead:'Esta es la app que van a usar los riders. Toca la barra de abajo y recorrela.'
@@ -407,6 +466,16 @@
       send:'Quiero probar SPOTRA',
       ok:'Listo. Te escribimos por WhatsApp para darte el acceso.',
       ig:'Siguenos en Instagram',
+      navBrands:"Para Marcas",
+      navDemo:"La app",
+      navJoin:"Sumate",
+      seeHow:"Ver como funciona",
+      quote:"Mas riders. Mas comunidad. Mas movimiento.",
+      quoteFoot:"Latinoamerica rueda aqui",
+      joinKicker:"Acceso anticipado para marcas y tiendas",
+      formCardTitle:"Completa tus datos",
+      formCardHint:"Te escribimos pronto para darte el acceso y contarte como funciona.",
+      bullets:[["Acceso anticipado","Se de las primeras marcas en probar la plataforma."],["3 meses completos","Con acompañamiento nuestro mientras la usas."],["Sin permanencia","Si no te sirve, te das de baja y listo."],["Una comunidad real","Riders de toda Latinoamerica en un solo lugar."]],
       demoKicker:'Asi se ve por dentro',
       demoTitleA:'Mira ', demoTitleB:' por dentro',
       demoLead:'Esta es la app que van a usar los riders. Toca la barra de abajo y recorrela.'
@@ -433,6 +502,16 @@
       send:'Quero testar o SPOTRA',
       ok:'Pronto. A gente te escreve no WhatsApp para liberar o acesso.',
       ig:'Siga a gente no Instagram',
+      navBrands:"Para Marcas",
+      navDemo:"O app",
+      navJoin:"Participe",
+      seeHow:"Ver como funciona",
+      quote:"Mais riders. Mais comunidade. Mais movimento.",
+      quoteFoot:"A America Latina anda aqui",
+      joinKicker:"Acesso antecipado para marcas e lojas",
+      formCardTitle:"Preencha seus dados",
+      formCardHint:"A gente te escreve em breve para liberar o acesso e explicar como funciona.",
+      bullets:[["Acesso antecipado","Seja uma das primeiras marcas a testar a plataforma."],["3 meses completos","Com acompanhamento do nosso time enquanto voce usa."],["Sem fidelidade","Se nao servir, voce cancela e pronto."],["Uma comunidade real","Riders do Uruguai, Argentina e Brasil em um so lugar."]],
       demoKicker:'Como e por dentro',
       demoTitleA:'Veja ', demoTitleB:' por dentro',
       demoLead:'Esse e o app que os riders vao usar. Toque na barra de baixo e navegue.'
@@ -459,6 +538,16 @@
       send:'I want to try SPOTRA',
       ok:'Done. We will message you on WhatsApp with access.',
       ig:'Follow us on Instagram',
+      navBrands:"For Brands",
+      navDemo:"The app",
+      navJoin:"Join",
+      seeHow:"See how it works",
+      quote:"More riders. More community. More movement.",
+      quoteFoot:"Latin America rides here",
+      joinKicker:"Early access for brands and shops",
+      formCardTitle:"Fill in your details",
+      formCardHint:"We will message you shortly with access and walk you through it.",
+      bullets:[["Early access","Be one of the first brands to try the platform."],["3 full months","With our team alongside you while you use it."],["No lock-in","If it is not for you, cancel and that is it."],["A real community","Riders across Latin America in one place."]],
       demoKicker:'What it looks like inside',
       demoTitleA:'See ', demoTitleB:' from the inside',
       demoLead:'This is the app riders will use. Tap the bottom bar and walk through it.'
@@ -662,11 +751,21 @@
     audience = aud || ls(KEY_AUD) || 'rider';
     gate = document.createElement('div');
     gate.className = 'spotra-gate';
-    gate.innerHTML = '<div class="sg-bg"></div><div class="sg-grid"></div><div class="sg-glow"></div>'
-      + '<div class="sg-wrap">' + (audience === 'marca' ? brandBody() : riderBody()) + '</div>';
+    var esMarca = audience === 'marca';
+    gate.innerHTML = '<div class="sg-bg' + (esMarca ? ' brand' : '') + '"></div><div class="sg-grid"></div>'
+      + (esMarca ? '' : '<div class="sg-glow"></div>')
+      + '<div class="sg-wrap"' + (esMarca ? ' style="max-width:1140px"' : '') + '>'
+      + (esMarca ? brandBody() : riderBody()) + '</div>';
     document.body.appendChild(gate);
     wireDemo();
     wireForm();
+    gate.addEventListener('click', function(ev){
+      var sc = ev.target.closest('[data-scroll]');
+      if(!sc) return;
+      var target = gate.querySelector('#' + sc.getAttribute('data-scroll'));
+      if(target) target.scrollIntoView({ behavior:'smooth', block:'start' });
+    });
+
     gate.querySelector('#sgLangSwitch').addEventListener('click', function(){
       lsDel(KEY_LANG); lsDel(KEY_AUD);
       gate.remove(); gate = null;
@@ -708,48 +807,98 @@
     + footHTML();
   }
 
+  function icon(name){
+    var paths = {
+      pin:'<path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11Z"/><circle cx="12" cy="10" r="2.6"/>',
+      cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/>',
+      bag:'<path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+      map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z"/><path d="M9 4v14M15 6v14"/>',
+      bars:'<path d="M5 20V12M12 20V5M19 20v-6"/>',
+      rocket:'<path d="M12 3c3.5 1.6 5.6 5 5.6 9l-2.4 2.4H8.8L6.4 12C6.4 8 8.5 4.6 12 3Z"/><path d="M9 17c-1.4 1-2 2.4-2 4 1.6 0 3-.6 4-2M15 17c1.4 1 2 2.4 2 4-1.6 0-3-.6-4-2"/>',
+      clock:'<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+      free:'<path d="M5 6h10l4 4v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/><path d="M8 13h8M8 17h5"/>',
+      people:'<circle cx="9" cy="9" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 7.2a3 3 0 0 1 0 5.6M17.5 19a5.5 5.5 0 0 0-2-4.3"/>'
+    };
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'
+      + (paths[name] || paths.pin) + '</svg>';
+  }
+
   function brandBody(){
     var sel = countrySelects();
-    var benefits = b('benefits').map(function(x){
-      return '<li><b>' + esc(x[0]) + '</b><p>' + esc(x[1]) + '</p></li>';
+    var icons = ['pin','cal','bag','map','bars'];
+    var cards = b('benefits').map(function(x, i){
+      return '<li><div class="ico">' + icon(icons[i] || 'pin') + '</div>'
+        + '<div><div class="num">0' + (i + 1) + '</div><b>' + esc(x[0]) + '</b><p>' + esc(x[1]) + '</p></div></li>';
     }).join('');
-    return ''
-    + '<div class="sg-logo">SPOT<span>RA</span></div>'
-    + '<div class="sg-kicker">' + esc(b('kicker')) + '</div>'
-    + '<h1 class="sg-h1">' + esc(b('h1a')) + '<em>' + esc(b('h1b')) + '</em></h1>'
-    + '<p class="sg-sub">' + esc(b('sub')) + '</p>'
-    + '<ul class="sg-benefits">' + benefits + '</ul>'
-    + '<div class="sg-offer">'
-    +   '<div class="tag">' + esc(b('offerTag')) + '</div>'
-    +   '<div class="price">' + esc(b('offerPrice')) + '</div>'
+    var bullets = b('bullets').map(function(x, i){
+      return '<li><div class="ico">' + icon(['rocket','clock','free','people'][i] || 'rocket') + '</div>'
+        + '<div><b>' + esc(x[0]) + '</b><p>' + esc(x[1]) + '</p></div></li>';
+    }).join('');
+
+    return '<div class="sg-brand"><div class="sg-wrapinner">'
+    + '<div class="sg-topnav">'
+    +   '<div class="brandmark">SPOT<span>RA</span></div>'
+    +   '<nav><a href="#sgBenef" class="on">' + esc(b('navBrands')) + '</a>'
+    +     '<a href="#sgDemo">' + esc(b('navDemo')) + '</a>'
+    +     '<a href="#sgJoin">' + esc(b('navJoin')) + '</a></nav>'
+    +   '<button class="sg-navcta" data-scroll="sgJoin">' + esc(b('send')) + '</button>'
+    + '</div>'
+
+    + '<section class="sg-hero" id="sgBenef">'
+    +   '<div>'
+    +     '<div class="sg-kicker" style="text-align:left">' + esc(b('kicker')) + '</div>'
+    +     '<h1 class="sg-hero-h1">' + esc(b('h1a')) + '<em>' + esc(b('h1b')) + '</em></h1>'
+    +     '<p class="sg-hero-lead">' + esc(b('sub')) + '</p>'
+    +     '<div class="sg-ctas">'
+    +       '<button class="sg-cta-main" data-scroll="sgJoin">' + esc(b('send')) + '</button>'
+    +       '<button class="sg-cta-ghost" data-scroll="sgDemo">' + esc(b('seeHow')) + '</button>'
+    +     '</div>'
+    +     '<div class="sg-quote">' + esc(b('quote')) + '<small>' + esc(b('quoteFoot')) + '</small></div>'
+    +   '</div>'
+    +   '<ul class="sg-cards">' + cards + '</ul>'
+    + '</section>'
+
+    + '<div class="sg-offerbar">'
+    +   '<div><div class="tag">' + esc(b('offerTag')) + '</div><div class="price">' + esc(b('offerPrice')) + '</div></div>'
     +   '<p>' + esc(b('offerNote')) + '</p>'
     + '</div>'
-    + demoHTML(b('demoKicker'), b('demoTitleA'), b('demoTitleB'), b('demoLead'))
-    + '<div class="sg-card" style="margin-top:26px">'
-    +   '<h2>' + esc(b('formTitle')) + '</h2>'
-    +   '<p class="hint">' + esc(b('formHint')) + '</p>'
-    +   '<form id="sgForm" novalidate>'
-    +     '<div class="sg-field"><label for="sgBrand">' + esc(b('brandName')) + '</label>'
-    +       '<input id="sgBrand" type="text" placeholder="' + esc(b('brandPh')) + '" required></div>'
-    +     '<div class="sg-field"><label for="sgName">' + esc(b('contact')) + '</label>'
-    +       '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
-    +     '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
-    +       '<select id="sgCountry">' + sel.country + '</select></div>'
-    +     '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
-    +       '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + sel.dial + '</select>'
-    +       '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
-    +     '<div class="sg-field"><label for="sgDisc">' + esc(b('kind')) + '</label><select id="sgDisc">'
-    +       '<option value="tienda">' + esc(b('kindShop')) + '</option>'
-    +       '<option value="marca">' + esc(b('kindBrand')) + '</option>'
-    +       '<option value="escuela">' + esc(b('kindSchool')) + '</option>'
-    +       '<option value="otro">' + esc(b('kindOther')) + '</option>'
-    +     '</select></div>'
-    +     '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(b('send')) + '</button>'
-    +   '</form>'
-    +   '<div class="sg-msg" id="sgMsg"></div>'
-    +   igButton(b('ig'))
-    + '</div>'
-    + footHTML();
+
+    + '<div id="sgDemo">' + demoHTML(b('demoKicker'), b('demoTitleA'), b('demoTitleB'), b('demoLead')) + '</div>'
+
+    + '<section class="sg-final" id="sgJoin">'
+    +   '<div>'
+    +     '<div class="sg-kicker" style="text-align:left">' + esc(b('joinKicker')) + '</div>'
+    +     '<h2 class="sg-hero-h1" style="font-size:32px">' + esc(b('formTitle')) + '</h2>'
+    +     '<p class="sg-hero-lead">' + esc(b('formHint')) + '</p>'
+    +     '<ul class="sg-bullets">' + bullets + '</ul>'
+    +   '</div>'
+    +   '<div class="sg-card">'
+    +     '<h2>' + esc(b('formCardTitle')) + '</h2>'
+    +     '<p class="hint">' + esc(b('formCardHint')) + '</p>'
+    +     '<form id="sgForm" novalidate>'
+    +       '<div class="sg-field"><label for="sgBrand">' + esc(b('brandName')) + '</label>'
+    +         '<input id="sgBrand" type="text" placeholder="' + esc(b('brandPh')) + '" required></div>'
+    +       '<div class="sg-field"><label for="sgName">' + esc(b('contact')) + '</label>'
+    +         '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
+    +       '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
+    +         '<select id="sgCountry">' + sel.country + '</select></div>'
+    +       '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
+    +         '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + sel.dial + '</select>'
+    +         '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
+    +       '<div class="sg-field"><label for="sgDisc">' + esc(b('kind')) + '</label><select id="sgDisc">'
+    +         '<option value="tienda">' + esc(b('kindShop')) + '</option>'
+    +         '<option value="marca">' + esc(b('kindBrand')) + '</option>'
+    +         '<option value="escuela">' + esc(b('kindSchool')) + '</option>'
+    +         '<option value="otro">' + esc(b('kindOther')) + '</option>'
+    +       '</select></div>'
+    +       '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(b('send')) + '</button>'
+    +     '</form>'
+    +     '<div class="sg-msg" id="sgMsg"></div>'
+    +     igButton(b('ig'))
+    +   '</div>'
+    + '</section>'
+    + footHTML()
+    + '</div></div>';
   }
 
   function wireForm(){
