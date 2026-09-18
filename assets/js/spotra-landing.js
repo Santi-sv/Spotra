@@ -259,6 +259,14 @@
   + '.sg-brand .sg-kicker2{color:var(--cinta);}'
   + '.sg-brand .sg-steps button{border-radius:0;}'
   + '.sg-brand .sg-steps button.on{background:#2ee84d;color:#06210c;border-color:#2ee84d;}'
+  + '.sg-riders .sg-tape{background:var(--hueso);color:#111;}'
+  + '.sg-riders .sg-navcta{background:#2ee84d;color:#06210c;}'
+  + '.sg-riders .sg-eyebrow{background:var(--hueso);color:#111;}'
+  + '.sg-riders .sg-hero-lead{border-left-color:rgba(255,212,0,.6);}'
+  + '.sg-riders .sg-demo-head h3{text-transform:uppercase;}'
+  + '.sg-stat{display:flex;gap:26px;margin-top:30px;flex-wrap:wrap;}'
+  + '.sg-stat div b{display:block;font-family:\"Clash Display\",\"General Sans\",sans-serif;font-size:30px;line-height:1;color:#2ee84d;}'
+  + '.sg-stat div span{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#7c817b;}'
   + '@media(min-width:900px){'
   +   '.sg-topnav nav{display:flex;}'
   +   '.sg-hero{grid-template-columns:1.15fr .85fr;align-items:start;gap:54px;padding:44px 0 20px;}'
@@ -268,6 +276,7 @@
   +   '.sg-final{grid-template-columns:1fr .9fr;align-items:start;gap:52px;}'
   +   '.sg-brand .sg-card{margin-top:0;}'
   + '}'
+  + '@media(min-width:900px){.sg-bg{background-image:url(\"assets/preview/brand-hero.webp\");background-position:center top;background-size:100% auto;}}'
   + '.sg-bg.brand{background-image:url(\"assets/preview/brand-hero-mobile.webp\");background-position:center top;}'
   + '@media(min-width:900px){.sg-bg.brand{background-image:url(\"assets/preview/brand-hero.webp\");background-position:center top;background-size:100% auto;}}'
   + '.sg-bg.brand::after{background:linear-gradient(180deg,rgba(7,9,7,.35) 0%,rgba(7,9,7,.72) 34%,rgba(7,9,7,.94) 62%,#070907 82%);}';
@@ -775,8 +784,7 @@
     gate.className = 'spotra-gate';
     var esMarca = audience === 'marca';
     gate.innerHTML = '<div class="sg-bg' + (esMarca ? ' brand' : '') + '"></div><div class="sg-grid"></div>'
-      + (esMarca ? '' : '<div class="sg-glow"></div>')
-      + '<div class="sg-wrap"' + (esMarca ? ' style="max-width:1140px"' : '') + '>'
+      + '<div class="sg-wrap" style="max-width:1180px">'
       + (esMarca ? brandBody() : riderBody()) + '</div>';
     document.body.appendChild(gate);
     wireDemo();
@@ -797,36 +805,58 @@
 
   function riderBody(){
     var sel = countrySelects();
-    return ''
-    + '<div class="sg-logo">SPOT<span>RA</span></div>'
-    + '<div class="sg-kicker">' + esc(t('kicker')) + '</div>'
-    + '<h1 class="sg-h1">' + esc(t('h1a')) + '<em>' + esc(t('h1b')) + '</em></h1>'
-    + '<p class="sg-sub">' + esc(t('sub')) + '</p>'
-    + '<div class="sg-card">'
-    +   '<h2>' + esc(t('formTitle')) + '</h2>'
-    +   '<p class="hint">' + esc(t('formHint')) + '</p>'
-    +   '<form id="sgForm" novalidate>'
-    +     '<div class="sg-field"><label for="sgName">' + esc(t('name')) + '</label>'
-    +       '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
-    +     '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
-    +       '<select id="sgCountry">' + sel.country + '</select></div>'
-    +     '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
-    +       '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + sel.dial + '</select>'
-    +       '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
-    +     '<div class="sg-field"><label for="sgDisc">' + esc(t('disc')) + '</label><select id="sgDisc">'
-    +       '<option value="skate">' + esc(t('discSkate')) + '</option>'
-    +       '<option value="bmx">' + esc(t('discBmx')) + '</option>'
-    +       '<option value="rollers">' + esc(t('discRollers')) + '</option>'
-    +       '<option value="otro">' + esc(t('discOther')) + '</option>'
-    +     '</select></div>'
-    +     '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(t('send')) + '</button>'
-    +   '</form>'
-    +   '<div class="sg-msg" id="sgMsg"></div>'
-    +   igButton(b('ig'))
+    return '<div class="sg-brand sg-riders"><div class="sg-noise"></div><div class="sg-wrapinner">'
+    + '<div class="sg-topnav">'
+    +   '<div class="brandmark">SPOT<span>RA</span></div>'
+    +   '<nav><a href="#sgJoin" class="on">' + esc(t('kicker')) + '</a>'
+    +     '<a href="#sgDemo">' + esc(t('demoKicker')) + '</a></nav>'
+    +   '<button class="sg-navcta" data-scroll="sgJoin">' + esc(t('send')) + '</button>'
     + '</div>'
-    + demoHTML(t('demoKicker'), t('demoTitleA'), t('demoTitleB'), t('demoLead'))
+
+    + '<section class="sg-hero" id="sgJoin">'
+    +   '<div>'
+    +     '<span class="sg-eyebrow">' + esc(t('kicker')) + '</span>'
+    +     '<h1 class="sg-hero-h1">' + esc(t('h1a')) + '<em>' + esc(t('h1b')) + '</em></h1>'
+    +     '<p class="sg-hero-lead">' + esc(t('sub')) + '</p>'
+    +     '<div class="sg-ctas">'
+    +       '<button class="sg-cta-main" data-scroll="sgFormCard">' + esc(t('send')) + '</button>'
+    +       '<button class="sg-cta-ghost" data-scroll="sgDemo">' + esc(b('seeHow')) + '</button>'
+    +     '</div>'
+    +     '<div class="sg-tape">' + esc(b('quoteFoot')) + '</div>'
+    +     '<div class="sg-stat">'
+    +       '<div><b>SKATE</b><span>BMX · ROLLERS</span></div>'
+    +       '<div><b>UY</b><span>AR · BR</span></div>'
+    +       '<div><b>2026</b><span>' + esc(t('kicker')) + '</span></div>'
+    +     '</div>'
+    +   '</div>'
+    +   '<div class="sg-card" id="sgFormCard">'
+    +     '<h2>' + esc(t('formTitle')) + '</h2>'
+    +     '<p class="hint">' + esc(t('formHint')) + '</p>'
+    +     '<form id="sgForm" novalidate>'
+    +       '<div class="sg-field"><label for="sgName">' + esc(t('name')) + '</label>'
+    +         '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
+    +       '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
+    +         '<select id="sgCountry">' + sel.country + '</select></div>'
+    +       '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
+    +         '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + sel.dial + '</select>'
+    +         '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
+    +       '<div class="sg-field"><label for="sgDisc">' + esc(t('disc')) + '</label><select id="sgDisc">'
+    +         '<option value="skate">' + esc(t('discSkate')) + '</option>'
+    +         '<option value="bmx">' + esc(t('discBmx')) + '</option>'
+    +         '<option value="rollers">' + esc(t('discRollers')) + '</option>'
+    +         '<option value="otro">' + esc(t('discOther')) + '</option>'
+    +       '</select></div>'
+    +       '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(t('send')) + '</button>'
+    +     '</form>'
+    +     '<div class="sg-msg" id="sgMsg"></div>'
+    +     igButton(b('ig'))
+    +   '</div>'
+    + '</section>'
+
+    + '<div id="sgDemo">' + demoHTML(t('demoKicker'), t('demoTitleA'), t('demoTitleB'), t('demoLead')) + '</div>'
     + '<p class="sg-demo-hint">' + esc(t('demoHint')) + '</p>'
-    + footHTML();
+    + footHTML()
+    + '</div></div>';
   }
 
   function icon(name){
