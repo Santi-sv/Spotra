@@ -949,7 +949,7 @@
     const db = await client();
     if(!db) return [];
     const { data, error } = await db.from('waitlist')
-      .select('id,nombre,telefono,pais,prefijo,disciplina,idioma,origen,created_at')
+      .select('id,nombre,marca,tipo,telefono,pais,prefijo,disciplina,idioma,origen,created_at')
       .order('created_at', { ascending: false })
       .limit(500);
     if(error){ console.warn('[SPOTRA] listWaitlist:', error.message); return []; }
