@@ -943,6 +943,44 @@
     }
   }
 
+
+  /* ================= Lista de espera (landing) ================= */
+  async function listWaitlist(){
+    const db = await client();
+    if(!db) return [];
+    const { data, error } = await db.from('waitlist')
+      .select('id,nombre,telefono,pais,prefijo,disciplina,idioma,origen,created_at')
+      .order('created_at', { ascending: false })
+      .limit(500);
+    if(error){ console.warn('[SPOTRA] listWaitlist:', error.message); return []; }
+    return data || [];
+  }
+
+  async function deleteWaitlistEntry(id){
+    const db = await client();
+    if(!db) return { ok: false };
+    const { error } = await db.from('waitlist').delete().eq('id', id);
+    if(error){ console.warn('[SPOTRA] deleteWaitlistEntry:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
+  async function getWaitlistTemplates(){
+    const db = await client();
+    if(!db) return null;
+    const { data, error } = await db.from('waitlist_settings').select('templates').eq('id', 1).maybeSingle();
+    if(error){ console.warn('[SPOTRA] getWaitlistTemplates:', error.message); return null; }
+    return (data && data.templates) || null;
+  }
+
+  async function saveWaitlistTemplates(templates){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexion' };
+    const { error } = await db.from('waitlist_settings')
+      .upsert({ id: 1, templates: templates, updated_at: new Date().toISOString() });
+    if(error){ console.warn('[SPOTRA] saveWaitlistTemplates:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
   window.SpotraBackend = {
     config: cfg,
     getClient: client,
@@ -995,6 +1033,10 @@
     sendPush,
     listPendingEvents,
     reviewEvent,
+    listWaitlist,
+    deleteWaitlistEntry,
+    getWaitlistTemplates,
+    saveWaitlistTemplates,
     seedPlaces: seedPlaces.map(normalizePlace)
   };
 })();
