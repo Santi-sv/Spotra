@@ -1,22 +1,22 @@
-/* SPOTRA — Capa de lanzamiento (landing publica + lista de espera + demo)
-   El acceso a la app NO se muestra en la pantalla: se abre solo con el enlace secreto
-   y ademas pide Face ID / Touch ID.
+/* SPOTRA — Capa de lanzamiento
+   Idioma + landing publica + lista de espera + demo navegable + acceso privado.
    ------------------------------------------------------------------
    ENLACE DE ACCESO:  https://spotra.onrender.com/?k=TU-PALABRA
-   En el codigo solo vive el hash de la palabra (PBKDF2, 250.000 vueltas),
-   no la palabra. Para cambiarla: abri la consola del navegador en la landing,
-   escribi  spotraHash('tu-palabra-nueva')  y pega lo que devuelve en HASH_ACCESO.
+   En el codigo solo vive el hash de la palabra (PBKDF2, 250.000 vueltas).
+   Para cambiarla: en la consola del navegador escribi  spotraHash('palabra-nueva')
+   y pega lo que devuelve en HASH_ACCESO.
    ------------------------------------------------------------------ */
 (function(){
   'use strict';
 
-  var HASH_ACCESO = 'T6NAEk5OpQcxC441WeFdomJSqXr6OeY9bY1VPbIB+PQ=';  // hash del enlace secreto
+  var HASH_ACCESO = 'T6NAEk5OpQcxC441WeFdomJSqXr6OeY9bY1VPbIB+PQ=';
   var SALT = 'spotra-gate-v3';
   var ITER = 250000;
-  var WHATSAPP_FALLBACK = '59896452060';    // si falla el guardado, se ofrece WhatsApp
-  var KEY_ACCESS = 'spotra_access';         // acceso recordado (sin Face ID)
-  var KEY_BIO = 'spotra_bio_id';            // id de la llave Face ID / Touch ID
-  var KEY_SESSION = 'spotra_session';       // acceso valido solo mientras la app este abierta
+  var WHATSAPP_FALLBACK = '59896452060';
+  var KEY_ACCESS = 'spotra_access';
+  var KEY_BIO = 'spotra_bio_id';
+  var KEY_SESSION = 'spotra_session';
+  var KEY_LANG = 'spotra_lang';
 
   var cfg = window.SPOTRA_CONFIG || {};
 
@@ -30,15 +30,12 @@
 
   function hasAccess(){
     try { if(sessionStorage.getItem(KEY_SESSION) === 'ok') return true; } catch(e){}
-    if(hasBio()) return false;               // con Face ID siempre se pide al abrir
+    if(hasBio()) return false;
     return ls(KEY_ACCESS) === 'ok';
   }
-  function releaseLock(){
-    document.documentElement.classList.remove('gate-lock');
-  }
+  function releaseLock(){ document.documentElement.classList.remove('gate-lock'); }
 
   if(hasAccess()){ releaseLock(); return; }
-
   document.documentElement.classList.add('gate-lock');
 
   /* ---------- enlace secreto ---------- */
@@ -46,40 +43,24 @@
     var enc = new TextEncoder();
     return crypto.subtle.importKey('raw', enc.encode(text), 'PBKDF2', false, ['deriveBits'])
       .then(function(key){
-        return crypto.subtle.deriveBits({
-          name:'PBKDF2', salt: enc.encode(SALT), iterations: ITER, hash:'SHA-256'
-        }, key, 256);
+        return crypto.subtle.deriveBits({ name:'PBKDF2', salt: enc.encode(SALT), iterations: ITER, hash:'SHA-256' }, key, 256);
       })
       .then(function(bits){
-        var b = new Uint8Array(bits), s = '';
-        for(var i=0;i<b.length;i++) s += String.fromCharCode(b[i]);
-        return btoa(s);
+        var b = new Uint8Array(bits), out = '';
+        for(var i=0;i<b.length;i++) out += String.fromCharCode(b[i]);
+        return btoa(out);
       });
   }
-  // Ayuda para generar el hash de una palabra nueva desde la consola del navegador
-  window.spotraHash = function(text){
-    return derive(text).then(function(h){ console.log(h); return h; });
-  };
+  window.spotraHash = function(text){ return derive(text).then(function(h){ console.log(h); return h; }); };
 
   function secretFromUrl(){
-    try {
-      var v = new URLSearchParams(location.search).get('k');
-      return v ? v.trim() : '';
-    } catch(e){ return ''; }
+    try { var v = new URLSearchParams(location.search).get('k'); return v ? v.trim() : ''; } catch(e){ return ''; }
   }
+  function cleanUrl(){ try { history.replaceState(null, '', location.pathname); } catch(e){} }
 
-  function cleanUrl(){
-    try { history.replaceState(null, '', location.pathname); } catch(e){}
-  }
-
-  /* ---------- Face ID / Touch ID (WebAuthn) ---------- */
+  /* ---------- Face ID / Touch ID ---------- */
   var bioSupported = !!(window.PublicKeyCredential && navigator.credentials && location.protocol === 'https:');
-
-  function rand(n){
-    var a = new Uint8Array(n);
-    (window.crypto || window.msCrypto).getRandomValues(a);
-    return a;
-  }
+  function rand(n){ var a = new Uint8Array(n); (window.crypto || window.msCrypto).getRandomValues(a); return a; }
   function b64url(buf){
     var bytes = new Uint8Array(buf), s = '';
     for(var i=0;i<bytes.length;i++) s += String.fromCharCode(bytes[i]);
@@ -92,7 +73,6 @@
     for(var i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
     return bytes;
   }
-
   function bioRegister(){
     return navigator.credentials.create({
       publicKey: {
@@ -101,8 +81,7 @@
         user: { id: rand(16), name: 'admin@spotra', displayName: 'SPOTRA' },
         pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
         authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred' },
-        timeout: 60000,
-        attestation: 'none'
+        timeout: 60000, attestation: 'none'
       }
     }).then(function(cred){
       if(!cred) throw new Error('sin credencial');
@@ -111,7 +90,6 @@
       return true;
     });
   }
-
   function bioLogin(){
     var id = ls(KEY_BIO);
     if(!id) return Promise.reject(new Error('sin llave'));
@@ -119,16 +97,11 @@
       publicKey: {
         challenge: rand(32),
         allowCredentials: [{ type:'public-key', id: fromB64url(id) }],
-        userVerification: 'required',
-        timeout: 60000
+        userVerification: 'required', timeout: 60000
       }
-    }).then(function(assertion){
-      if(!assertion) throw new Error('cancelado');
-      return true;
-    });
+    }).then(function(a){ if(!a) throw new Error('cancelado'); return true; });
   }
 
-  /* ---------- estilos ---------- */
   var css = ''
   + '.spotra-gate{position:fixed;inset:0;z-index:99999;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#070907;color:#f5f7f4;font-family:"General Sans",system-ui,-apple-system,sans-serif;}'
   + '.sg-bg{position:fixed;inset:0;background:url("assets/preview/landing-bg.webp") center top/cover no-repeat;opacity:1;}'
@@ -199,29 +172,236 @@
   + '.sg-link{display:block;width:100%;margin-top:10px;background:none;border:0;color:#9aa39a;font-size:13px;font-family:inherit;text-decoration:underline;cursor:pointer;padding:6px;}'
   + '.sg-foot{text-align:center;color:#4e564e;font-size:11px;margin-top:26px;line-height:1.6;}'
   + '.sg-foot a{color:#8d968d;text-decoration:none;}'
-  + '';
+  + '.sg-langscreen{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:24px;background:#070907;}'
+  + '.sg-langbox{position:relative;z-index:1;width:100%;max-width:420px;text-align:center;}'
+  + '.sg-langbox .sg-logo{margin-bottom:6px;}'
+  + '.sg-langtitle{font-family:"Clash Display","General Sans",sans-serif;font-size:20px;font-weight:600;margin:22px 0 4px;}'
+  + '.sg-langsub{color:#9aa39a;font-size:13.5px;margin:0 0 20px;}'
+  + '.sg-langlist{display:grid;gap:10px;}'
+  + '.sg-langlist button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:rgba(10,15,11,.82);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#f5f7f4;font-family:inherit;font-size:15px;font-weight:600;padding:14px 16px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}'
+  + '.sg-langlist button:active{border-color:#2ee84d;}'
+  + '.sg-langlist b{font-size:20px;line-height:1;}'
+  + '.sg-langlist span{display:block;font-size:12px;color:#9aa39a;font-weight:400;margin-top:2px;}'
+  + '.sg-phonerow{display:grid;grid-template-columns:118px 1fr;gap:8px;}'
+  + '.sg-phonerow select{padding-left:10px;padding-right:6px;}'
+  + '.sg-langswitch{background:none;border:0;color:#8d968d;font-size:12px;font-family:inherit;text-decoration:underline;cursor:pointer;padding:4px;}';
+
+
+  /* ---------- idiomas ---------- */
+  var LANGS = [
+    { code:'es-uy', flag:'\uD83C\uDDFA\uD83C\uDDFE', name:'Español', note:'Rio de la Plata' },
+    { code:'es',    flag:'\uD83C\uDDF2\uD83C\uDDFD', name:'Español', note:'Latinoamerica' },
+    { code:'pt-br', flag:'\uD83C\uDDE7\uD83C\uDDF7', name:'Português', note:'Brasil' },
+    { code:'en',    flag:'\uD83C\uDDFA\uD83C\uDDF8', name:'English', note:'International' }
+  ];
+
+  var T = {
+    'es-uy': {
+      kicker:'Proximamente',
+      h1a:'Estamos creando la mejor app para ', h1b:'skaters de Latinoamerica',
+      sub:'Mapa colaborativo de spots, eventos con ranking, market de usados entre riders y foro. Todo en un solo lugar.',
+      formTitle:'Queres ser parte?',
+      formHint:'Dejanos tu nombre y tu numero. Te avisamos primero cuando abramos.',
+      name:'Nombre', namePh:'Tu nombre',
+      country:'Pais', phone:'Telefono (WhatsApp)', phonePh:'99 123 456',
+      disc:'Que andas', discSkate:'Skate', discBmx:'BMX', discRollers:'Rollers', discOther:'Otro / solo miro',
+      send:'Quiero estar en la lista', sending:'Guardando...',
+      errName:'Escribi tu nombre.', errPhone:'Escribi un telefono valido.', errCountry:'Elegi tu pais.',
+      ok:'Listo {n}. Ya estas en la lista. Te escribimos cuando abramos.',
+      dup:'Ese numero ya estaba anotado. Tranquilo, te avisamos igual.',
+      fail:'No pudimos guardarlo ahora. Mandanos los datos por WhatsApp: ',
+      failLink:'abrir WhatsApp',
+      demoKicker:'Recorrido por la app',
+      demoTitleA:'Mira ', demoTitleB:' por dentro',
+      demoLead:'Es SPOTRA funcionando. Toca la barra de abajo del telefono, desliza las pantallas o elegi una de la lista.',
+      demoHint:'Demo navegable con datos de ejemplo. Version en desarrollo.',
+      changeLang:'Cambiar idioma',
+      accessTitle:'Acceso privado', enter:'Entrar', enterBio:'Entrar con Face ID',
+      bioSetup:'Activa Face ID / Touch ID en este dispositivo. Despues, cada vez que abras el enlace te pide la cara o la huella.',
+      bioAdd:'Activar Face ID / Touch ID', bioSkip:'Entrar sin activarlo',
+      bioFail:'No se pudo verificar. Proba de nuevo.', bioNo:'Este dispositivo no pudo registrar Face ID.',
+      opening:'Abriendo la app...',
+      steps:['Inicio','Mapa','Eventos','Market','Foro','Perfil'],
+      caps:['Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.',
+            'Skateparks, spots de calle y tiendas. Desliza dentro del mapa para ver la ficha del spot.',
+            'Competencias y juntadas con inscripcion, resultados y ranking.',
+            'Usados entre riders, con contacto directo por WhatsApp.',
+            'La escena hablando: fotos, likes y comentarios.',
+            'Tu muro, tus podios, tus redes y tu SPOTRA ID.']
+    },
+    'es': {
+      kicker:'Proximamente',
+      h1a:'Estamos creando la mejor app para ', h1b:'skaters de Latinoamerica',
+      sub:'Mapa colaborativo de spots, eventos con ranking, mercado de usados entre riders y foro. Todo en un solo lugar.',
+      formTitle:'Quieres ser parte?',
+      formHint:'Dejanos tu nombre y tu numero. Te avisamos primero cuando abramos.',
+      name:'Nombre', namePh:'Tu nombre',
+      country:'Pais', phone:'Telefono (WhatsApp)', phonePh:'99 123 456',
+      disc:'Que practicas', discSkate:'Skate', discBmx:'BMX', discRollers:'Patines', discOther:'Otro / solo miro',
+      send:'Quiero estar en la lista', sending:'Guardando...',
+      errName:'Escribe tu nombre.', errPhone:'Escribe un telefono valido.', errCountry:'Elige tu pais.',
+      ok:'Listo {n}. Ya estas en la lista. Te escribimos cuando abramos.',
+      dup:'Ese numero ya estaba anotado. Igual te avisamos.',
+      fail:'No pudimos guardarlo ahora. Mandanos los datos por WhatsApp: ',
+      failLink:'abrir WhatsApp',
+      demoKicker:'Recorrido por la app',
+      demoTitleA:'Mira ', demoTitleB:' por dentro',
+      demoLead:'Es SPOTRA funcionando. Toca la barra de abajo del telefono, desliza las pantallas o elige una de la lista.',
+      demoHint:'Demo navegable con datos de ejemplo. Version en desarrollo.',
+      changeLang:'Cambiar idioma',
+      accessTitle:'Acceso privado', enter:'Entrar', enterBio:'Entrar con Face ID',
+      bioSetup:'Activa Face ID / Touch ID en este dispositivo. Despues, cada vez que abras el enlace te pide la cara o la huella.',
+      bioAdd:'Activar Face ID / Touch ID', bioSkip:'Entrar sin activarlo',
+      bioFail:'No se pudo verificar. Intenta de nuevo.', bioNo:'Este dispositivo no pudo registrar Face ID.',
+      opening:'Abriendo la app...',
+      steps:['Inicio','Mapa','Eventos','Mercado','Foro','Perfil'],
+      caps:['Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.',
+            'Skateparks, spots de calle y tiendas. Desliza dentro del mapa para ver la ficha del spot.',
+            'Competencias y quedadas con inscripcion, resultados y ranking.',
+            'Usados entre riders, con contacto directo por WhatsApp.',
+            'La escena hablando: fotos, likes y comentarios.',
+            'Tu muro, tus podios, tus redes y tu SPOTRA ID.']
+    },
+    'pt-br': {
+      kicker:'Em breve',
+      h1a:'Estamos criando o melhor app para ', h1b:'skatistas da America Latina',
+      sub:'Mapa colaborativo de picos, eventos com ranking, mercado de usados entre riders e forum. Tudo em um so lugar.',
+      formTitle:'Quer fazer parte?',
+      formHint:'Deixe seu nome e seu numero. Avisamos voce primeiro quando abrirmos.',
+      name:'Nome', namePh:'Seu nome',
+      country:'Pais', phone:'Telefone (WhatsApp)', phonePh:'11 91234 5678',
+      disc:'O que voce anda', discSkate:'Skate', discBmx:'BMX', discRollers:'Patins', discOther:'Outro / so olhando',
+      send:'Quero entrar na lista', sending:'Salvando...',
+      errName:'Escreva seu nome.', errPhone:'Escreva um telefone valido.', errCountry:'Escolha seu pais.',
+      ok:'Pronto {n}. Voce esta na lista. A gente avisa quando abrir.',
+      dup:'Esse numero ja estava na lista. Vamos avisar voce do mesmo jeito.',
+      fail:'Nao conseguimos salvar agora. Mande seus dados pelo WhatsApp: ',
+      failLink:'abrir WhatsApp',
+      demoKicker:'Passeio pelo app',
+      demoTitleA:'Veja ', demoTitleB:' por dentro',
+      demoLead:'E o SPOTRA funcionando. Toque na barra de baixo do celular, deslize as telas ou escolha uma da lista.',
+      demoHint:'Demo navegavel com dados de exemplo. Versao em desenvolvimento.',
+      changeLang:'Mudar idioma',
+      accessTitle:'Acesso privado', enter:'Entrar', enterBio:'Entrar com Face ID',
+      bioSetup:'Ative Face ID / Touch ID neste aparelho. Depois, toda vez que abrir o link ele pede seu rosto ou digital.',
+      bioAdd:'Ativar Face ID / Touch ID', bioSkip:'Entrar sem ativar',
+      bioFail:'Nao foi possivel verificar. Tente de novo.', bioNo:'Este aparelho nao conseguiu registrar Face ID.',
+      opening:'Abrindo o app...',
+      steps:['Inicio','Mapa','Eventos','Mercado','Forum','Perfil'],
+      caps:['Sua rede rider ao abrir: picos proximos, eventos e atalhos.',
+            'Pistas, picos de rua e lojas. Deslize dentro do mapa para ver a ficha do pico.',
+            'Campeonatos e encontros com inscricao, resultados e ranking.',
+            'Usados entre riders, com contato direto pelo WhatsApp.',
+            'A cena conversando: fotos, curtidas e comentarios.',
+            'Seu mural, seus podios, suas redes e seu SPOTRA ID.']
+    },
+    'en': {
+      kicker:'Coming soon',
+      h1a:'We are building the best app for ', h1b:'Latin American skaters',
+      sub:'Collaborative spot map, events with rankings, rider-to-rider used gear market and forum. All in one place.',
+      formTitle:'Want in?',
+      formHint:'Leave your name and number. You will be the first to know when we open.',
+      name:'Name', namePh:'Your name',
+      country:'Country', phone:'Phone (WhatsApp)', phonePh:'555 123 456',
+      disc:'What you ride', discSkate:'Skate', discBmx:'BMX', discRollers:'Rollers', discOther:'Other / just looking',
+      send:'Add me to the list', sending:'Saving...',
+      errName:'Please write your name.', errPhone:'Please write a valid phone.', errCountry:'Pick your country.',
+      ok:'Done {n}. You are on the list. We will text you when we open.',
+      dup:'That number was already on the list. We will still reach out.',
+      fail:'We could not save it right now. Send us your details on WhatsApp: ',
+      failLink:'open WhatsApp',
+      demoKicker:'App walkthrough',
+      demoTitleA:'See ', demoTitleB:' from the inside',
+      demoLead:'This is SPOTRA running. Tap the bottom bar of the phone, swipe the screens or pick one from the list.',
+      demoHint:'Interactive demo with sample data. Work in progress.',
+      changeLang:'Change language',
+      accessTitle:'Private access', enter:'Enter', enterBio:'Enter with Face ID',
+      bioSetup:'Turn on Face ID / Touch ID on this device. From then on, the link will ask for your face or fingerprint.',
+      bioAdd:'Turn on Face ID / Touch ID', bioSkip:'Enter without it',
+      bioFail:'Could not verify. Try again.', bioNo:'This device could not register Face ID.',
+      opening:'Opening the app...',
+      steps:['Home','Map','Events','Market','Forum','Profile'],
+      caps:['Your rider network at a glance: nearby spots, events and shortcuts.',
+            'Skateparks, street spots and shops. Swipe inside the map to open the spot sheet.',
+            'Contests and meetups with signups, results and rankings.',
+            'Used gear between riders, with direct WhatsApp contact.',
+            'The scene talking: photos, likes and comments.',
+            'Your wall, your podiums, your socials and your SPOTRA ID.']
+    }
+  };
+
+  var COUNTRIES = [
+    { code:'UY', dial:'598', es:'Uruguay', pt:'Uruguai', en:'Uruguay' },
+    { code:'AR', dial:'54',  es:'Argentina', pt:'Argentina', en:'Argentina' },
+    { code:'BR', dial:'55',  es:'Brasil', pt:'Brasil', en:'Brazil' },
+    { code:'CL', dial:'56',  es:'Chile', pt:'Chile', en:'Chile' },
+    { code:'PY', dial:'595', es:'Paraguay', pt:'Paraguai', en:'Paraguay' },
+    { code:'BO', dial:'591', es:'Bolivia', pt:'Bolivia', en:'Bolivia' },
+    { code:'PE', dial:'51',  es:'Peru', pt:'Peru', en:'Peru' },
+    { code:'CO', dial:'57',  es:'Colombia', pt:'Colombia', en:'Colombia' },
+    { code:'EC', dial:'593', es:'Ecuador', pt:'Equador', en:'Ecuador' },
+    { code:'VE', dial:'58',  es:'Venezuela', pt:'Venezuela', en:'Venezuela' },
+    { code:'MX', dial:'52',  es:'Mexico', pt:'Mexico', en:'Mexico' },
+    { code:'CR', dial:'506', es:'Costa Rica', pt:'Costa Rica', en:'Costa Rica' },
+    { code:'PA', dial:'507', es:'Panama', pt:'Panama', en:'Panama' },
+    { code:'GT', dial:'502', es:'Guatemala', pt:'Guatemala', en:'Guatemala' },
+    { code:'DO', dial:'1',   es:'Rep. Dominicana', pt:'Rep. Dominicana', en:'Dominican Rep.' },
+    { code:'US', dial:'1',   es:'Estados Unidos', pt:'Estados Unidos', en:'United States' },
+    { code:'ES', dial:'34',  es:'España', pt:'Espanha', en:'Spain' }
+  ];
+
+  var lang = ls(KEY_LANG) || '';
+  function t(k){ var d = T[lang] || T['es-uy']; return d[k]; }
+  function countryName(c){
+    if(lang === 'pt-br') return c.pt;
+    if(lang === 'en') return c.en;
+    return c.es;
+  }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
 
   var st = document.createElement('style');
   st.textContent = css;
   document.head.appendChild(st);
 
-  /* ---------- demo: capturas reales de la app ---------- */
-  var STEPS = [
-    { view:'home',      step:'Inicio',  cap:'Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.' },
-    { view:'map',       step:'Mapa',    cap:'Skateparks, spots de calle y tiendas. Desliza dentro del mapa para ver la ficha del spot.' },
-    { view:'events',    step:'Eventos', cap:'Competencias y juntadas con inscripcion, resultados y ranking.' },
-    { view:'market',    step:'Market',  cap:'Usados entre riders, con contacto directo por WhatsApp.' },
-    { view:'community', step:'Foro',    cap:'La escena hablando: fotos, likes y comentarios.' },
-    { view:'profile',   step:'Perfil',  cap:'Tu muro, tus podios, tus redes y tu SPOTRA ID.' }
-  ];
+  var gate = null;
 
+  /* ---------- pantalla de idioma ---------- */
+  function mountLang(){
+    var el = document.createElement('div');
+    el.className = 'spotra-gate sg-langscreen';
+    el.innerHTML = '<div class="sg-bg"></div><div class="sg-grid"></div>'
+      + '<div class="sg-langbox">'
+      +   '<div class="sg-logo">SPOT<span>RA</span></div>'
+      +   '<div class="sg-langtitle">Elegi tu idioma · Escolha seu idioma · Choose your language</div>'
+      +   '<p class="sg-langsub">SPOTRA · Uruguay</p>'
+      +   '<div class="sg-langlist">'
+      +     LANGS.map(function(l){
+              return '<button type="button" data-lang="' + l.code + '"><b>' + l.flag + '</b>'
+                + '<span style="font-size:15px;color:#f5f7f4;font-weight:600">' + l.name
+                + '<span>' + l.note + '</span></span></button>';
+            }).join('')
+      +   '</div>'
+      + '</div>';
+    document.body.appendChild(el);
+    el.addEventListener('click', function(ev){
+      var b = ev.target.closest('[data-lang]');
+      if(!b) return;
+      lang = b.getAttribute('data-lang');
+      lsSet(KEY_LANG, lang);
+      el.remove();
+      mountGate();
+    });
+  }
 
-
+  /* ---------- demo navegable ---------- */
+  var VIEWS = ['home','map','events','market','community','profile'];
 
   function demoHTML(){
-    var steps = STEPS.map(function(s, i){
+    var steps = t('steps').map(function(name, i){
       return '<li><button type="button" data-shot="' + i + '" class="' + (i === 0 ? 'on' : '') + '">'
-        + '<span class="num">0' + (i + 1) + '</span>' + s.step + '</button></li>';
+        + '<span class="num">0' + (i + 1) + '</span>' + esc(name) + '</button></li>';
     }).join('');
     var status = '<div class="sg-status"><span>9:41</span><span class="sg-statusicons">'
       + '<svg width="17" height="11" viewBox="0 0 17 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>'
@@ -232,25 +412,25 @@
       + '<div class="sg-island"></div>' + status
       + '<div class="sg-viewport">'
       +   '<img class="sg-fallback" src="assets/preview/p1-inicio.webp" alt="">'
-      +   '<iframe class="sg-frame" id="sgFrame" src="demo.html" title="SPOTRA en funcionamiento" loading="lazy"></iframe>'
+      +   '<iframe class="sg-frame" id="sgFrame" src="demo.html" title="SPOTRA" loading="lazy"></iframe>'
       + '</div>'
       + '<div class="sg-home"></div>'
       + '</div></div></div>';
     return '<section class="sg-demo"><div class="sg-demo-grid">'
       + '<div class="sg-demo-head">'
-      +   '<div class="sg-kicker2">Recorrido por la app</div>'
-      +   '<h3>Mira <span id="sgCapT">' + STEPS[0].step + '</span> por dentro</h3>'
-      +   '<p class="lead2">Es SPOTRA funcionando. Tocá la barra de abajo del telefono, deslizá las pantallas o elegí una de la lista.</p>'
+      +   '<div class="sg-kicker2">' + esc(t('demoKicker')) + '</div>'
+      +   '<h3>' + esc(t('demoTitleA')) + '<span id="sgCapT">' + esc(t('steps')[0]) + '</span>' + esc(t('demoTitleB')) + '</h3>'
+      +   '<p class="lead2">' + esc(t('demoLead')) + '</p>'
       + '</div>'
       + phone
       + '<div class="sg-steps-wrap">'
       +   '<ol class="sg-steps" id="sgSteps">' + steps + '</ol>'
-      +   '<p class="sg-caption" id="sgCap">' + STEPS[0].cap + '</p>'
+      +   '<p class="sg-caption" id="sgCap">' + esc(t('caps')[0]) + '</p>'
       + '</div>'
       + '</div></section>';
   }
 
-  function wireGallery(){
+  function wireDemo(){
     var frame = gate.querySelector('#sgFrame');
     var steps = gate.querySelector('#sgSteps');
     var capT = gate.querySelector('#sgCapT');
@@ -258,24 +438,22 @@
     if(!frame || !steps) return;
 
     function paint(view){
-      var i = 0;
-      STEPS.forEach(function(s, n){ if(s.view === view) i = n; });
+      var i = VIEWS.indexOf(view);
+      if(i < 0) i = 0;
       Array.prototype.forEach.call(steps.querySelectorAll('button'), function(b, n){
         b.classList.toggle('on', n === i);
       });
-      if(capT) capT.textContent = STEPS[i].step;
-      if(cap) cap.textContent = STEPS[i].cap;
+      if(capT) capT.textContent = t('steps')[i];
+      if(cap) cap.textContent = t('caps')[i];
     }
-
     steps.addEventListener('click', function(ev){
       var b = ev.target.closest('[data-shot]');
       if(!b) return;
-      var s = STEPS[parseInt(b.getAttribute('data-shot'), 10)];
-      if(!s) return;
-      paint(s.view);
-      try { frame.contentWindow.postMessage({ spotraGo: s.view }, '*'); } catch(e){}
+      var view = VIEWS[parseInt(b.getAttribute('data-shot'), 10)];
+      if(!view) return;
+      paint(view);
+      try { frame.contentWindow.postMessage({ spotraGo: view }, '*'); } catch(e){}
     });
-
     window.addEventListener('message', function(ev){
       var d = ev.data || {};
       if(d.spotraReady){ gate.classList.add('sg-live'); }
@@ -283,87 +461,129 @@
     });
   }
 
-  /* ---------- overlay ---------- */
-  var gate = document.createElement('div');
-  gate.className = 'spotra-gate';
-  gate.innerHTML = ''
-  + '<div class="sg-bg"></div><div class="sg-grid"></div><div class="sg-glow"></div>'
-  + '<div class="sg-wrap">'
-  +   '<div class="sg-logo">SPOT<span>RA</span></div>'
-  +   '<div class="sg-kicker">Proximamente</div>'
-  +   '<h1 class="sg-h1">Estamos creando la mejor app para <em>skaters de Latinoamerica</em></h1>'
-  +   '<p class="sg-sub">Mapa colaborativo de spots, eventos con ranking, market de usados entre riders y foro. Todo en un solo lugar.</p>'
-  +   '<div class="sg-card">'
-  +     '<h2>Queres ser parte?</h2>'
-  +     '<p class="hint">Dejanos tu nombre y tu numero. Te avisamos primero cuando abramos.</p>'
-  +     '<form id="sgForm" novalidate>'
-  +       '<div class="sg-field"><label for="sgName">Nombre</label><input id="sgName" name="nombre" type="text" autocomplete="name" placeholder="Tu nombre" required></div>'
-  +       '<div class="sg-field"><label for="sgPhone">Telefono (WhatsApp)</label><input id="sgPhone" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="099 123 456" required></div>'
-  +       '<div class="sg-field"><label for="sgDisc">Que andas</label><select id="sgDisc" name="disciplina"><option value="skate">Skate</option><option value="bmx">BMX</option><option value="rollers">Rollers</option><option value="otro">Otro / solo miro</option></select></div>'
-  +       '<button class="sg-btn" type="submit" id="sgSubmit">Quiero estar en la lista</button>'
-  +     '</form>'
-  +     '<div class="sg-msg" id="sgMsg"></div>'
-  +   '</div>'
-  +   demoHTML()
-  +   '<p class="sg-demo-hint">Demo navegable con datos de ejemplo. Version en desarrollo.</p>'
-  +   '<p class="sg-foot">SPOTRA · Uruguay<br><a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com</p>'
-  + '</div>';
+  /* ---------- landing ---------- */
+  function mountGate(){
+    gate = document.createElement('div');
+    gate.className = 'spotra-gate';
 
-  function mount(){
+    var defCode = lang === 'pt-br' ? 'BR' : (lang === 'en' ? 'US' : (lang === 'es' ? 'MX' : 'UY'));
+    var countryOpts = COUNTRIES.map(function(c){
+      return '<option value="' + c.code + '" data-dial="' + c.dial + '"' + (c.code === defCode ? ' selected' : '') + '>'
+        + esc(countryName(c)) + ' (+' + c.dial + ')</option>';
+    }).join('');
+    var dialOpts = COUNTRIES.map(function(c){
+      return '<option value="' + c.code + '"' + (c.code === defCode ? ' selected' : '') + '>' + c.code + ' +' + c.dial + '</option>';
+    }).join('');
+
+    gate.innerHTML = ''
+    + '<div class="sg-bg"></div><div class="sg-grid"></div><div class="sg-glow"></div>'
+    + '<div class="sg-wrap">'
+    +   '<div class="sg-logo">SPOT<span>RA</span></div>'
+    +   '<div class="sg-kicker">' + esc(t('kicker')) + '</div>'
+    +   '<h1 class="sg-h1">' + esc(t('h1a')) + '<em>' + esc(t('h1b')) + '</em></h1>'
+    +   '<p class="sg-sub">' + esc(t('sub')) + '</p>'
+    +   '<div class="sg-card">'
+    +     '<h2>' + esc(t('formTitle')) + '</h2>'
+    +     '<p class="hint">' + esc(t('formHint')) + '</p>'
+    +     '<form id="sgForm" novalidate>'
+    +       '<div class="sg-field"><label for="sgName">' + esc(t('name')) + '</label>'
+    +         '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
+    +       '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
+    +         '<select id="sgCountry">' + countryOpts + '</select></div>'
+    +       '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
+    +         '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + dialOpts + '</select>'
+    +         '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
+    +       '<div class="sg-field"><label for="sgDisc">' + esc(t('disc')) + '</label><select id="sgDisc">'
+    +         '<option value="skate">' + esc(t('discSkate')) + '</option>'
+    +         '<option value="bmx">' + esc(t('discBmx')) + '</option>'
+    +         '<option value="rollers">' + esc(t('discRollers')) + '</option>'
+    +         '<option value="otro">' + esc(t('discOther')) + '</option>'
+    +       '</select></div>'
+    +       '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(t('send')) + '</button>'
+    +     '</form>'
+    +     '<div class="sg-msg" id="sgMsg"></div>'
+    +   '</div>'
+    +   demoHTML()
+    +   '<p class="sg-demo-hint">' + esc(t('demoHint')) + '</p>'
+    +   '<p class="sg-foot">SPOTRA · Uruguay<br>'
+    +     '<a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com<br>'
+    +     '<button class="sg-langswitch" id="sgLangSwitch">' + esc(t('changeLang')) + '</button></p>'
+    + '</div>';
+
     document.body.appendChild(gate);
-    wire();
+    wireDemo();
+    wireForm();
+
+    gate.querySelector('#sgLangSwitch').addEventListener('click', function(){
+      lsDel(KEY_LANG);
+      gate.remove();
+      gate = null;
+      mountLang();
+    });
   }
 
-  function wire(){
-    wireGallery();
-    /* lista de espera */
+  function wireForm(){
     var form = gate.querySelector('#sgForm');
     var msg = gate.querySelector('#sgMsg');
     var submit = gate.querySelector('#sgSubmit');
+    var country = gate.querySelector('#sgCountry');
+    var dial = gate.querySelector('#sgDial');
 
-    form.addEventListener('submit', function(ev){
-      ev.preventDefault();
-      var nombre = gate.querySelector('#sgName').value.trim();
-      var telefono = gate.querySelector('#sgPhone').value.trim();
-      var disciplina = gate.querySelector('#sgDisc').value;
-
-      msg.className = 'sg-msg';
-      if(nombre.length < 2){ show('err', 'Escribi tu nombre.'); return; }
-      if(telefono.replace(/\D/g,'').length < 7){ show('err', 'Escribi un telefono valido.'); return; }
-
-      submit.disabled = true;
-      submit.textContent = 'Guardando...';
-
-      saveLead({ nombre:nombre, telefono:telefono, disciplina:disciplina })
-        .then(function(res){
-          submit.disabled = false;
-          submit.textContent = 'Quiero estar en la lista';
-          if(res.ok){
-            form.style.display = 'none';
-            show('ok', 'Listo ' + nombre + '. Ya estas en la lista. Te escribimos cuando abramos.');
-          } else if(res.duplicate){
-            show('ok', 'Ese numero ya estaba anotado. Tranquilo, te avisamos igual.');
-          } else {
-            show('err', 'No pudimos guardarlo ahora. Mandanos los datos por WhatsApp: '
-              + '<a href="https://wa.me/' + WHATSAPP_FALLBACK + '?text='
-              + encodeURIComponent('Hola SPOTRA, quiero estar en la lista. Nombre: ' + nombre + ' - Tel: ' + telefono + ' - ' + disciplina)
-              + '" target="_blank" rel="noopener">abrir WhatsApp</a>');
-          }
-        });
-    });
+    country.addEventListener('change', function(){ dial.value = country.value; });
+    dial.addEventListener('change', function(){ country.value = dial.value; });
 
     function show(kind, html){
       msg.className = 'sg-msg ' + kind;
       msg.innerHTML = html;
     }
 
+    form.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      var nombre = gate.querySelector('#sgName').value.trim();
+      var raw = gate.querySelector('#sgPhone').value.replace(/\D/g, '');
+      var code = country.value;
+      var info = null;
+      COUNTRIES.forEach(function(c){ if(c.code === code) info = c; });
+
+      msg.className = 'sg-msg';
+      if(nombre.length < 2){ show('err', esc(t('errName'))); return; }
+      if(!info){ show('err', esc(t('errCountry'))); return; }
+      if(raw.length < 6){ show('err', esc(t('errPhone'))); return; }
+
+      raw = raw.replace(/^0+/, '');
+      if(info.code === 'AR' && raw.charAt(0) !== '9') raw = '9' + raw;
+      var full = '+' + info.dial + raw;
+
+      submit.disabled = true;
+      submit.textContent = t('sending');
+
+      saveLead({
+        nombre: nombre,
+        telefono: full,
+        pais: info.code,
+        prefijo: '+' + info.dial,
+        disciplina: gate.querySelector('#sgDisc').value,
+        idioma: lang
+      }).then(function(res){
+        submit.disabled = false;
+        submit.textContent = t('send');
+        if(res.ok){
+          form.style.display = 'none';
+          show('ok', esc(t('ok').replace('{n}', nombre)));
+        } else if(res.duplicate){
+          show('ok', esc(t('dup')));
+        } else {
+          show('err', esc(t('fail'))
+            + '<a href="https://wa.me/' + WHATSAPP_FALLBACK + '?text='
+            + encodeURIComponent('SPOTRA: ' + nombre + ' - ' + full + ' - ' + info.code)
+            + '" target="_blank" rel="noopener">' + esc(t('failLink')) + '</a>');
+        }
+      });
+    });
   }
 
-  /* ---------- guardado en Supabase (tabla waitlist) ---------- */
   function saveLead(data){
-    if(!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY){
-      return Promise.resolve({ ok:false });
-    }
+    if(!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY){ return Promise.resolve({ ok:false }); }
     return fetch(cfg.SUPABASE_URL + '/rest/v1/waitlist', {
       method: 'POST',
       headers: {
@@ -375,14 +595,17 @@
       body: JSON.stringify({
         nombre: data.nombre,
         telefono: data.telefono,
+        pais: data.pais,
+        prefijo: data.prefijo,
         disciplina: data.disciplina,
+        idioma: data.idioma,
         origen: 'landing'
       })
     }).then(function(r){
       if(r.ok) return { ok:true };
-      return r.text().then(function(t){
-        var dup = r.status === 409 || (t && t.indexOf('duplicate') !== -1) || (t && t.indexOf('23505') !== -1);
-        console.warn('[SPOTRA] waitlist:', r.status, t);
+      return r.text().then(function(txt){
+        var dup = r.status === 409 || (txt && (txt.indexOf('duplicate') !== -1 || txt.indexOf('23505') !== -1));
+        console.warn('[SPOTRA] waitlist:', r.status, txt);
         return { ok:false, duplicate:dup };
       });
     }).catch(function(err){
@@ -391,94 +614,82 @@
     });
   }
 
-  /* ---------- pantalla privada de acceso (solo con el enlace correcto) ---------- */
-  function buildAccess(){
+  /* ---------- pantalla privada de acceso ---------- */
+  function mountAccess(){
     var el = document.createElement('div');
     el.className = 'spotra-gate';
     el.innerHTML = ''
     + '<div class="sg-bg"></div><div class="sg-grid"></div>'
     + '<div class="sg-wrap" style="padding-top:22vh">'
     +   '<div class="sg-logo">SPOT<span>RA</span></div>'
-    +   '<div class="sg-kicker">Acceso privado</div>'
+    +   '<div class="sg-kicker">' + esc(t('accessTitle')) + '</div>'
     +   '<div class="sg-card" style="margin-top:26px">'
-    +     '<button class="sg-btn" type="button" id="sgGo">Entrar</button>'
+    +     '<button class="sg-btn" type="button" id="sgGo">' + esc(t('enter')) + '</button>'
     +     '<div id="sgSetup" style="display:none;margin-top:14px;border-top:1px solid rgba(255,255,255,.1);padding-top:14px">'
-    +       '<p class="hint" style="margin:0 0 10px">Activa Face ID / Touch ID en este dispositivo. Despues, cada vez que abras el enlace te va a pedir la cara o la huella.</p>'
-    +       '<button class="sg-btn" type="button" id="sgAdd">Activar Face ID / Touch ID</button>'
-    +       '<button class="sg-link" type="button" id="sgSkip">Entrar sin activarlo</button>'
+    +       '<p class="hint" style="margin:0 0 10px">' + esc(t('bioSetup')) + '</p>'
+    +       '<button class="sg-btn" type="button" id="sgAdd">' + esc(t('bioAdd')) + '</button>'
+    +       '<button class="sg-link" type="button" id="sgSkip">' + esc(t('bioSkip')) + '</button>'
     +     '</div>'
     +     '<div class="sg-msg" id="sgAccMsg"></div>'
     +   '</div>'
     + '</div>';
-    return el;
-  }
-
-  function mountAccess(){
-    var el = buildAccess();
     document.body.appendChild(el);
+
     var go = el.querySelector('#sgGo');
     var setup = el.querySelector('#sgSetup');
     var addBtn = el.querySelector('#sgAdd');
     var skipBtn = el.querySelector('#sgSkip');
     var msg = el.querySelector('#sgAccMsg');
 
-    function say(kind, text){
-      msg.className = 'sg-msg ' + kind;
-      msg.textContent = text;
-    }
+    function say(kind, text){ msg.className = 'sg-msg ' + kind; msg.textContent = text; }
     function enterApp(){
       unlockSession();
-      say('ok', 'Abriendo la app...');
+      say('ok', t('opening'));
       setTimeout(function(){ location.reload(); }, 350);
     }
-
-    if(hasBio() && bioSupported){
-      go.textContent = 'Entrar con Face ID';
-    }
+    if(hasBio() && bioSupported){ go.textContent = t('enterBio'); }
 
     go.addEventListener('click', function(){
       say('', '');
       if(hasBio() && bioSupported){
         bioLogin().then(enterApp).catch(function(err){
           console.warn('[SPOTRA] Face ID:', err);
-          say('err', 'No se pudo verificar. Proba de nuevo.');
+          say('err', t('bioFail'));
         });
         return;
       }
-      if(bioSupported){
-        go.style.display = 'none';
-        setup.style.display = 'block';
-        return;
-      }
+      if(bioSupported){ go.style.display = 'none'; setup.style.display = 'block'; return; }
       enterApp();
     });
-
     addBtn.addEventListener('click', function(){
       addBtn.disabled = true;
-      addBtn.textContent = 'Esperando a Face ID...';
+      addBtn.textContent = t('sending');
       bioRegister().then(enterApp).catch(function(err){
         console.warn('[SPOTRA] registro Face ID:', err);
         addBtn.disabled = false;
-        addBtn.textContent = 'Activar Face ID / Touch ID';
-        say('err', 'Este dispositivo no pudo registrar Face ID.');
+        addBtn.textContent = t('bioAdd');
+        say('err', t('bioNo'));
       });
     });
-
-    skipBtn.addEventListener('click', function(){
-      unlockRemembered();
-      enterApp();
-    });
+    skipBtn.addEventListener('click', function(){ unlockRemembered(); enterApp(); });
   }
 
   /* ---------- arranque ---------- */
   function start(){
     var secret = secretFromUrl();
-    if(!secret){ mount(); return; }
-    cleanUrl();
-    derive(secret).then(function(h){
-      if(h === HASH_ACCESO){ mountAccess(); }
-      else { mount(); }
-    }).catch(function(){ mount(); });
+    if(secret){
+      cleanUrl();
+      derive(secret).then(function(h){
+        if(h === HASH_ACCESO){ if(!lang) lang = 'es-uy'; mountAccess(); }
+        else { openPublic(); }
+      }).catch(openPublic);
+      return;
+    }
+    openPublic();
+  }
+  function openPublic(){
+    if(lang && T[lang]) mountGate();
+    else mountLang();
   }
 
   if(document.body){ start(); }
