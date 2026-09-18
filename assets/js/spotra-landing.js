@@ -17,6 +17,7 @@
   var KEY_BIO = 'spotra_bio_id';
   var KEY_SESSION = 'spotra_session';
   var KEY_LANG = 'spotra_lang';
+  var KEY_AUD = 'spotra_aud';
 
   var cfg = window.SPOTRA_CONFIG || {};
 
@@ -184,7 +185,21 @@
   + '.sg-langlist span{display:block;font-size:12px;color:#9aa39a;font-weight:400;margin-top:2px;}'
   + '.sg-phonerow{display:grid;grid-template-columns:118px 1fr;gap:8px;}'
   + '.sg-phonerow select{padding-left:10px;padding-right:6px;}'
-  + '.sg-langswitch{background:none;border:0;color:#8d968d;font-size:12px;font-family:inherit;text-decoration:underline;cursor:pointer;padding:4px;}';
+  + '.sg-langswitch{background:none;border:0;color:#8d968d;font-size:12px;font-family:inherit;text-decoration:underline;cursor:pointer;padding:4px;}'
+  + '.sg-ig{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:14px;padding:13px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(10,15,11,.8);color:#f5f7f4;font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer;text-decoration:none;}'
+  + '.sg-ig svg{width:19px;height:19px;color:#2ee84d;}'
+  + '.sg-benefits{display:grid;gap:10px;margin:22px 0 0;padding:0;list-style:none;}'
+  + '.sg-benefits li{background:rgba(10,15,11,.82);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:15px 16px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}'
+  + '.sg-benefits b{display:block;font-family:\"Clash Display\",\"General Sans\",sans-serif;font-size:16px;margin-bottom:4px;}'
+  + '.sg-benefits p{margin:0;color:#9aa39a;font-size:13.5px;line-height:1.5;}'
+  + '.sg-offer{margin-top:22px;border:1px solid rgba(46,232,77,.45);background:linear-gradient(160deg,rgba(46,232,77,.14),rgba(10,15,11,.9));border-radius:18px;padding:20px;text-align:center;}'
+  + '.sg-offer .tag{color:#2ee84d;font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:700;}'
+  + '.sg-offer .price{font-family:\"Clash Display\",\"General Sans\",sans-serif;font-size:34px;font-weight:700;margin:6px 0 4px;}'
+  + '.sg-offer p{margin:0;color:#b9c1b9;font-size:13.5px;line-height:1.5;}'
+  + '.sg-audience{display:grid;gap:10px;margin-top:6px;}'
+  + '.sg-audience button{display:block;width:100%;text-align:left;background:rgba(10,15,11,.82);border:1px solid rgba(255,255,255,.14);border-radius:14px;color:#f5f7f4;font-family:inherit;font-size:15.5px;font-weight:600;padding:16px;cursor:pointer;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}'
+  + '.sg-audience button span{display:block;font-size:12.5px;color:#9aa39a;font-weight:400;margin-top:3px;}'
+  + '.sg-audience button:active{border-color:#2ee84d;}';
 
 
   /* ---------- idiomas ---------- */
@@ -330,6 +345,137 @@
     }
   };
 
+  var IG_URL = 'https://instagram.com/spotra.ok';
+
+  var AUD = {
+    'es-uy': { title:'Como entras a SPOTRA?', rider:'Soy rider', riderNote:'Ando en skate, BMX o rollers',
+               brand:'Soy marca o tienda', brandNote:'Vendo, auspicio o doy clases', back:'Volver' },
+    'es':    { title:'Como entras a SPOTRA?', rider:'Soy rider', riderNote:'Ando en patineta, BMX o patines',
+               brand:'Soy marca o tienda', brandNote:'Vendo, patrocino o doy clases', back:'Volver' },
+    'pt-br': { title:'Como voce entra no SPOTRA?', rider:'Sou rider', riderNote:'Ando de skate, BMX ou patins',
+               brand:'Sou marca ou loja', brandNote:'Vendo, patrocino ou dou aulas', back:'Voltar' },
+    'en':    { title:'How do you come into SPOTRA?', rider:'I am a rider', riderNote:'I skate, ride BMX or rollers',
+               brand:'I am a brand or shop', brandNote:'I sell, sponsor or teach', back:'Back' }
+  };
+
+  var B = {
+    'es-uy': {
+      kicker:'Para marcas y tiendas',
+      h1a:'Tu marca, donde los riders ', h1b:'realmente estan',
+      sub:'SPOTRA es el mapa y la comunidad de skate, BMX y rollers de Latinoamerica. Tu tienda aparece adentro de la app, no al costado.',
+      benefits:[
+        ['Perfil verificado en el mapa','Tu local con fotos, horarios, redes y como llegar. Te encuentran mientras buscan spots.'],
+        ['Eventos con tu nombre','Auspicia competencias y juntadas: tu marca en la ficha del evento, en las inscripciones y en el podio.'],
+        ['Publicaciones en el Market','Subi producto y la gente te escribe directo por WhatsApp. Sin comisiones por venta.'],
+        ['Alcance regional','Uruguay primero, despues Argentina y Brasil. La misma escena en un solo lugar.'],
+        ['Numeros claros','Cuanta gente vio tu perfil, de que zona es y que disciplina practica.']
+      ],
+      offerTag:'Prueba para las primeras marcas',
+      offerPrice:'USD 0,99',
+      offerNote:'Los primeros 3 meses completos. Sin permanencia: si no te sirve, te das de baja y listo.',
+      formTitle:'Queres probarla?',
+      formHint:'Dejanos los datos y te escribimos para darte el acceso.',
+      brandName:'Marca o tienda', brandPh:'Nombre de tu marca',
+      contact:'Nombre de contacto',
+      kind:'Que hacen', kindShop:'Tienda', kindBrand:'Marca', kindSchool:'Escuela o clases', kindOther:'Otro',
+      send:'Quiero probar SPOTRA',
+      ok:'Listo. Te escribimos por WhatsApp para darte el acceso.',
+      ig:'Seguinos en Instagram',
+      demoKicker:'Asi se ve por dentro',
+      demoTitleA:'Mira ', demoTitleB:' por dentro',
+      demoLead:'Esta es la app que van a usar los riders. Toca la barra de abajo y recorrela.'
+    },
+    'es': {
+      kicker:'Para marcas y tiendas',
+      h1a:'Tu marca, donde los riders ', h1b:'realmente estan',
+      sub:'SPOTRA es el mapa y la comunidad de patineta, BMX y patines de Latinoamerica. Tu tienda aparece dentro de la app, no al costado.',
+      benefits:[
+        ['Perfil verificado en el mapa','Tu local con fotos, horarios, redes y como llegar. Te encuentran mientras buscan spots.'],
+        ['Eventos con tu nombre','Patrocina competencias y quedadas: tu marca en la ficha del evento, en las inscripciones y en el podio.'],
+        ['Publicaciones en el Mercado','Sube producto y la gente te escribe directo por WhatsApp. Sin comisiones por venta.'],
+        ['Alcance regional','Uruguay primero, despues Argentina y Brasil. La misma escena en un solo lugar.'],
+        ['Numeros claros','Cuanta gente vio tu perfil, de que zona es y que disciplina practica.']
+      ],
+      offerTag:'Prueba para las primeras marcas',
+      offerPrice:'USD 0,99',
+      offerNote:'Los primeros 3 meses completos. Sin permanencia: si no te sirve, te das de baja y listo.',
+      formTitle:'Quieres probarla?',
+      formHint:'Dejanos los datos y te escribimos para darte el acceso.',
+      brandName:'Marca o tienda', brandPh:'Nombre de tu marca',
+      contact:'Nombre de contacto',
+      kind:'Que hacen', kindShop:'Tienda', kindBrand:'Marca', kindSchool:'Escuela o clases', kindOther:'Otro',
+      send:'Quiero probar SPOTRA',
+      ok:'Listo. Te escribimos por WhatsApp para darte el acceso.',
+      ig:'Siguenos en Instagram',
+      demoKicker:'Asi se ve por dentro',
+      demoTitleA:'Mira ', demoTitleB:' por dentro',
+      demoLead:'Esta es la app que van a usar los riders. Toca la barra de abajo y recorrela.'
+    },
+    'pt-br': {
+      kicker:'Para marcas e lojas',
+      h1a:'Sua marca onde os riders ', h1b:'realmente estao',
+      sub:'O SPOTRA e o mapa e a comunidade de skate, BMX e patins da America Latina. Sua loja aparece dentro do app, nao do lado.',
+      benefits:[
+        ['Perfil verificado no mapa','Sua loja com fotos, horarios, redes e como chegar. Te acham enquanto procuram picos.'],
+        ['Eventos com o seu nome','Patrocine campeonatos e encontros: sua marca na ficha do evento, nas inscricoes e no podio.'],
+        ['Anuncios no Mercado','Publique produto e a pessoa fala com voce direto no WhatsApp. Sem comissao por venda.'],
+        ['Alcance regional','Uruguai primeiro, depois Argentina e Brasil. A mesma cena em um so lugar.'],
+        ['Numeros claros','Quantas pessoas viram seu perfil, de que regiao sao e o que praticam.']
+      ],
+      offerTag:'Teste para as primeiras marcas',
+      offerPrice:'USD 0,99',
+      offerNote:'Os 3 primeiros meses completos. Sem fidelidade: se nao servir, voce cancela e pronto.',
+      formTitle:'Quer testar?',
+      formHint:'Deixe seus dados e a gente te escreve para liberar o acesso.',
+      brandName:'Marca ou loja', brandPh:'Nome da sua marca',
+      contact:'Nome do contato',
+      kind:'O que voces fazem', kindShop:'Loja', kindBrand:'Marca', kindSchool:'Escola ou aulas', kindOther:'Outro',
+      send:'Quero testar o SPOTRA',
+      ok:'Pronto. A gente te escreve no WhatsApp para liberar o acesso.',
+      ig:'Siga a gente no Instagram',
+      demoKicker:'Como e por dentro',
+      demoTitleA:'Veja ', demoTitleB:' por dentro',
+      demoLead:'Esse e o app que os riders vao usar. Toque na barra de baixo e navegue.'
+    },
+    'en': {
+      kicker:'For brands and shops',
+      h1a:'Your brand where the riders ', h1b:'actually are',
+      sub:'SPOTRA is the map and the community for skate, BMX and rollers in Latin America. Your shop shows up inside the app, not beside it.',
+      benefits:[
+        ['Verified profile on the map','Your shop with photos, hours, socials and directions. Riders find you while looking for spots.'],
+        ['Events with your name on them','Sponsor contests and meetups: your brand on the event page, the signups and the podium.'],
+        ['Listings in the Market','Post gear and people message you straight on WhatsApp. No sales commission.'],
+        ['Regional reach','Uruguay first, then Argentina and Brazil. One scene, one place.'],
+        ['Clear numbers','How many riders saw your profile, where they are and what they ride.']
+      ],
+      offerTag:'Trial for the first brands',
+      offerPrice:'USD 0.99',
+      offerNote:'For the first 3 full months. No lock-in: if it is not for you, cancel and that is it.',
+      formTitle:'Want to try it?',
+      formHint:'Leave your details and we will message you with access.',
+      brandName:'Brand or shop', brandPh:'Your brand name',
+      contact:'Contact name',
+      kind:'What you do', kindShop:'Shop', kindBrand:'Brand', kindSchool:'School or lessons', kindOther:'Other',
+      send:'I want to try SPOTRA',
+      ok:'Done. We will message you on WhatsApp with access.',
+      ig:'Follow us on Instagram',
+      demoKicker:'What it looks like inside',
+      demoTitleA:'See ', demoTitleB:' from the inside',
+      demoLead:'This is the app riders will use. Tap the bottom bar and walk through it.'
+    }
+  };
+
+  function a(k){ var d = AUD[lang] || AUD['es-uy']; return d[k]; }
+  function b(k){ var d = B[lang] || B['es-uy']; return d[k]; }
+
+  function igButton(label){
+    return '<a class="sg-ig" href="' + IG_URL + '" target="_blank" rel="noopener">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">'
+      + '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/>'
+      + '<circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg>'
+      + esc(label) + '</a>';
+  }
+
   var COUNTRIES = [
     { code:'UY', dial:'598', es:'Uruguay', pt:'Uruguai', en:'Uruguay' },
     { code:'AR', dial:'54',  es:'Argentina', pt:'Argentina', en:'Argentina' },
@@ -351,6 +497,7 @@
   ];
 
   var lang = ls(KEY_LANG) || '';
+  var audience = ls(KEY_AUD) || '';
   function t(k){ var d = T[lang] || T['es-uy']; return d[k]; }
   function countryName(c){
     if(lang === 'pt-br') return c.pt;
@@ -367,38 +514,69 @@
 
   var gate = null;
 
-  /* ---------- pantalla de idioma ---------- */
+  /* ---------- pantalla de idioma y publico ---------- */
   function mountLang(){
     var el = document.createElement('div');
     el.className = 'spotra-gate sg-langscreen';
-    el.innerHTML = '<div class="sg-bg"></div><div class="sg-grid"></div>'
-      + '<div class="sg-langbox">'
-      +   '<div class="sg-logo">SPOT<span>RA</span></div>'
-      +   '<div class="sg-langtitle">Elegi tu idioma · Escolha seu idioma · Choose your language</div>'
-      +   '<p class="sg-langsub">SPOTRA · Uruguay</p>'
-      +   '<div class="sg-langlist">'
-      +     LANGS.map(function(l){
-              return '<button type="button" data-lang="' + l.code + '"><b>' + l.flag + '</b>'
-                + '<span style="font-size:15px;color:#f5f7f4;font-weight:600">' + l.name
-                + '<span>' + l.note + '</span></span></button>';
-            }).join('')
-      +   '</div>'
-      + '</div>';
-    document.body.appendChild(el);
+
+    function langStep(){
+      el.innerHTML = '<div class="sg-bg"></div><div class="sg-grid"></div>'
+        + '<div class="sg-langbox">'
+        +   '<div class="sg-logo">SPOT<span>RA</span></div>'
+        +   '<div class="sg-langtitle">Elegi tu idioma · Escolha seu idioma · Choose your language</div>'
+        +   '<p class="sg-langsub">SPOTRA · Uruguay</p>'
+        +   '<div class="sg-langlist">'
+        +     LANGS.map(function(l){
+                return '<button type="button" data-lang="' + l.code + '"><b>' + l.flag + '</b>'
+                  + '<span style="font-size:15px;color:#f5f7f4;font-weight:600">' + l.name
+                  + '<span>' + l.note + '</span></span></button>';
+              }).join('')
+        +   '</div>'
+        + '</div>';
+    }
+
+    function audStep(){
+      el.innerHTML = '<div class="sg-bg"></div><div class="sg-grid"></div>'
+        + '<div class="sg-langbox">'
+        +   '<div class="sg-logo">SPOT<span>RA</span></div>'
+        +   '<div class="sg-langtitle">' + esc(a('title')) + '</div>'
+        +   '<div class="sg-audience">'
+        +     '<button type="button" data-aud="rider">' + esc(a('rider'))
+        +       '<span>' + esc(a('riderNote')) + '</span></button>'
+        +     '<button type="button" data-aud="marca">' + esc(a('brand'))
+        +       '<span>' + esc(a('brandNote')) + '</span></button>'
+        +   '</div>'
+        +   '<button class="sg-langswitch" data-aud-back="1" style="margin-top:16px">' + esc(a('back')) + '</button>'
+        + '</div>';
+    }
+
     el.addEventListener('click', function(ev){
-      var b = ev.target.closest('[data-lang]');
-      if(!b) return;
-      lang = b.getAttribute('data-lang');
-      lsSet(KEY_LANG, lang);
-      el.remove();
-      mountGate();
+      var l = ev.target.closest('[data-lang]');
+      if(l){
+        lang = l.getAttribute('data-lang');
+        lsSet(KEY_LANG, lang);
+        audStep();
+        return;
+      }
+      if(ev.target.closest('[data-aud-back]')){ langStep(); return; }
+      var au = ev.target.closest('[data-aud]');
+      if(au){
+        var aud = au.getAttribute('data-aud');
+        lsSet(KEY_AUD, aud);
+        el.remove();
+        mountGate(aud);
+      }
     });
+
+    langStep();
+    if(lang && T[lang]) audStep();
+    document.body.appendChild(el);
   }
 
   /* ---------- demo navegable ---------- */
   var VIEWS = ['home','map','events','market','community','profile'];
 
-  function demoHTML(){
+  function demoHTML(kicker, titleA, titleB, lead){
     var steps = t('steps').map(function(name, i){
       return '<li><button type="button" data-shot="' + i + '" class="' + (i === 0 ? 'on' : '') + '">'
         + '<span class="num">0' + (i + 1) + '</span>' + esc(name) + '</button></li>';
@@ -418,9 +596,9 @@
       + '</div></div></div>';
     return '<section class="sg-demo"><div class="sg-demo-grid">'
       + '<div class="sg-demo-head">'
-      +   '<div class="sg-kicker2">' + esc(t('demoKicker')) + '</div>'
-      +   '<h3>' + esc(t('demoTitleA')) + '<span id="sgCapT">' + esc(t('steps')[0]) + '</span>' + esc(t('demoTitleB')) + '</h3>'
-      +   '<p class="lead2">' + esc(t('demoLead')) + '</p>'
+      +   '<div class="sg-kicker2">' + esc(kicker) + '</div>'
+      +   '<h3>' + esc(titleA) + '<span id="sgCapT">' + esc(t('steps')[0]) + '</span>' + esc(titleB) + '</h3>'
+      +   '<p class="lead2">' + esc(lead) + '</p>'
       + '</div>'
       + phone
       + '<div class="sg-steps-wrap">'
@@ -462,10 +640,7 @@
   }
 
   /* ---------- landing ---------- */
-  function mountGate(){
-    gate = document.createElement('div');
-    gate.className = 'spotra-gate';
-
+  function countrySelects(){
     var defCode = lang === 'pt-br' ? 'BR' : (lang === 'en' ? 'US' : (lang === 'es' ? 'MX' : 'UY'));
     var countryOpts = COUNTRIES.map(function(c){
       return '<option value="' + c.code + '" data-dial="' + c.dial + '"' + (c.code === defCode ? ' selected' : '') + '>'
@@ -474,52 +649,107 @@
     var dialOpts = COUNTRIES.map(function(c){
       return '<option value="' + c.code + '"' + (c.code === defCode ? ' selected' : '') + '>' + c.code + ' +' + c.dial + '</option>';
     }).join('');
+    return { country: countryOpts, dial: dialOpts };
+  }
 
-    gate.innerHTML = ''
-    + '<div class="sg-bg"></div><div class="sg-grid"></div><div class="sg-glow"></div>'
-    + '<div class="sg-wrap">'
-    +   '<div class="sg-logo">SPOT<span>RA</span></div>'
-    +   '<div class="sg-kicker">' + esc(t('kicker')) + '</div>'
-    +   '<h1 class="sg-h1">' + esc(t('h1a')) + '<em>' + esc(t('h1b')) + '</em></h1>'
-    +   '<p class="sg-sub">' + esc(t('sub')) + '</p>'
-    +   '<div class="sg-card">'
-    +     '<h2>' + esc(t('formTitle')) + '</h2>'
-    +     '<p class="hint">' + esc(t('formHint')) + '</p>'
-    +     '<form id="sgForm" novalidate>'
-    +       '<div class="sg-field"><label for="sgName">' + esc(t('name')) + '</label>'
-    +         '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
-    +       '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
-    +         '<select id="sgCountry">' + countryOpts + '</select></div>'
-    +       '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
-    +         '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + dialOpts + '</select>'
-    +         '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
-    +       '<div class="sg-field"><label for="sgDisc">' + esc(t('disc')) + '</label><select id="sgDisc">'
-    +         '<option value="skate">' + esc(t('discSkate')) + '</option>'
-    +         '<option value="bmx">' + esc(t('discBmx')) + '</option>'
-    +         '<option value="rollers">' + esc(t('discRollers')) + '</option>'
-    +         '<option value="otro">' + esc(t('discOther')) + '</option>'
-    +       '</select></div>'
-    +       '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(t('send')) + '</button>'
-    +     '</form>'
-    +     '<div class="sg-msg" id="sgMsg"></div>'
-    +   '</div>'
-    +   demoHTML()
-    +   '<p class="sg-demo-hint">' + esc(t('demoHint')) + '</p>'
-    +   '<p class="sg-foot">SPOTRA · Uruguay<br>'
-    +     '<a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com<br>'
-    +     '<button class="sg-langswitch" id="sgLangSwitch">' + esc(t('changeLang')) + '</button></p>'
-    + '</div>';
+  function footHTML(igLabel){
+    return '<p class="sg-foot">SPOTRA · Uruguay<br>'
+      + '<a href="' + IG_URL + '" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com<br>'
+      + '<button class="sg-langswitch" id="sgLangSwitch">' + esc(t('changeLang')) + '</button></p>';
+  }
 
+  function mountGate(aud){
+    audience = aud || ls(KEY_AUD) || 'rider';
+    gate = document.createElement('div');
+    gate.className = 'spotra-gate';
+    gate.innerHTML = '<div class="sg-bg"></div><div class="sg-grid"></div><div class="sg-glow"></div>'
+      + '<div class="sg-wrap">' + (audience === 'marca' ? brandBody() : riderBody()) + '</div>';
     document.body.appendChild(gate);
     wireDemo();
     wireForm();
-
     gate.querySelector('#sgLangSwitch').addEventListener('click', function(){
-      lsDel(KEY_LANG);
-      gate.remove();
-      gate = null;
+      lsDel(KEY_LANG); lsDel(KEY_AUD);
+      gate.remove(); gate = null;
       mountLang();
     });
+  }
+
+  function riderBody(){
+    var sel = countrySelects();
+    return ''
+    + '<div class="sg-logo">SPOT<span>RA</span></div>'
+    + '<div class="sg-kicker">' + esc(t('kicker')) + '</div>'
+    + '<h1 class="sg-h1">' + esc(t('h1a')) + '<em>' + esc(t('h1b')) + '</em></h1>'
+    + '<p class="sg-sub">' + esc(t('sub')) + '</p>'
+    + '<div class="sg-card">'
+    +   '<h2>' + esc(t('formTitle')) + '</h2>'
+    +   '<p class="hint">' + esc(t('formHint')) + '</p>'
+    +   '<form id="sgForm" novalidate>'
+    +     '<div class="sg-field"><label for="sgName">' + esc(t('name')) + '</label>'
+    +       '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
+    +     '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
+    +       '<select id="sgCountry">' + sel.country + '</select></div>'
+    +     '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
+    +       '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + sel.dial + '</select>'
+    +       '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
+    +     '<div class="sg-field"><label for="sgDisc">' + esc(t('disc')) + '</label><select id="sgDisc">'
+    +       '<option value="skate">' + esc(t('discSkate')) + '</option>'
+    +       '<option value="bmx">' + esc(t('discBmx')) + '</option>'
+    +       '<option value="rollers">' + esc(t('discRollers')) + '</option>'
+    +       '<option value="otro">' + esc(t('discOther')) + '</option>'
+    +     '</select></div>'
+    +     '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(t('send')) + '</button>'
+    +   '</form>'
+    +   '<div class="sg-msg" id="sgMsg"></div>'
+    +   igButton(b('ig'))
+    + '</div>'
+    + demoHTML(t('demoKicker'), t('demoTitleA'), t('demoTitleB'), t('demoLead'))
+    + '<p class="sg-demo-hint">' + esc(t('demoHint')) + '</p>'
+    + footHTML();
+  }
+
+  function brandBody(){
+    var sel = countrySelects();
+    var benefits = b('benefits').map(function(x){
+      return '<li><b>' + esc(x[0]) + '</b><p>' + esc(x[1]) + '</p></li>';
+    }).join('');
+    return ''
+    + '<div class="sg-logo">SPOT<span>RA</span></div>'
+    + '<div class="sg-kicker">' + esc(b('kicker')) + '</div>'
+    + '<h1 class="sg-h1">' + esc(b('h1a')) + '<em>' + esc(b('h1b')) + '</em></h1>'
+    + '<p class="sg-sub">' + esc(b('sub')) + '</p>'
+    + '<ul class="sg-benefits">' + benefits + '</ul>'
+    + '<div class="sg-offer">'
+    +   '<div class="tag">' + esc(b('offerTag')) + '</div>'
+    +   '<div class="price">' + esc(b('offerPrice')) + '</div>'
+    +   '<p>' + esc(b('offerNote')) + '</p>'
+    + '</div>'
+    + demoHTML(b('demoKicker'), b('demoTitleA'), b('demoTitleB'), b('demoLead'))
+    + '<div class="sg-card" style="margin-top:26px">'
+    +   '<h2>' + esc(b('formTitle')) + '</h2>'
+    +   '<p class="hint">' + esc(b('formHint')) + '</p>'
+    +   '<form id="sgForm" novalidate>'
+    +     '<div class="sg-field"><label for="sgBrand">' + esc(b('brandName')) + '</label>'
+    +       '<input id="sgBrand" type="text" placeholder="' + esc(b('brandPh')) + '" required></div>'
+    +     '<div class="sg-field"><label for="sgName">' + esc(b('contact')) + '</label>'
+    +       '<input id="sgName" type="text" autocomplete="name" placeholder="' + esc(t('namePh')) + '" required></div>'
+    +     '<div class="sg-field"><label for="sgCountry">' + esc(t('country')) + '</label>'
+    +       '<select id="sgCountry">' + sel.country + '</select></div>'
+    +     '<div class="sg-field"><label for="sgPhone">' + esc(t('phone')) + '</label>'
+    +       '<div class="sg-phonerow"><select id="sgDial" aria-label="Prefijo">' + sel.dial + '</select>'
+    +       '<input id="sgPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="' + esc(t('phonePh')) + '" required></div></div>'
+    +     '<div class="sg-field"><label for="sgDisc">' + esc(b('kind')) + '</label><select id="sgDisc">'
+    +       '<option value="tienda">' + esc(b('kindShop')) + '</option>'
+    +       '<option value="marca">' + esc(b('kindBrand')) + '</option>'
+    +       '<option value="escuela">' + esc(b('kindSchool')) + '</option>'
+    +       '<option value="otro">' + esc(b('kindOther')) + '</option>'
+    +     '</select></div>'
+    +     '<button class="sg-btn" type="submit" id="sgSubmit">' + esc(b('send')) + '</button>'
+    +   '</form>'
+    +   '<div class="sg-msg" id="sgMsg"></div>'
+    +   igButton(b('ig'))
+    + '</div>'
+    + footHTML();
   }
 
   function wireForm(){
@@ -528,24 +758,25 @@
     var submit = gate.querySelector('#sgSubmit');
     var country = gate.querySelector('#sgCountry');
     var dial = gate.querySelector('#sgDial');
+    var brandEl = gate.querySelector('#sgBrand');
+    var esMarca = audience === 'marca';
 
     country.addEventListener('change', function(){ dial.value = country.value; });
     dial.addEventListener('change', function(){ country.value = dial.value; });
 
-    function show(kind, html){
-      msg.className = 'sg-msg ' + kind;
-      msg.innerHTML = html;
-    }
+    function show(kind, html){ msg.className = 'sg-msg ' + kind; msg.innerHTML = html; }
 
     form.addEventListener('submit', function(ev){
       ev.preventDefault();
       var nombre = gate.querySelector('#sgName').value.trim();
+      var marca = brandEl ? brandEl.value.trim() : '';
       var raw = gate.querySelector('#sgPhone').value.replace(/\D/g, '');
       var code = country.value;
       var info = null;
       COUNTRIES.forEach(function(c){ if(c.code === code) info = c; });
 
       msg.className = 'sg-msg';
+      if(esMarca && marca.length < 2){ show('err', esc(b('brandName'))); return; }
       if(nombre.length < 2){ show('err', esc(t('errName'))); return; }
       if(!info){ show('err', esc(t('errCountry'))); return; }
       if(raw.length < 6){ show('err', esc(t('errPhone'))); return; }
@@ -559,6 +790,8 @@
 
       saveLead({
         nombre: nombre,
+        marca: marca || null,
+        tipo: esMarca ? 'marca' : 'rider',
         telefono: full,
         pais: info.code,
         prefijo: '+' + info.dial,
@@ -566,16 +799,16 @@
         idioma: lang
       }).then(function(res){
         submit.disabled = false;
-        submit.textContent = t('send');
+        submit.textContent = esMarca ? b('send') : t('send');
         if(res.ok){
           form.style.display = 'none';
-          show('ok', esc(t('ok').replace('{n}', nombre)));
+          show('ok', esMarca ? esc(b('ok')) : esc(t('ok').replace('{n}', nombre)));
         } else if(res.duplicate){
           show('ok', esc(t('dup')));
         } else {
           show('err', esc(t('fail'))
             + '<a href="https://wa.me/' + WHATSAPP_FALLBACK + '?text='
-            + encodeURIComponent('SPOTRA: ' + nombre + ' - ' + full + ' - ' + info.code)
+            + encodeURIComponent('SPOTRA: ' + (marca ? marca + ' - ' : '') + nombre + ' - ' + full + ' - ' + info.code)
             + '" target="_blank" rel="noopener">' + esc(t('failLink')) + '</a>');
         }
       });
@@ -594,6 +827,8 @@
       },
       body: JSON.stringify({
         nombre: data.nombre,
+        marca: data.marca,
+        tipo: data.tipo,
         telefono: data.telefono,
         pais: data.pais,
         prefijo: data.prefijo,
@@ -688,7 +923,7 @@
     openPublic();
   }
   function openPublic(){
-    if(lang && T[lang]) mountGate();
+    if(lang && T[lang] && audience) mountGate(audience);
     else mountLang();
   }
 
