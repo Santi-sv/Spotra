@@ -16,7 +16,7 @@
       texto: 'Hola {nombre}! Te comparto un acceso anticipado a SPOTRA para que lo pruebes antes que nadie. Me sirve mucho que me digas que te parece.' }
   ];
 
-  var state = { rows: [], templates: null, filter: '', country: '' };
+  var state = { rows: [], templates: null, filter: '', country: '', tipo: '' };
 
   var PAISES = {
     UY:'Uruguay', AR:'Argentina', BR:'Brasil', CL:'Chile', PY:'Paraguay', BO:'Bolivia',
@@ -47,7 +47,8 @@
     return String(texto || '')
       .replace(/\{nombre\}/g, row.nombre || '')
       .replace(/\{pais\}/g, PAISES[row.pais] || row.pais || '')
-      .replace(/\{disciplina\}/g, row.disciplina || '');
+      .replace(/\{disciplina\}/g, row.disciplina || '')
+      .replace(/\{marca\}/g, row.marca || '');
   }
 
   function view(){ return document.querySelector(VIEW); }
@@ -62,7 +63,9 @@
     var tel = esc(r.telefono || '');
     return '<div class="approve-row" style="grid-template-columns:1fr auto" data-wl-row="' + esc(r.id) + '">'
       + '<div>'
-      +   '<div class="kind">' + esc(PAISES[r.pais] || r.pais || 'Sin pais') + ' · ' + esc(IDIOMAS[r.idioma] || r.idioma || '') + '</div>'
+      +   '<div class="kind"' + ((r.tipo === 'marca') ? ' style="color:#ffd24a"' : '') + '>'
+      +     ((r.tipo === 'marca') ? 'MARCA · ' : 'RIDER · ')
+      +     esc(PAISES[r.pais] || r.pais || 'Sin pais') + ' · ' + esc(IDIOMAS[r.idioma] || r.idioma || '') + '</div>'
       +   '<div class="name" style="font-size:18px">' + esc(r.nombre || 'Sin nombre') + '</div>'
       +   '<div class="ln">' + tel + ' · ' + esc(r.disciplina || '') + ' · ' + esc(fecha(r.created_at)) + '</div>'
       + '</div>'
@@ -76,6 +79,7 @@
   function filtered(){
     var q = state.filter.toLowerCase();
     return state.rows.filter(function(r){
+      if(state.tipo && (r.tipo || 'rider') !== state.tipo) return false;
       if(state.country && r.pais !== state.country) return false;
       if(!q) return true;
       return (String(r.nombre || '') + ' ' + String(r.telefono || '')).toLowerCase().indexOf(q) !== -1;
@@ -102,6 +106,11 @@
     + '<div class="section-head" style="margin-top:0"><h2 style="font-family:var(--display);font-size:28px;letter-spacing:0;text-transform:none">Lista de espera</h2>'
     +   '<button class="ghost-btn" id="wlReload">Actualizar</button></div>'
     + '<div class="meta" style="margin-bottom:10px">' + state.rows.length + ' anotados' + (resumen ? ' · ' + resumen : '') + '</div>'
+    + '<div class="sub-tabs" style="margin-bottom:10px">'
+    +   '<button' + (state.tipo === '' ? ' class="active"' : '') + ' data-wl-tipo="">Todos</button>'
+    +   '<button' + (state.tipo === 'rider' ? ' class="active"' : '') + ' data-wl-tipo="rider">Riders</button>'
+    +   '<button' + (state.tipo === 'marca' ? ' class="active"' : '') + ' data-wl-tipo="marca">Marcas</button>'
+    + '</div>'
     + '<div class="form-grid" style="grid-template-columns:1fr 160px;gap:8px;margin-bottom:12px">'
     +   '<input id="wlSearch" placeholder="Buscar por nombre o numero" value="' + esc(state.filter) + '">'
     +   '<select id="wlCountry"><option value="">Todos los paises</option>'
@@ -152,6 +161,9 @@
     if(reload){ reload.addEventListener('click', load); }
 
     box.addEventListener('click', function(ev){
+      var tipoBtn = ev.target.closest('[data-wl-tipo]');
+      if(tipoBtn){ state.tipo = tipoBtn.getAttribute('data-wl-tipo'); render(); return; }
+
       var wa = ev.target.closest('[data-wl-wa]');
       if(wa){
         var id = wa.getAttribute('data-wl-wa');
