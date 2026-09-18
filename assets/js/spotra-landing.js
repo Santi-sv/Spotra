@@ -130,15 +130,20 @@
 
   /* ---------- estilos ---------- */
   var css = ''
-  + '.spotra-gate{position:fixed;inset:0;z-index:99999;overflow-y:auto;-webkit-overflow-scrolling:touch;background:radial-gradient(120% 80% at 50% 0%,#121a13 0%,#070907 60%);color:#f5f7f4;font-family:"General Sans",system-ui,-apple-system,sans-serif;}'
-  + '.sg-wrap{max-width:560px;margin:0 auto;padding:28px 18px 56px;}'
+  + '.spotra-gate{position:fixed;inset:0;z-index:99999;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#070907;color:#f5f7f4;font-family:"General Sans",system-ui,-apple-system,sans-serif;}'
+  + '.sg-bg{position:fixed;inset:0;background:url("assets/preview/landing-bg.webp") center top/cover no-repeat;opacity:1;}'
+  + '.sg-bg::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,9,7,.1) 0%,rgba(7,9,7,.38) 26%,rgba(7,9,7,.86) 56%,#070907 78%);}'
+  + '.sg-grid{position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(46,232,77,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(46,232,77,.05) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 70%);-webkit-mask-image:linear-gradient(180deg,rgba(0,0,0,.9),transparent 70%);}'
+  + '.sg-glow{position:fixed;left:50%;top:-140px;width:420px;height:420px;transform:translateX(-50%);border-radius:50%;background:radial-gradient(circle,rgba(46,232,77,.18),transparent 65%);pointer-events:none;}'
+  + '.sg-wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:34px 18px 10px;}'
+  + '.sg-demo{position:relative;z-index:1;padding:0 18px 10px;}'
   + '.sg-logo{font-family:"Clash Display","General Sans",sans-serif;font-weight:700;font-size:26px;letter-spacing:.14em;color:#fff;text-align:center;}'
   + '.sg-logo span{color:#2ee84d;}'
   + '.sg-kicker{text-align:center;color:#2ee84d;font-size:11px;letter-spacing:.22em;text-transform:uppercase;margin-top:6px;font-weight:600;}'
-  + '.sg-h1{font-family:"Clash Display","General Sans",sans-serif;font-weight:700;font-size:28px;line-height:1.15;text-align:center;margin:26px 0 10px;}'
+  + '.sg-h1{font-family:"Clash Display","General Sans",sans-serif;font-weight:700;font-size:29px;line-height:1.14;text-align:center;margin:26px 0 10px;text-shadow:0 2px 18px rgba(0,0,0,.8);}'
   + '.sg-h1 em{font-style:normal;color:#2ee84d;}'
-  + '.sg-sub{text-align:center;color:#9aa39a;font-size:15px;line-height:1.5;margin:0 auto 22px;max-width:420px;}'
-  + '.sg-card{background:rgba(16,22,18,.9);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:18px;}'
+  + '.sg-sub{text-align:center;color:#b9c1b9;font-size:15px;line-height:1.5;margin:0 auto 22px;max-width:420px;text-shadow:0 1px 10px rgba(0,0,0,.7);}'
+  + '.sg-card{background:rgba(10,15,11,.82);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:18px;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 18px 40px rgba(0,0,0,.45);}'
   + '.sg-card h2{font-family:"Clash Display","General Sans",sans-serif;font-size:17px;margin:0 0 4px;font-weight:600;}'
   + '.sg-card p.hint{color:#9aa39a;font-size:13px;margin:0 0 14px;}'
   + '.sg-field{margin-bottom:10px;}'
@@ -155,18 +160,41 @@
   + '.sg-sec-title{text-align:center;margin:34px 0 4px;font-family:"Clash Display","General Sans",sans-serif;font-size:19px;font-weight:600;}'
   + '.sg-sec-sub{text-align:center;color:#9aa39a;font-size:13px;margin:0 0 16px;}'
   /* demo phone */
-  + '.sg-phone{width:296px;margin:0 auto;background:#0b0f0c;border:8px solid #1b211c;border-radius:34px;box-shadow:0 20px 50px rgba(0,0,0,.6);overflow:hidden;}'
-  + '.sg-screenbox{width:280px;height:497px;overflow:hidden;position:relative;background:#070907;border-radius:26px;margin:0 auto;}'
-  + '.sg-rail{display:flex;height:100%;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}'
+  + '.sg-demo{margin:38px auto 0;max-width:1000px;}'
+  + '.sg-demo-grid{display:grid;gap:22px;justify-items:center;grid-template-areas:"head" "phone" "steps";}'
+  + '.sg-demo-head{grid-area:head;width:100%;max-width:420px;}'
+  + '.sg-demo-phone{grid-area:phone;}'
+  + '.sg-steps-wrap{grid-area:steps;width:100%;max-width:460px;min-width:0;}'
+  + '.sg-demo-grid>*{min-width:0;max-width:100%;}'
+  + '.sg-kicker2{color:#2ee84d;font-size:10.5px;letter-spacing:.24em;text-transform:uppercase;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:7px;}'
+  + '.sg-kicker2::before{content:"";width:6px;height:6px;border-radius:50%;background:#2ee84d;}'
+  + '.sg-demo-head h3{font-family:"Clash Display","General Sans",sans-serif;font-size:25px;line-height:1.15;margin:0 0 8px;font-weight:600;}'
+  + '.sg-demo-head p.lead2{color:#9aa39a;font-size:14.5px;line-height:1.5;margin:0 0 18px;}'
+  + '.sg-steps{list-style:none;margin:0;padding:2px 0 6px;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;}'
+  + '.sg-steps::-webkit-scrollbar{display:none;}'
+  + '.sg-steps li{margin:0;flex:0 0 auto;}'
+  + '.sg-steps button{display:flex;align-items:center;gap:8px;background:rgba(10,15,11,.6);border:1px solid rgba(255,255,255,.13);border-radius:999px;padding:8px 14px 8px 8px;color:#9aa39a;font-family:inherit;font-size:14px;cursor:pointer;white-space:nowrap;transition:all .2s;}'
+  + '.sg-steps .num{width:24px;height:24px;border-radius:50%;border:1px solid rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s;}'
+  + '.sg-steps button.on{color:#f5f7f4;font-weight:600;border-color:rgba(46,232,77,.55);background:rgba(46,232,77,.08);}'
+  + '.sg-steps button.on .num{background:#2ee84d;border-color:#2ee84d;color:#06210c;font-weight:700;}'
+  + '.sg-device{width:300px;margin:0 auto;padding:10px;border-radius:46px;background:linear-gradient(155deg,#6b756d 0%,#252c26 18%,#161b17 52%,#2f372f 78%,#5c665e 100%);box-shadow:0 34px 70px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.16),0 0 60px rgba(46,232,77,.1),inset 0 1px 2px rgba(255,255,255,.22);}'
+  + '.sg-screenbox{position:relative;width:280px;height:531px;margin:0 auto;border-radius:38px;overflow:hidden;background:#070907;}'
+  + '.sg-island{position:absolute;top:9px;left:50%;transform:translateX(-50%);width:76px;height:21px;border-radius:999px;background:#000;z-index:4;}'
+  + '.sg-status{position:relative;z-index:3;height:34px;display:flex;align-items:center;justify-content:space-between;padding:0 15px;background:#070907;color:#fff;font-size:11.5px;font-weight:600;letter-spacing:.02em;}'
+  + '.sg-status svg{display:block;}'
+  + '.sg-statusicons{display:flex;align-items:center;gap:5px;}'
+  + '.sg-home{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:104px;height:4px;border-radius:999px;background:rgba(255,255,255,.5);z-index:4;}'
+  + '.sg-rail{display:flex;height:497px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}'
   + '.sg-rail::-webkit-scrollbar{display:none;}'
   + '.sg-rail figure{flex:0 0 280px;margin:0;scroll-snap-align:center;}'
   + '.sg-rail img{width:280px;height:497px;object-fit:cover;object-position:top center;display:block;}'
-  + '.sg-dots{display:flex;gap:7px;justify-content:center;margin-top:14px;}'
+  + '.sg-dots{display:flex;gap:7px;justify-content:center;margin-top:16px;}'
   + '.sg-dots button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#2a332b;cursor:pointer;}'
   + '.sg-dots button.on{background:#2ee84d;width:20px;border-radius:999px;}'
-  + '.sg-caption{text-align:center;color:#9aa39a;font-size:13px;margin:10px 0 0;min-height:19px;}'
+  + '.sg-caption{text-align:center;color:#b9c1b9;font-size:13.5px;margin:12px auto 0;max-width:330px;min-height:19px;}'
   + '.sg-demo-hint{text-align:center;color:#606960;font-size:12px;margin-top:8px;}'
-  + '@media(max-width:360px){.sg-phone{width:266px}.sg-screenbox{width:250px;height:444px}.sg-rail figure{flex-basis:250px}.sg-rail img{width:250px;height:444px}}'
+  + '@media(min-width:900px){.sg-demo{width:min(1000px,calc(100vw - 60px));margin-left:50%;transform:translateX(-50%);}.sg-demo-grid{grid-template-areas:"head phone" "steps phone";grid-template-columns:1fr auto;align-items:center;justify-items:start;column-gap:48px;row-gap:18px;}.sg-demo-head{text-align:left;max-width:460px}.sg-demo-head h3{font-size:34px}.sg-caption{text-align:left;margin-left:0;max-width:460px}.sg-steps-wrap{max-width:100%}.sg-steps{flex-wrap:wrap;overflow:visible}}'
+  + '@media(max-width:360px){.sg-device{width:272px;padding:9px}.sg-screenbox{width:254px;height:485px}.sg-rail,.sg-rail img{height:451px}.sg-rail figure{flex-basis:254px}.sg-rail img{width:254px}}'
   + '.sg-access{margin-top:30px;text-align:center;}'
   + '.sg-access summary{color:#9aa39a;font-size:13px;cursor:pointer;list-style:none;}'
   + '.sg-access summary::-webkit-details-marker{display:none;}'
@@ -174,7 +202,7 @@
   + '.sg-link{display:block;width:100%;margin-top:10px;background:none;border:0;color:#9aa39a;font-size:13px;font-family:inherit;text-decoration:underline;cursor:pointer;padding:6px;}'
   + '.sg-foot{text-align:center;color:#4e564e;font-size:11px;margin-top:26px;line-height:1.6;}'
   + '.sg-foot a{color:#8d968d;text-decoration:none;}'
-  + '@media(max-width:360px){.sg-phone{width:250px}.sg-screen{height:440px}}';
+  + '';
 
   var st = document.createElement('style');
   st.textContent = css;
@@ -182,57 +210,88 @@
 
   /* ---------- demo: capturas reales de la app ---------- */
   var SHOTS = [
-    { src:'assets/preview/p1-inicio.webp',  cap:'Inicio: tu red rider, spots cercanos y accesos rapidos' },
-    { src:'assets/preview/p2-mapa.webp',    cap:'Mapa: skateparks, spots y tiendas cargados por riders' },
-    { src:'assets/preview/p3-spot.webp',    cap:'Ficha del spot: fotos, descripcion y como llegar' },
-    { src:'assets/preview/p4-eventos.webp', cap:'Eventos: competencias, inscripciones y ranking' },
-    { src:'assets/preview/p7-market.webp',  cap:'Market: usados entre riders, contacto directo por WhatsApp' },
-    { src:'assets/preview/p8-foro.webp',    cap:'Foro: la escena hablando, con fotos, likes y comentarios' },
-    { src:'assets/preview/p5-perfil.webp',  cap:'Perfil: tu muro, tus podios y tus redes' }
+    { src:'assets/preview/p1-inicio.webp',  step:'Inicio',  cap:'Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.' },
+    { src:'assets/preview/p2-mapa.webp',    step:'Mapa',    cap:'Skateparks, spots de calle y tiendas cargados por la comunidad.' },
+    { src:'assets/preview/p3-spot.webp',    step:'Spot',    cap:'Ficha del lugar: fotos, dificultad, distancia y como llegar.' },
+    { src:'assets/preview/p4-eventos.webp', step:'Eventos', cap:'Competencias y juntadas con inscripcion, resultados y ranking.' },
+    { src:'assets/preview/p7-market.webp',  step:'Market',  cap:'Usados entre riders, con contacto directo por WhatsApp.' },
+    { src:'assets/preview/p8-foro.webp',    step:'Foro',    cap:'La escena hablando: fotos, likes y comentarios.' },
+    { src:'assets/preview/p5-perfil.webp',  step:'Perfil',  cap:'Tu muro, tus podios, tus redes y tu SPOTRA ID.' }
   ];
+
 
 
   function demoHTML(){
     var slides = SHOTS.map(function(s, i){
-      return '<figure><img src="' + s.src + '" alt="Pantalla de SPOTRA" ' + (i ? 'loading="lazy"' : '') + '></figure>';
+      return '<figure><img src="' + s.src + '" alt="Pantalla de SPOTRA: ' + s.step + '" ' + (i ? 'loading="lazy"' : '') + '></figure>';
     }).join('');
-    var dots = SHOTS.map(function(s, i){
-      return '<button type="button" data-shot="' + i + '" class="' + (i === 0 ? 'on' : '') + '" aria-label="Pantalla ' + (i+1) + '"></button>';
+    var steps = SHOTS.map(function(s, i){
+      return '<li><button type="button" data-shot="' + i + '" class="' + (i === 0 ? 'on' : '') + '">'
+        + '<span class="num">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' + s.step + '</button></li>';
     }).join('');
-    return '<div class="sg-phone"><div class="sg-screenbox"><div class="sg-rail" id="sgRail">' + slides + '</div></div></div>'
-      + '<div class="sg-dots" id="sgDots">' + dots + '</div>'
-      + '<p class="sg-caption" id="sgCap">' + SHOTS[0].cap + '</p>';
+    var status = '<div class="sg-status"><span>9:41</span><span class="sg-statusicons">'
+      + '<svg width="17" height="11" viewBox="0 0 17 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>'
+      + '<svg width="15" height="11" viewBox="0 0 16 12" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round"><path d="M1 4.2a10 10 0 0 1 14 0"/><path d="M3.6 7a6.4 6.4 0 0 1 8.8 0"/><path d="M6.2 9.7a2.7 2.7 0 0 1 3.6 0"/></svg>'
+      + '<svg width="24" height="12" viewBox="0 0 26 13" fill="none"><rect x=".7" y=".7" width="21" height="11.6" rx="3.4" stroke="rgba(255,255,255,.5)"/><rect x="2.4" y="2.4" width="17.6" height="8.2" rx="2.2" fill="#2ee84d"/><path d="M23.4 4.6v3.8c1.2-.3 1.8-1 1.8-1.9s-.6-1.6-1.8-1.9Z" fill="rgba(255,255,255,.5)"/></svg>'
+      + '</span></div>';
+    var phone = '<div class="sg-demo-phone"><div class="sg-device"><div class="sg-screenbox">'
+      + '<div class="sg-island"></div>' + status
+      + '<div class="sg-rail" id="sgRail">' + slides + '</div>'
+      + '<div class="sg-home"></div>'
+      + '</div></div></div>';
+    return '<section class="sg-demo"><div class="sg-demo-grid">'
+      + '<div class="sg-demo-head">'
+      +   '<div class="sg-kicker2">Recorrido por la app</div>'
+      +   '<h3>Mira <span id="sgCapT">' + SHOTS[0].step + '</span> por dentro</h3>'
+      +   '<p class="lead2">Capturas reales de SPOTRA. Desliza el telefono o elegi una pantalla.</p>'
+      + '</div>'
+      + phone
+      + '<div class="sg-steps-wrap">'
+      +   '<ol class="sg-steps" id="sgSteps">' + steps + '</ol>'
+      +   '<p class="sg-caption" id="sgCap">' + SHOTS[0].cap + '</p>'
+      + '</div>'
+      + '</div></section>';
   }
 
   function wireGallery(){
     var rail = gate.querySelector('#sgRail');
-    var dots = gate.querySelector('#sgDots');
+    var steps = gate.querySelector('#sgSteps');
+    var capT = gate.querySelector('#sgCapT');
     var cap = gate.querySelector('#sgCap');
-    if(!rail || !dots) return;
+    if(!rail || !steps) return;
 
-    function current(){
+    function slideW(){
       var fig = rail.querySelector('figure');
-      var w = fig ? fig.offsetWidth : 280;
-      return Math.round(rail.scrollLeft / w);
+      return fig ? fig.offsetWidth : 276;
+    }
+    function index(){
+      return Math.max(0, Math.min(SHOTS.length - 1, Math.round(rail.scrollLeft / slideW())));
     }
     function paint(){
-      var i = Math.max(0, Math.min(SHOTS.length - 1, current()));
-      Array.prototype.forEach.call(dots.children, function(b, n){
+      var i = index();
+      Array.prototype.forEach.call(steps.querySelectorAll('button'), function(b, n){
         b.classList.toggle('on', n === i);
       });
+      if(capT) capT.textContent = SHOTS[i].step;
       if(cap) cap.textContent = SHOTS[i].cap;
     }
+    function goTo(i){
+      i = Math.max(0, Math.min(SHOTS.length - 1, i));
+      rail.scrollTo({ left: slideW() * i, behavior:'smooth' });
+    }
+
     var t;
     rail.addEventListener('scroll', function(){
       clearTimeout(t);
       t = setTimeout(paint, 80);
     });
-    dots.addEventListener('click', function(ev){
+    steps.addEventListener('click', function(ev){
       var b = ev.target.closest('[data-shot]');
-      if(!b) return;
-      var fig = rail.querySelector('figure');
-      var w = fig ? fig.offsetWidth : 280;
-      rail.scrollTo({ left: w * parseInt(b.getAttribute('data-shot'), 10), behavior:'smooth' });
+      if(b) goTo(parseInt(b.getAttribute('data-shot'), 10));
+    });
+    gate.addEventListener('click', function(ev){
+      var b = ev.target.closest('.sg-arrows [data-go]');
+      if(b) goTo(index() + parseInt(b.getAttribute('data-go'), 10));
     });
   }
 
@@ -240,6 +299,7 @@
   var gate = document.createElement('div');
   gate.className = 'spotra-gate';
   gate.innerHTML = ''
+  + '<div class="sg-bg"></div><div class="sg-grid"></div><div class="sg-glow"></div>'
   + '<div class="sg-wrap">'
   +   '<div class="sg-logo">SPOT<span>RA</span></div>'
   +   '<div class="sg-kicker">Proximamente</div>'
@@ -256,8 +316,6 @@
   +     '</form>'
   +     '<div class="sg-msg" id="sgMsg"></div>'
   +   '</div>'
-  +   '<h3 class="sg-sec-title">Mira como va a ser por dentro</h3>'
-  +   '<p class="sg-sec-sub">Capturas reales de SPOTRA. Desliza para ver las pantallas.</p>'
   +   demoHTML()
   +   '<p class="sg-demo-hint">Version en desarrollo. Algunas pantallas van a cambiar.</p>'
   +   '<p class="sg-foot">SPOTRA · Uruguay<br><a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com</p>'
@@ -350,6 +408,7 @@
     var el = document.createElement('div');
     el.className = 'spotra-gate';
     el.innerHTML = ''
+    + '<div class="sg-bg"></div><div class="sg-grid"></div>'
     + '<div class="sg-wrap" style="padding-top:22vh">'
     +   '<div class="sg-logo">SPOT<span>RA</span></div>'
     +   '<div class="sg-kicker">Acceso privado</div>'
