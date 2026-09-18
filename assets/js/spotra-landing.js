@@ -184,17 +184,14 @@
   + '.sg-status svg{display:block;}'
   + '.sg-statusicons{display:flex;align-items:center;gap:5px;}'
   + '.sg-home{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:104px;height:4px;border-radius:999px;background:rgba(255,255,255,.5);z-index:4;}'
-  + '.sg-rail{display:flex;height:497px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;}'
-  + '.sg-rail::-webkit-scrollbar{display:none;}'
-  + '.sg-rail figure{flex:0 0 280px;margin:0;scroll-snap-align:center;}'
-  + '.sg-rail img{width:280px;height:497px;object-fit:cover;object-position:top center;display:block;}'
-  + '.sg-dots{display:flex;gap:7px;justify-content:center;margin-top:16px;}'
-  + '.sg-dots button{width:8px;height:8px;padding:0;border:0;border-radius:50%;background:#2a332b;cursor:pointer;}'
-  + '.sg-dots button.on{background:#2ee84d;width:20px;border-radius:999px;}'
+  + '.sg-viewport{position:relative;width:280px;height:497px;overflow:hidden;background:#070907;}'
+  + '.sg-fallback{position:absolute;inset:0;width:280px;height:497px;object-fit:cover;object-position:top center;}'
+  + '.sg-live .sg-fallback{display:none;}'
+  + '.sg-frame{position:relative;z-index:1;width:390px;height:692px;border:0;display:block;background:#070907;transform:scale(.7179);transform-origin:top left;}'
   + '.sg-caption{text-align:center;color:#b9c1b9;font-size:13.5px;margin:12px auto 0;max-width:330px;min-height:19px;}'
   + '.sg-demo-hint{text-align:center;color:#606960;font-size:12px;margin-top:8px;}'
   + '@media(min-width:900px){.sg-demo{width:min(1000px,calc(100vw - 60px));margin-left:50%;transform:translateX(-50%);}.sg-demo-grid{grid-template-areas:"head phone" "steps phone";grid-template-columns:1fr auto;align-items:center;justify-items:start;column-gap:48px;row-gap:18px;}.sg-demo-head{text-align:left;max-width:460px}.sg-demo-head h3{font-size:34px}.sg-caption{text-align:left;margin-left:0;max-width:460px}.sg-steps-wrap{max-width:100%}.sg-steps{flex-wrap:wrap;overflow:visible}}'
-  + '@media(max-width:360px){.sg-device{width:272px;padding:9px}.sg-screenbox{width:254px;height:485px}.sg-rail,.sg-rail img{height:451px}.sg-rail figure{flex-basis:254px}.sg-rail img{width:254px}}'
+  + '@media(max-width:360px){.sg-device{width:272px;padding:9px}.sg-screenbox{width:254px;height:485px}.sg-viewport,.sg-fallback{width:254px;height:451px}.sg-frame{transform:scale(.6513)}}'
   + '.sg-access{margin-top:30px;text-align:center;}'
   + '.sg-access summary{color:#9aa39a;font-size:13px;cursor:pointer;list-style:none;}'
   + '.sg-access summary::-webkit-details-marker{display:none;}'
@@ -209,25 +206,22 @@
   document.head.appendChild(st);
 
   /* ---------- demo: capturas reales de la app ---------- */
-  var SHOTS = [
-    { src:'assets/preview/p1-inicio.webp',  step:'Inicio',  cap:'Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.' },
-    { src:'assets/preview/p2-mapa.webp',    step:'Mapa',    cap:'Skateparks, spots de calle y tiendas cargados por la comunidad.' },
-    { src:'assets/preview/p3-spot.webp',    step:'Spot',    cap:'Ficha del lugar: fotos, dificultad, distancia y como llegar.' },
-    { src:'assets/preview/p4-eventos.webp', step:'Eventos', cap:'Competencias y juntadas con inscripcion, resultados y ranking.' },
-    { src:'assets/preview/p7-market.webp',  step:'Market',  cap:'Usados entre riders, con contacto directo por WhatsApp.' },
-    { src:'assets/preview/p8-foro.webp',    step:'Foro',    cap:'La escena hablando: fotos, likes y comentarios.' },
-    { src:'assets/preview/p5-perfil.webp',  step:'Perfil',  cap:'Tu muro, tus podios, tus redes y tu SPOTRA ID.' }
+  var STEPS = [
+    { view:'home',      step:'Inicio',  cap:'Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.' },
+    { view:'map',       step:'Mapa',    cap:'Skateparks, spots de calle y tiendas. Desliza dentro del mapa para ver la ficha del spot.' },
+    { view:'events',    step:'Eventos', cap:'Competencias y juntadas con inscripcion, resultados y ranking.' },
+    { view:'market',    step:'Market',  cap:'Usados entre riders, con contacto directo por WhatsApp.' },
+    { view:'community', step:'Foro',    cap:'La escena hablando: fotos, likes y comentarios.' },
+    { view:'profile',   step:'Perfil',  cap:'Tu muro, tus podios, tus redes y tu SPOTRA ID.' }
   ];
 
 
 
+
   function demoHTML(){
-    var slides = SHOTS.map(function(s, i){
-      return '<figure><img src="' + s.src + '" alt="Pantalla de SPOTRA: ' + s.step + '" ' + (i ? 'loading="lazy"' : '') + '></figure>';
-    }).join('');
-    var steps = SHOTS.map(function(s, i){
+    var steps = STEPS.map(function(s, i){
       return '<li><button type="button" data-shot="' + i + '" class="' + (i === 0 ? 'on' : '') + '">'
-        + '<span class="num">' + (i < 9 ? '0' : '') + (i + 1) + '</span>' + s.step + '</button></li>';
+        + '<span class="num">0' + (i + 1) + '</span>' + s.step + '</button></li>';
     }).join('');
     var status = '<div class="sg-status"><span>9:41</span><span class="sg-statusicons">'
       + '<svg width="17" height="11" viewBox="0 0 17 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>'
@@ -236,62 +230,56 @@
       + '</span></div>';
     var phone = '<div class="sg-demo-phone"><div class="sg-device"><div class="sg-screenbox">'
       + '<div class="sg-island"></div>' + status
-      + '<div class="sg-rail" id="sgRail">' + slides + '</div>'
+      + '<div class="sg-viewport">'
+      +   '<img class="sg-fallback" src="assets/preview/p1-inicio.webp" alt="">'
+      +   '<iframe class="sg-frame" id="sgFrame" src="demo.html" title="SPOTRA en funcionamiento" loading="lazy"></iframe>'
+      + '</div>'
       + '<div class="sg-home"></div>'
       + '</div></div></div>';
     return '<section class="sg-demo"><div class="sg-demo-grid">'
       + '<div class="sg-demo-head">'
       +   '<div class="sg-kicker2">Recorrido por la app</div>'
-      +   '<h3>Mira <span id="sgCapT">' + SHOTS[0].step + '</span> por dentro</h3>'
-      +   '<p class="lead2">Capturas reales de SPOTRA. Desliza el telefono o elegi una pantalla.</p>'
+      +   '<h3>Mira <span id="sgCapT">' + STEPS[0].step + '</span> por dentro</h3>'
+      +   '<p class="lead2">Es SPOTRA funcionando. Tocá la barra de abajo del telefono, deslizá las pantallas o elegí una de la lista.</p>'
       + '</div>'
       + phone
       + '<div class="sg-steps-wrap">'
       +   '<ol class="sg-steps" id="sgSteps">' + steps + '</ol>'
-      +   '<p class="sg-caption" id="sgCap">' + SHOTS[0].cap + '</p>'
+      +   '<p class="sg-caption" id="sgCap">' + STEPS[0].cap + '</p>'
       + '</div>'
       + '</div></section>';
   }
 
   function wireGallery(){
-    var rail = gate.querySelector('#sgRail');
+    var frame = gate.querySelector('#sgFrame');
     var steps = gate.querySelector('#sgSteps');
     var capT = gate.querySelector('#sgCapT');
     var cap = gate.querySelector('#sgCap');
-    if(!rail || !steps) return;
+    if(!frame || !steps) return;
 
-    function slideW(){
-      var fig = rail.querySelector('figure');
-      return fig ? fig.offsetWidth : 276;
-    }
-    function index(){
-      return Math.max(0, Math.min(SHOTS.length - 1, Math.round(rail.scrollLeft / slideW())));
-    }
-    function paint(){
-      var i = index();
+    function paint(view){
+      var i = 0;
+      STEPS.forEach(function(s, n){ if(s.view === view) i = n; });
       Array.prototype.forEach.call(steps.querySelectorAll('button'), function(b, n){
         b.classList.toggle('on', n === i);
       });
-      if(capT) capT.textContent = SHOTS[i].step;
-      if(cap) cap.textContent = SHOTS[i].cap;
-    }
-    function goTo(i){
-      i = Math.max(0, Math.min(SHOTS.length - 1, i));
-      rail.scrollTo({ left: slideW() * i, behavior:'smooth' });
+      if(capT) capT.textContent = STEPS[i].step;
+      if(cap) cap.textContent = STEPS[i].cap;
     }
 
-    var t;
-    rail.addEventListener('scroll', function(){
-      clearTimeout(t);
-      t = setTimeout(paint, 80);
-    });
     steps.addEventListener('click', function(ev){
       var b = ev.target.closest('[data-shot]');
-      if(b) goTo(parseInt(b.getAttribute('data-shot'), 10));
+      if(!b) return;
+      var s = STEPS[parseInt(b.getAttribute('data-shot'), 10)];
+      if(!s) return;
+      paint(s.view);
+      try { frame.contentWindow.postMessage({ spotraGo: s.view }, '*'); } catch(e){}
     });
-    gate.addEventListener('click', function(ev){
-      var b = ev.target.closest('.sg-arrows [data-go]');
-      if(b) goTo(index() + parseInt(b.getAttribute('data-go'), 10));
+
+    window.addEventListener('message', function(ev){
+      var d = ev.data || {};
+      if(d.spotraReady){ gate.classList.add('sg-live'); }
+      if(d.spotraView){ paint(d.spotraView); }
     });
   }
 
@@ -317,7 +305,7 @@
   +     '<div class="sg-msg" id="sgMsg"></div>'
   +   '</div>'
   +   demoHTML()
-  +   '<p class="sg-demo-hint">Version en desarrollo. Algunas pantallas van a cambiar.</p>'
+  +   '<p class="sg-demo-hint">Demo navegable con datos de ejemplo. Version en desarrollo.</p>'
   +   '<p class="sg-foot">SPOTRA · Uruguay<br><a href="https://instagram.com/spotra.ok" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com</p>'
   + '</div>';
 
