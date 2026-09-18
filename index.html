@@ -1458,6 +1458,7 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
     </section>
 
     <section class="view" data-view="admin-users">
+      <button class="primary-btn" data-route="admin-waitlist" style="margin-bottom:14px">Lista de espera de la landing</button>
       <div class="section-head" style="margin-top:0"><h2 style="font-family:var(--display);font-size:28px;letter-spacing:0;text-transform:none">Usuarios</h2></div>
       <div class="search" style="margin-bottom:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar usuario por nombre, @usuario o email</div>
       <div class="filter-row" style="margin-bottom:18px"><button class="active">Todos</button><button>Riders</button><button>Tiendas</button><button>Marcas</button><button>Organizadores</button><button>Reportados</button></div>
@@ -1466,6 +1467,10 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div class="list-row"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div><div class="nm">@lucas.flips</div><div class="meta">Rider · Buenos Aires, AR</div></div><span class="badge green">Verificado</span></div>
       <div class="list-row"><div class="av"><b style="display:grid;place-items:center;height:100%;font-family:var(--display)">N</b></div><div><div class="nm">Nómada Skate Co.</div><div class="meta">Marca · Montevideo, UY</div></div><span class="badge green">Verificado</span></div>
       <div class="list-row"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><div class="nm">@tomi.bmx</div><div class="meta">Rider · Rosario, AR</div></div><span class="badge">Activo</span></div>
+    </section>
+
+    <section class="view" data-view="admin-waitlist">
+      <div class="meta">Cargando lista de espera...</div>
     </section>
 
     <section class="view" data-view="admin-reports">
@@ -1722,7 +1727,7 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="assets/js/spotra-backend.js?v=16"></script>
+<script src="assets/js/spotra-backend.js?v=17"></script>
 <script src="assets/js/spotra-google-map.js?v=11"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2189,13 +2194,14 @@ window.addEventListener('popstate', () => setRoute(location.hash.replace('#','')
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=5"></script>
-<script src="assets/js/spotra-admin.js?v=10"></script>
+<script src="assets/js/spotra-admin.js?v=11"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-market.js?v=1"></script>
 <script src="assets/js/spotra-forum.js?v=1"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=3"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
-<script src="assets/js/spotra-landing.js?v=10"></script>
+<script src="assets/js/spotra-waitlist.js?v=1"></script>
+<script src="assets/js/spotra-landing.js?v=11"></script>
 </body>
 </html>
