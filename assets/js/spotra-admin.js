@@ -169,6 +169,7 @@
       const listings = (window.SpotraBackend && window.SpotraBackend.listPendingListings ? await window.SpotraBackend.listPendingListings() : []) || [];
       const kpis = v.querySelectorAll('.kpi .num');
       if(kpis[2]) kpis[2].textContent = events.length;
+      if(kpis[3]) kpis[3].textContent = listings.length;
       const total = subs.length + photos.length + events.length + listings.length;
       if(!total){
         if(subTabs) subTabs.insertAdjacentHTML('afterend', noteHTML('No hay envíos pendientes por ahora.'));
