@@ -1078,7 +1078,6 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div data-role-nav="admin">
         <button class="nav-btn" data-route="admin-approvals">Aprobaciones</button>
         <button class="nav-btn" data-route="admin-users">Usuarios</button>
-        <button class="nav-btn" data-route="admin-reports">Reportes</button>
       </div>
     </nav>
     <div class="actions">
@@ -1109,9 +1108,9 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <div class="auth-inner">
           <div class="auth-ambient-logo"><img src="assets/logo/spotra-brush.webp" alt="SPOTRA"></div>
           <div class="auth-stats">
-            <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><b>12.000+</b><span>SPOTS</span></div>
-            <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3M9 14v3M15 14v3M8 20h8"/></svg><b>500+</b><span>EVENTOS</span></div>
-            <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="2.8"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.3"/><path d="M15 19a5 5 0 0 1 6-4.6"/></svg><b>10K+</b><span>RIDERS</span></div>
+            <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><b>Spots</b><span>MAPA</span></div>
+            <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M6 5H3v2a3 3 0 0 0 3 3M18 5h3v2a3 3 0 0 1-3 3M9 14v3M15 14v3M8 20h8"/></svg><b>Eventos</b><span>RANKING</span></div>
+            <div class="auth-stat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="2.8"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.3"/><path d="M15 19a5 5 0 0 1 6-4.6"/></svg><b>Market</b><span>USADOS</span></div>
           </div>
           <div class="auth-logo" id="authLogo">
             <img src="assets/logo/spotra-brush.webp" alt="SPOTRA" onload="this.parentElement.querySelector('.logo-type').style.display='none';this.parentElement.querySelector('.tm').style.display='none'" onerror="this.style.display='none'">
@@ -1124,18 +1123,12 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           </div>
           <div class="auth-row">
             <label class="check"><input type="checkbox" checked><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><path d="M5 12l4.5 4.5L19 7"/></svg></span>Recordarme</label>
-            <a class="auth-forgot" data-toast="Te enviamos un enlace de recuperación al email registrado.">¿Olvidaste tu contraseña?</a>
+            <a class="auth-forgot">¿Olvidaste tu contraseña?</a>
           </div>
           <button class="auth-enter" data-validate="loginForm" data-route="home">ENTRAR A SPOTRA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12h15M13 6l6 6-6 6"/></svg></button>
-          <div class="auth-div">O CONTINUÁ CON</div>
-          <div class="social-row">
-            <button class="social-btn" data-toast="Login con Google disponible al conectar el backend."><svg viewBox="0 0 24 24"><path fill="#4285F4" d="M23.5 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.45a5.52 5.52 0 0 1-2.39 3.62v3h3.87c2.26-2.09 3.57-5.16 3.57-8.81Z"/><path fill="#34A853" d="M12 24c3.24 0 5.96-1.07 7.93-2.92l-3.87-3c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.95H1.29v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.29 14.28a7.2 7.2 0 0 1 0-4.56v-3.1H1.29a12 12 0 0 0 0 10.76l4-3.1Z"/><path fill="#EA4335" d="M12 4.77c1.76 0 3.34.6 4.59 1.8l3.43-3.44C17.95 1.19 15.24 0 12 0A12 12 0 0 0 1.29 6.62l4 3.1C6.23 6.88 8.88 4.77 12 4.77Z"/></svg><span>Google</span></button>
-            <button class="social-btn" data-toast="Login con Apple disponible al conectar el backend."><svg viewBox="0 0 24 24" fill="#fff"><path d="M16.7 12.9c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.86-1.6 0-3.1 1-4 2.4-1.7 3-0.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3.1 2.4 1.2-.05 1.7-.8 3.2-.8s1.9.8 3.2.77c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8-.03-.01-2.6-1-2.7-3.9ZM14.4 5.3c.7-.8 1.1-1.9 1-3-1 .04-2.1.65-2.8 1.4-.6.7-1.2 1.9-1 3 1.1.1 2.2-.5 2.8-1.4Z"/></svg><span>Apple</span></button>
-            <button class="social-btn" data-toast="Login con Facebook disponible al conectar el backend."><svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12a12 12 0 1 0-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.24 2.7.24v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12Z"/></svg><span>Facebook</span></button>
-          </div>
           <button class="auth-create" data-route="signup">CREAR CUENTA</button>
           <div class="auth-feats">
-            <div class="auth-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><span>12.000+ spots</span></div>
+            <div class="auth-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><span>Mapa de spots</span></div>
             <div class="auth-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><span>Eventos y competencias</span></div>
             <div class="auth-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="2.8"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.3"/><path d="M15 19a5 5 0 0 1 6-4.6"/></svg><span>Comunidad rider</span></div>
             <div class="auth-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><span>Marketplace</span></div>
@@ -1208,7 +1201,6 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
         <div class="map-stage">
           <div class="map-tools">
             <label class="search" for="mapSearchInput"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="mapSearchInput" placeholder="Buscar spots, skateparks, tiendas..." autocomplete="off"></label>
-            <button class="icon-btn map-tune" data-toast="Filtros avanzados disponibles al conectar el mapa real." aria-label="Filtros"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg></button>
           </div>
           <div class="map-kind-row">
             <button class="active" data-map-filter="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Todos</button>
@@ -1217,26 +1209,13 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
             <button data-map-filter="store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/></svg>Tiendas</button>
             <button data-map-filter="event"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>Eventos</button>
           </div>
-          <div class="map-road" style="top:29%;left:-5%;right:-2%;height:2px;transform:rotate(-5deg)"></div>
-          <div class="map-road" style="top:0;bottom:0;left:48%;width:2px;transform:rotate(6deg)"></div>
-          <div class="map-road" style="top:62%;left:8%;right:15%;height:2px;transform:rotate(8deg)"></div>
-          <div class="map-label" style="top:22%;left:65%">PALERMO</div>
-          <div class="map-label" style="top:33%;left:18%">VILLA CRESPO</div>
-          <div class="map-label" style="top:53%;left:45%">ALMAGRO</div>
-          <div class="map-label" style="top:69%;left:16%">CABALLITO</div>
-          <div class="map-label" style="top:77%;left:57%">BOEDO</div>
-          <div class="pin big" data-map-cat="skatepark" data-spot="rivadavia" style="top:52%;left:47%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.8" fill="#06140a"/></svg></div>
-          <div class="pin" data-map-cat="spot" data-spot="italia" style="top:33%;left:23%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
-          <div class="pin" data-map-cat="event" data-spot="palermo" style="top:28%;left:75%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
-          <div class="pin" data-map-cat="spot" data-spot="caballito" style="top:66%;left:29%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
-          <div class="pin" data-map-cat="store" data-spot="boedo" style="top:64%;left:78%"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg></div>
         </div>
         <aside class="panel spot-detail">
           <div class="map-sheet-handle"></div>
           <div class="cover" id="spotCover"></div>
-          <div class="kicker" id="spotType">Skatepark</div>
-          <h2 id="spotName">Parque Rivadavia</h2>
-          <div class="meta" id="spotMeta">Caballito, CABA · Skatepark verificado</div>
+          <div class="kicker" id="spotType">Mapa</div>
+          <h2 id="spotName">Elegí un lugar</h2>
+          <div class="meta" id="spotMeta">Tocá un pin del mapa para ver su ficha.</div>
           <div class="spot-gallery" id="spotGallery" style="display:none"></div>
           <p class="spot-desc" id="spotDesc" style="display:none"></p>
           <div class="spot-info" id="spotInfo">
@@ -1305,34 +1284,18 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <div class="profile-identity">
             <div class="profile-avatar"></div>
             <div>
-              <h1><span data-profile-name>Santiago Varela</span> <span class="verified-dot">✓</span></h1>
-              <p data-profile-handle>@santi.sk8</p>
-              <div class="profile-meta"><span data-profile-discipline>Skate</span><span data-profile-location>Canelones, Uruguay</span></div>
+              <h1><span data-profile-name>Rider</span></h1>
+              <p data-profile-handle></p>
+              <div class="profile-meta"><span data-profile-discipline></span><span data-profile-location></span></div>
               <p class="profile-bio" data-profile-bio style="margin-top:8px;color:var(--muted);font-size:14px"></p>
             </div>
           </div>
-          <div class="profile-stats">
-            <div><b>8</b><span>eventos</span></div>
-            <div><b>3</b><span>podios</span></div>
-            <div><b>1.2k</b><span>seguidores</span></div>
-          </div>
           <div class="social-grid">
-            <button data-social="instagram" data-toast="Instagram conectado: @santi.sk8"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.5" cy="7.6" r="1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
-            <button data-social="tiktok" data-toast="TikTok conectado."><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M15.7 3c.4 2.5 1.8 4.1 4.3 4.3v3.1c-1.5.1-2.8-.3-4.2-1.1v5.8c0 5.8-6.3 7.6-9.7 4.3-2.2-2.1-2.1-5.8.3-7.8 1.4-1.2 3-1.6 5-1.2v3.3c-.6-.2-1.2-.2-1.8 0-1.7.5-2.4 2.5-1.3 3.8 1.1 1.4 3.7 1.1 4.1-1.1.1-.4.1-.8.1-1.2V3h3.2Z"/></svg></span>TikTok</button>
-            <button data-social="facebook" data-toast="Facebook conectado."><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M14.4 8.1H16V5.2c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4v2.5H6.5v3.2h2.8V23h3.4v-7.8h2.8l.4-3.2h-3.2V9.8c0-.9.3-1.7 1.7-1.7Z"/></svg></span>Facebook</button>
-            <button data-social="email" data-toast="Correo"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span>Email</button>
+            <button data-social="instagram"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.5" cy="7.6" r="1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
+            <button data-social="tiktok"><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M15.7 3c.4 2.5 1.8 4.1 4.3 4.3v3.1c-1.5.1-2.8-.3-4.2-1.1v5.8c0 5.8-6.3 7.6-9.7 4.3-2.2-2.1-2.1-5.8.3-7.8 1.4-1.2 3-1.6 5-1.2v3.3c-.6-.2-1.2-.2-1.8 0-1.7.5-2.4 2.5-1.3 3.8 1.1 1.4 3.7 1.1 4.1-1.1.1-.4.1-.8.1-1.2V3h3.2Z"/></svg></span>TikTok</button>
+            <button data-social="facebook"><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M14.4 8.1H16V5.2c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4v2.5H6.5v3.2h2.8V23h3.4v-7.8h2.8l.4-3.2h-3.2V9.8c0-.9.3-1.7 1.7-1.7Z"/></svg></span>Facebook</button>
+            <button data-social="email"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span>Email</button>
           </div>
-        </div>
-
-        <div class="profile-wall panel">
-          <div class="section-head"><h2>Mi muro</h2><button data-toast="Vista completa del muro disponible al conectar backend.">Ver todo</button></div>
-          <div class="wall-grid">
-            <div style="background-image:url('assets/eventos/skater-bowl.webp')"><span>▶</span></div>
-            <div style="background-image:url('assets/eventos/skater-2.webp')"></div>
-            <div style="background-image:url('assets/spots/spot-7.webp')"><span>▶</span></div>
-            <div style="background-image:url('assets/eventos/biker-1.webp')"></div>
-          </div>
-          <button class="primary-btn upload-media" data-open-modal="post"><span class="upload-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 16V5"/><path d="M7.5 9.5 12 5l4.5 4.5"/><rect x="4" y="15" width="16" height="5" rx="2"/></svg></span><span class="upload-copy">Subir foto o video<small>Sumalo a tu muro</small></span></button>
         </div>
 
         <button class="profile-settings-entry panel" data-open-modal="settings">
@@ -1425,70 +1388,27 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       <div class="section-head" style="margin-top:0"><h2 style="letter-spacing:.05em;text-transform:none;font-family:var(--display);font-size:30px"><span class="green">Admin</span> SPOTRA</h2></div>
       <div class="meta" style="margin:-6px 0 20px">Panel de aprobaciones y gestión</div>
       <div class="kpi-grid">
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/></svg></div><div class="num">1.248</div><div class="lbl">Usuarios</div></div>
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></div><div class="num">28</div><div class="lbl">Spots pendientes</div></div>
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div class="num">12</div><div class="lbl">Eventos pendientes</div></div>
-        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg></div><div class="num">7</div><div class="lbl">Reportes pendientes</div></div>
+        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/></svg></div><div class="num">–</div><div class="lbl">Usuarios</div></div>
+        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></div><div class="num">–</div><div class="lbl">Pendientes</div></div>
+        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div class="num">–</div><div class="lbl">Eventos pendientes</div></div>
+        <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg></div><div class="num">–</div><div class="lbl">Productos pendientes</div></div>
       </div>
       <div class="sub-tabs">
-        <button class="active" data-route="admin-approvals">Aprobaciones <span class="count-chip">28</span></button>
+        <button class="active" data-route="admin-approvals">Aprobaciones <span class="count-chip">0</span></button>
         <button data-route="admin-users">Usuarios</button>
-        <button data-route="admin-reports">Reportes</button>
-      </div>
-      <div class="approve-row">
-        <div class="thumb" style="background-image:url('assets/spots/spot-5.webp')"></div>
-        <div><div class="kind">Skatepark</div><div class="name">Parque Las Heras</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Buenos Aires, Argentina</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@skate.buenosaires</div></div>
-        <div class="col"><button class="ok-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="no-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
-      </div>
-      <div class="approve-row">
-        <div class="thumb" style="background-image:url('assets/spots/spot-6.webp')"></div>
-        <div><div class="kind">Street spot</div><div class="name">Plaza Italia Ledges</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Córdoba, Argentina</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@joni.sk8</div></div>
-        <div class="col"><button class="ok-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="no-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
-      </div>
-      <div class="approve-row">
-        <div class="thumb" style="background-image:url('assets/tiendas/interior-tienda.webp')"></div>
-        <div><div class="kind">Tienda</div><div class="name">Underground Skate Shop</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>Montevideo, Uruguay</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@underground.mv</div></div>
-        <div class="col"><button class="ok-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="no-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
-      </div>
-      <div class="approve-row">
-        <div class="thumb" style="background-image:url('assets/banners/banner-skatepark.webp')"></div>
-        <div><div class="kind">Evento</div><div class="name">SPOTRA Jam Vol. 2</div><div class="ln"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>São Paulo, Brasil</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>@spotra.events</div></div>
-        <div class="col"><button class="ok-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>Aprobar</button><button class="no-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M6 6l12 12M18 6L6 18"/></svg>Rechazar</button></div>
       </div>
     </section>
 
     <section class="view" data-view="admin-users">
       <button class="primary-btn" data-route="admin-waitlist" style="margin-bottom:14px">Lista de espera de la landing</button>
       <div class="section-head" style="margin-top:0"><h2 style="font-family:var(--display);font-size:28px;letter-spacing:0;text-transform:none">Usuarios</h2></div>
-      <div class="search" style="margin-bottom:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar usuario por nombre, @usuario o email</div>
-      <div class="filter-row" style="margin-bottom:18px"><button class="active">Todos</button><button>Riders</button><button>Tiendas</button><button>Marcas</button><button>Organizadores</button><button>Reportados</button></div>
-      <div class="list-row"><div class="av" style="background-image:url('assets/eventos/skater-2.webp')"></div><div><div class="nm">@santi.sk8</div><div class="meta">Rider · Canelones, UY</div></div><span class="badge green">Verificado</span></div>
-      <div class="list-row"><div class="av" style="background-image:url('assets/tiendas/exterior-tienda.webp')"></div><div><div class="nm">@underground.mv</div><div class="meta">Tienda · Montevideo, UY</div></div><span class="badge warn">Pendiente</span></div>
-      <div class="list-row"><div class="av" style="background-image:url('assets/eventos/skater.webp')"></div><div><div class="nm">@lucas.flips</div><div class="meta">Rider · Buenos Aires, AR</div></div><span class="badge green">Verificado</span></div>
-      <div class="list-row"><div class="av"><b style="display:grid;place-items:center;height:100%;font-family:var(--display)">N</b></div><div><div class="nm">Nómada Skate Co.</div><div class="meta">Marca · Montevideo, UY</div></div><span class="badge green">Verificado</span></div>
-      <div class="list-row"><div class="av" style="background-image:url('assets/eventos/biker-1.webp')"></div><div><div class="nm">@tomi.bmx</div><div class="meta">Rider · Rosario, AR</div></div><span class="badge">Activo</span></div>
+      <div class="admin-note panel" style="margin-top:14px;color:var(--muted)">Próximamente: lista real de usuarios registrados.</div>
     </section>
 
     <section class="view" data-view="admin-waitlist">
       <div class="meta">Cargando lista de espera...</div>
     </section>
 
-    <section class="view" data-view="admin-reports">
-      <div class="section-head" style="margin-top:0"><h2 style="font-family:var(--display);font-size:28px;letter-spacing:0;text-transform:none">Reportes</h2></div>
-      <div class="sub-tabs"><button class="active">Pendientes <span class="count-chip">7</span></button><button>Resueltos</button></div>
-      <div class="approve-row" style="grid-template-columns:1fr auto">
-        <div><div class="kind" style="color:#ffd24a">Contenido</div><div class="name" style="font-size:18px">Spot duplicado: "Plaza Italia"</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Reportado por @maru.bmx · Hace 2 h</div></div>
-        <div class="col"><button class="ok-btn">Revisar</button><button class="no-btn">Descartar</button></div>
-      </div>
-      <div class="approve-row" style="grid-template-columns:1fr auto">
-        <div><div class="kind" style="color:#ffd24a">Usuario</div><div class="name" style="font-size:18px">Publicación spam en Marketplace</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Reportado por @flor.ride · Hace 6 h</div></div>
-        <div class="col"><button class="ok-btn">Revisar</button><button class="no-btn">Descartar</button></div>
-      </div>
-      <div class="approve-row" style="grid-template-columns:1fr auto">
-        <div><div class="kind" style="color:#ffd24a">Spot</div><div class="name" style="font-size:18px">Acceso cerrado / spot inactivo</div><div class="ln"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>Reportado por @lucas.flips · Hace 1 d</div></div>
-        <div class="col"><button class="ok-btn">Revisar</button><button class="no-btn">Descartar</button></div>
-      </div>
-    </section>
   </main>
 
   <nav class="bottom-nav" data-role-nav="rider" aria-label="Navegación rider">
@@ -1501,7 +1421,6 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   <nav class="bottom-nav cols-4" data-role-nav="admin" aria-label="Navegación admin">
     <button class="active" data-route="admin-approvals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Aprobar</button>
     <button data-route="admin-users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg>Usuarios</button>
-    <button data-route="admin-reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg>Reportes</button>
     <button data-route="brand-profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Config</button>
   </nav>
 </div>
@@ -1642,13 +1561,11 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
           <button id="pushBtn"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span data-push-label>Activar notificaciones</span></span><b>›</b></button>
         </div>
         <div id="pushHint" style="display:none;color:var(--muted);font-size:13px;line-height:1.5;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,210,74,.3);background:rgba(255,210,74,.06)"></div>
-        <button data-toast="Abriremos selector de imagen cuando conectemos storage."><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/><path d="M17 4h4v4"/></svg>Editar foto de perfil</span><b>›</b></button>
         <button data-open-modal="editProfile"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>Nombre y apellido</span><b>›</b></button>
         <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
         <button data-open-modal="password"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Cambiar contraseña</span><b>›</b></button>
-        <button data-open-modal="privacy"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg>Privacidad</span><b>›</b></button>
         <button data-logout><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M19 12H9M16 9l3 3-3 3"/></svg>Cerrar sesión</span><b>›</b></button>
-        <button class="danger" data-open-modal="deleteAccount"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16"/><path d="M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg>Eliminar cuenta</span><b>›</b></button>
+        <button class="danger" onclick="location.href='mailto:spotra.2026@gmail.com?subject=Eliminar%20mi%20cuenta%20SPOTRA'"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 7h16"/><path d="M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg>Pedir eliminar mi cuenta</span><b>›</b></button>
       </div>
     </div>
     <div class="modal-form" data-form="editProfile">
@@ -1682,39 +1599,9 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-change-password>Cambiar contraseña</button>
     </div>
-    <div class="modal-form" data-form="privacy">
-      <p class="hint">Definí qué partes de tu perfil competitivo se muestran públicamente.</p>
-      <div class="create-menu">
-        <button class="create-opt" data-toast="Perfil público activado."><div class="ic">✓</div><div><b>Perfil público</b><span>Visible para riders, tiendas y marcas.</span></div></button>
-        <button class="create-opt" data-toast="Contacto privado activado."><div class="ic">✓</div><div><b>Contacto privado</b><span>Solo se muestra al aprobar un chat o sponsor.</span></div></button>
-      </div>
-    </div>
-    <div class="modal-form" data-form="deleteAccount">
-      <p class="hint">Esta acción elimina tu perfil, muro, postulaciones y publicaciones asociadas a tu cuenta.</p>
-      <div class="security-warning"><b>Atención:</b> para evitar eliminaciones accidentales, primero confirmá tu contraseña y luego marcá la reconfirmación.</div>
-      <div class="form-grid" id="deleteAccountForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="deletePassword" required type="password" placeholder="Contraseña actual" autocomplete="current-password"></div>
-        <label class="check delete-confirm"><input id="deleteConfirm" type="checkbox"><span class="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><path d="M5 12l4.5 4.5L19 7"/></svg></span>Entiendo que esta acción no se puede deshacer.</label>
-      </div>
-      <button class="primary-btn danger-action" style="width:100%;margin-top:18px;height:56px" data-delete-account>Eliminar mi cuenta</button>
-    </div>
   </div>
 </div>
 
-<div class="chat-sheet" id="chatSheet" aria-hidden="true">
-  <div class="chat-card">
-    <div class="map-sheet-handle"></div>
-    <div class="chat-head">
-      <div class="seller-avatar" style="background-image:url('assets/eventos/skater-2.webp')"></div>
-      <div><b id="chatSeller">SantiSk8</b><span>En línea · Marketplace</span></div>
-      <button class="icon-btn" data-close-chat aria-label="Cerrar chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
-    </div>
-    <div class="chat-product" id="chatProduct">Consulta por producto</div>
-    <div class="bubble seller-bubble">¡Hola! ¿Sigue disponible?</div>
-    <div class="bubble my-bubble">Sí, todavía lo tengo.</div>
-    <div class="chat-input"><input placeholder="Escribí un mensaje..."><button aria-label="Enviar mensaje"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 20l18-8L3 4v6l11 2-11 2v6Z"/></svg></button></div>
-  </div>
-</div>
 
 <div class="toast-zone" id="toastZone" aria-live="polite"></div>
 
@@ -1810,24 +1697,6 @@ function bumpCounter(el, delta){
   setTimeout(()=>el.classList.remove('like-pop'), 380);
 }
 
-/* ===== Datos de spots (mapa) ===== */
-const SPOTS = {
-  rivadavia:{ type:'Skatepark', name:'Parque Rivadavia', meta:'Caballito, CABA · Skatepark verificado', s1:'86', s2:'18', s3:'OK', img:'assets/banners/banner-skatepark-4.webp' },
-  italia:{ type:'Spot', name:'Plaza Italia', meta:'Palermo, CABA · Street spot', s1:'74', s2:'9', s3:'OK', img:'assets/spots/spot-5.webp' },
-  palermo:{ type:'Evento', name:'Bowl Palermo', meta:'Palermo, CABA · Competencia este sábado', s1:'91', s2:'24', s3:'OK', img:'assets/spots/spot-6.webp' },
-  caballito:{ type:'Spot', name:'Ledges Caballito', meta:'Caballito, CABA · Street spot', s1:'58', s2:'4', s3:'OK', img:'assets/spots/spot-8.webp' },
-  boedo:{ type:'Tienda', name:'Underground Boedo', meta:'Boedo, CABA · Tienda verificada', s1:'15%', s2:'ON', s3:'OK', img:'assets/tiendas/interior-tienda.webp' }
-};
-function showSpot(id){
-  const s = SPOTS[id]; if(!s) return;
-  document.getElementById('spotType').textContent = s.type;
-  document.getElementById('spotName').textContent = s.name;
-  document.getElementById('spotMeta').textContent = s.meta;
-  const cover = document.getElementById('spotCover');
-  cover.style.background = `url('${s.img}') center/cover`;
-  cover.style.boxShadow = 'inset 0 -90px 70px rgba(0,0,0,.82)';
-  document.querySelectorAll('.pin').forEach(p => p.classList.toggle('big', p.dataset.spot === id));
-}
 
 /* ===== Filtros genéricos ===== */
 function applyFilter(targetId, f){
@@ -1866,9 +1735,6 @@ document.addEventListener('click', event => {
   const role = event.target.closest('[data-role-set]');
   if(role){ event.preventDefault(); setRole(role.dataset.roleSet); return; }
 
-  /* pin del mapa */
-  const pin = event.target.closest('.pin[data-spot]');
-  if(pin){ showSpot(pin.dataset.spot); return; }
 
   const mapFilter = event.target.closest('[data-map-filter]');
   if(mapFilter){
@@ -1876,9 +1742,6 @@ document.addEventListener('click', event => {
     if(f === 'event'){ setRoute('events'); return; }
     mapFilter.parentElement.querySelectorAll('button').forEach(b => b.classList.remove('active'));
     mapFilter.classList.add('active');
-    document.querySelectorAll('.pin[data-map-cat]').forEach(p => p.classList.toggle('hidden-map', f !== 'all' && p.dataset.mapCat !== f));
-    const first = document.querySelector(`.pin[data-map-cat="${f}"]`);
-    if(first) showSpot(first.dataset.spot);
     if(window.SpotraMaps) window.SpotraMaps.setFilter(f);
     return;
   }
@@ -1942,19 +1805,6 @@ document.addEventListener('click', event => {
   const toastBtn = event.target.closest('[data-toast]');
   if(toastBtn){ toast(toastBtn.dataset.toast); return; }
 
-  const openChat = event.target.closest('[data-open-chat]');
-  if(openChat){
-    document.getElementById('chatSeller').textContent = openChat.dataset.openChat;
-    document.getElementById('chatProduct').textContent = `Consulta por ${openChat.dataset.product || 'producto'}`;
-    document.getElementById('chatSheet').classList.add('open');
-    document.getElementById('chatSheet').setAttribute('aria-hidden','false');
-    return;
-  }
-  if(event.target.closest('[data-close-chat]') || event.target.id === 'chatSheet'){
-    document.getElementById('chatSheet').classList.remove('open');
-    document.getElementById('chatSheet').setAttribute('aria-hidden','true');
-    return;
-  }
 
   /* validación de formularios antes de navegar */
   const validate = event.target.closest('[data-validate]');
@@ -2056,17 +1906,6 @@ document.addEventListener('click', e => {
     resetForm('passwordForm');
     closeModal();
     toast('Contraseña actualizada correctamente.');
-    return;
-  }
-  const deleteAccount = e.target.closest('[data-delete-account]');
-  if(deleteAccount){
-    if(!validateForm('deleteAccountForm')) return;
-    const confirm = document.getElementById('deleteConfirm');
-    if(!confirm.checked){ toast('Marcá la reconfirmación para eliminar la cuenta.'); return; }
-    resetForm('deleteAccountForm');
-    closeModal();
-    setRoute('login');
-    toast('Cuenta eliminada. Te llevamos al inicio.');
     return;
   }
   const saveSettings = e.target.closest('[data-save-settings]');
@@ -2194,7 +2033,7 @@ window.addEventListener('popstate', () => setRoute(location.hash.replace('#','')
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
 <script src="assets/js/spotra-auth.js?v=5"></script>
-<script src="assets/js/spotra-admin.js?v=11"></script>
+<script src="assets/js/spotra-admin.js?v=12"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-market.js?v=1"></script>
 <script src="assets/js/spotra-forum.js?v=1"></script>
