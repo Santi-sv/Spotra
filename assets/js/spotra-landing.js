@@ -447,7 +447,7 @@
         ['Perfil verificado en el mapa','Tu local con fotos, horarios, redes y como llegar. Te encuentran mientras buscan spots.'],
         ['Eventos con tu nombre','Auspicia competencias y juntadas: tu marca en la ficha del evento, en las inscripciones y en el podio.'],
         ['Publicaciones en el Market','Subi producto y la gente te escribe directo por WhatsApp. Sin comisiones por venta.'],
-        ['Alcance regional','Uruguay primero, despues Argentina y Brasil. La misma escena en un solo lugar.'],
+        ['Toda Latinoamerica','Nacimos en Uruguay y vamos por toda la region. La misma escena en un solo lugar.'],
         ['Numeros claros','Cuanta gente vio tu perfil, de que zona es y que disciplina practica.']
       ],
       offerTag:'Prueba para las primeras marcas',
@@ -483,7 +483,7 @@
         ['Perfil verificado en el mapa','Tu local con fotos, horarios, redes y como llegar. Te encuentran mientras buscan spots.'],
         ['Eventos con tu nombre','Patrocina competencias y quedadas: tu marca en la ficha del evento, en las inscripciones y en el podio.'],
         ['Publicaciones en el Mercado','Sube producto y la gente te escribe directo por WhatsApp. Sin comisiones por venta.'],
-        ['Alcance regional','Uruguay primero, despues Argentina y Brasil. La misma escena en un solo lugar.'],
+        ['Toda Latinoamerica','Nacimos en Uruguay y vamos por toda la region. La misma escena en un solo lugar.'],
         ['Numeros claros','Cuanta gente vio tu perfil, de que zona es y que disciplina practica.']
       ],
       offerTag:'Prueba para las primeras marcas',
@@ -519,7 +519,7 @@
         ['Perfil verificado no mapa','Sua loja com fotos, horarios, redes e como chegar. Te acham enquanto procuram picos.'],
         ['Eventos com o seu nome','Patrocine campeonatos e encontros: sua marca na ficha do evento, nas inscricoes e no podio.'],
         ['Anuncios no Mercado','Publique produto e a pessoa fala com voce direto no WhatsApp. Sem comissao por venda.'],
-        ['Alcance regional','Uruguai primeiro, depois Argentina e Brasil. A mesma cena em um so lugar.'],
+        ['Toda a America Latina','Nascemos no Uruguai e vamos para toda a regiao. A mesma cena em um so lugar.'],
         ['Numeros claros','Quantas pessoas viram seu perfil, de que regiao sao e o que praticam.']
       ],
       offerTag:'Teste para as primeiras marcas',
@@ -555,7 +555,7 @@
         ['Verified profile on the map','Your shop with photos, hours, socials and directions. Riders find you while looking for spots.'],
         ['Events with your name on them','Sponsor contests and meetups: your brand on the event page, the signups and the podium.'],
         ['Listings in the Market','Post gear and people message you straight on WhatsApp. No sales commission.'],
-        ['Regional reach','Uruguay first, then Argentina and Brazil. One scene, one place.'],
+        ['All of Latin America','Born in Uruguay, built for the whole region. One scene, one place.'],
         ['Clear numbers','How many riders saw your profile, where they are and what they ride.']
       ],
       offerTag:'Trial for the first brands',
@@ -644,7 +644,7 @@
         + '<div class="sg-langbox">'
         +   '<div class="sg-logo">SPOT<span>RA</span></div>'
         +   '<div class="sg-langtitle">Elegi tu idioma · Escolha seu idioma · Choose your language</div>'
-        +   '<p class="sg-langsub">SPOTRA · Uruguay</p>'
+        +   '<p class="sg-langsub">SPOTRA · Latam</p>'
         +   '<div class="sg-langlist">'
         +     LANGS.map(function(l){
                 return '<button type="button" data-lang="' + l.code + '"><b>' + l.flag + '</b>'
@@ -773,7 +773,7 @@
   }
 
   function footHTML(igLabel){
-    return '<p class="sg-foot">SPOTRA · Uruguay<br>'
+    return '<p class="sg-foot">SPOTRA · Latam<br>'
       + '<a href="' + IG_URL + '" target="_blank" rel="noopener">@spotra.ok</a> · spotra.2026@gmail.com<br>'
       + '<button class="sg-langswitch" id="sgLangSwitch">' + esc(t('changeLang')) + '</button></p>';
   }
@@ -825,7 +825,7 @@
     +     '<div class="sg-tape">' + esc(b('quoteFoot')) + '</div>'
     +     '<div class="sg-stat">'
     +       '<div><b>SKATE</b><span>BMX · ROLLERS</span></div>'
-    +       '<div><b>UY</b><span>AR · BR</span></div>'
+    +       '<div><b>LATAM</b><span>UY · AR · BR · +</span></div>'
     +       '<div><b>2026</b><span>' + esc(t('kicker')) + '</span></div>'
     +     '</div>'
     +   '</div>'
