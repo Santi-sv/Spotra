@@ -813,3 +813,84 @@ begin
     raise exception 'no autorizado';
   end if;
 end $function$;
+
+-- ---------------------------------------------------------------------
+-- Agregado 21/09/2026 · lista de usuarios admin
+-- ---------------------------------------------------------------------
+create or replace function public.admin_list_users()
+ returns table (
+   id uuid, full_name text, username text, email text, phone text, city text,
+   country_code text, discipline text, instagram text, account_type text,
+   created_at timestamptz, last_sign_in_at timestamptz, has_profile boolean
+ )
+ language plpgsql
+ security definer
+ set search_path to 'public'
+as $function$
+#variable_conflict use_column
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+    raise exception 'no autorizado';
+  end if;
+  return query
+    select u.id, p.full_name, p.username, coalesce(u.email, p.email)::text, p.phone, p.city,
+           p.country_code::text, p.discipline, p.instagram, coalesce(p.account_type::text, 'rider'),
+           u.created_at, u.last_sign_in_at, (p.id is not null)
+    from auth.users u
+    left join public.profiles p on p.id = u.id
+    order by u.created_at desc;
+end $function$;
+
+revoke all on function public.admin_list_users() from public, anon;
+grant execute on function public.admin_list_users() to authenticated;
+
+-- ---------------------------------------------------------------------
+-- Agregado 21/09/2026 · borrado de cuentas
+-- ---------------------------------------------------------------------
+-- 1) Fotos: si se borra el usuario, la foto queda en el spot sin autor
+--    (antes no tenía ON DELETE y bloqueaba el borrado)
+alter table public.place_photos drop constraint if exists place_photos_uploaded_by_fkey;
+alter table public.place_photos
+  add constraint place_photos_uploaded_by_fkey
+  foreign key (uploaded_by) references public.profiles(id) on delete set null;
+
+-- 2) El rider borra SU propia cuenta. Un admin no puede borrarse por acá.
+create or replace function public.delete_my_account()
+ returns void
+ language plpgsql
+ security definer
+ set search_path to 'public'
+as $function$
+declare v_uid uuid := auth.uid();
+begin
+  if v_uid is null then raise exception 'no autorizado'; end if;
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') = 'admin' then
+    raise exception 'una cuenta admin no se puede borrar desde la app';
+  end if;
+  delete from auth.users where id = v_uid;
+end $function$;
+
+revoke all on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;
+
+-- 3) El admin borra la cuenta de otro usuario (nunca la propia ni la de otro admin).
+create or replace function public.admin_delete_user(p_user_id uuid)
+ returns void
+ language plpgsql
+ security definer
+ set search_path to 'public'
+as $function$
+declare v_role text;
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+    raise exception 'no autorizado';
+  end if;
+  if p_user_id = auth.uid() then raise exception 'no podés borrar tu propia cuenta'; end if;
+  select coalesce(raw_app_meta_data ->> 'role','') into v_role from auth.users where id = p_user_id;
+  if not found then raise exception 'usuario no encontrado'; end if;
+  if v_role = 'admin' then raise exception 'no se puede borrar a otro admin'; end if;
+  delete from auth.users where id = p_user_id;
+end $function$;
+
+revoke all on function public.admin_delete_user(uuid) from public, anon;
+grant execute on function public.admin_delete_user(uuid) to authenticated;
