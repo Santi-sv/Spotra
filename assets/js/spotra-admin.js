@@ -1,6 +1,7 @@
 /* SPOTRA · Panel de aprobaciones (admin)
    - Lee envíos reales de place_submissions (solo admin, por RLS)
    - Aprobar/Rechazar llaman a las funciones SQL approve_submission / reject_submission
+   - Usuarios: lista real vía RPC admin_list_users (solo admin) + KPI de usuarios
    El control real de quién es admin está en la base (app_metadata.role + funciones SECURITY DEFINER). */
 (function(){
   const PIN  = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg>';
@@ -148,6 +149,176 @@
     }
   }
 
+
+  /* ============ USUARIOS (lista real, solo admin) ============ */
+  const PAGE = 50;
+  let usersCache = null, usersLoading = null, uFilter = 'todos', uQuery = '', uShown = PAGE;
+
+  async function fetchUsers(force){
+    if(usersCache && !force) return usersCache;
+    if(usersLoading) return usersLoading;
+    usersLoading = (async function(){
+      const client = await db();
+      if(!client) return null;
+      const { data, error } = await client.rpc('admin_list_users');
+      if(error){ console.warn('[SPOTRA] admin_list_users:', error); return null; }
+      usersCache = data || [];
+      return usersCache;
+    })();
+    try { return await usersLoading; } finally { usersLoading = null; }
+  }
+
+  function setUsersKpi(n){
+    const v = view(); if(!v) return;
+    const k = v.querySelectorAll('.kpi .num');
+    if(k[0]) k[0].textContent = (n == null ? '–' : n);
+  }
+
+  function fmtShort(iso){
+    if(!iso) return '';
+    const d = new Date(iso); if(isNaN(d)) return '';
+    return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0') + '/' + String(d.getFullYear()).slice(-2);
+  }
+
+  function initials(u){
+    const base = (u.full_name || u.username || u.email || '?').trim();
+    const parts = base.split(/[\s@._-]+/).filter(Boolean);
+    return ((parts[0] || '?')[0] + ((parts[1] || '')[0] || '')).toUpperCase();
+  }
+
+  function waLink(phone, cc){
+    let d = String(phone || '').replace(/\D/g, '');
+    if(d.length < 6) return '';
+    const pre = { UY:'598', AR:'54', BR:'55', CL:'56', PY:'595', MX:'52', CO:'57', PE:'51' }[String(cc || 'UY').toUpperCase()] || '';
+    if(pre && !d.startsWith(pre)){ d = d.replace(/^0+/, ''); d = pre + d; }
+    return 'https://wa.me/' + d;
+  }
+
+  function igText(v){
+    if(!v) return '';
+    const m = String(v).match(/instagram\.com\/([^/?#]+)/i);
+    return '@' + (m ? m[1] : String(v).replace(/^@/, ''));
+  }
+
+  function userRowHTML(u){
+    const isAdm = u.account_type === 'admin';
+    const sub = [u.username ? '@' + u.username : '', (u.discipline || '').toLowerCase(), fmtShort(u.created_at)].filter(Boolean).join(' · ');
+    const wa = waLink(u.phone, u.country_code);
+    const place = [u.city, u.phone].filter(Boolean).join(' · ');
+    const ig = igText(u.instagram);
+    const btn = 'flex:1;text-align:center;padding:9px;border-radius:10px;border:1px solid rgba(255,255,255,.14);color:#fff;font-weight:700;font-size:13px;text-decoration:none';
+    return `<div class="adm-user" data-uid="${esc(u.id)}" style="border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);padding:11px 12px;margin-bottom:8px;cursor:pointer">
+      <div style="display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:11px;align-items:center">
+        <div style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:800;border:1px solid ${isAdm ? 'rgba(116,255,58,.5)' : 'rgba(255,255,255,.14)'};color:${isAdm ? 'var(--green-hot)' : 'var(--muted)'}">${esc(initials(u))}</div>
+        <div style="min-width:0"><div style="font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.full_name || u.email || 'Sin nombre')}</div>
+          <div style="color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(sub)}</div></div>
+        <div>${isAdm ? '<span class="badge green">Admin</span>' : (!u.has_profile ? '<span class="badge warn">Sin perfil</span>' : '')}</div>
+      </div>
+      <div class="adm-user-more" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);color:var(--muted);font-size:13px;line-height:1.8">
+        <div>${esc(u.email || 'Sin email')}</div>
+        ${place ? `<div>${esc(place)}</div>` : ''}
+        ${ig ? `<div>Instagram: ${esc(ig)}</div>` : ''}
+        <div>Último ingreso: ${esc(fmtShort(u.last_sign_in_at) || 'nunca')}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          ${wa ? `<a href="${esc(wa)}" target="_blank" rel="noopener" style="${btn}">WhatsApp</a>` : ''}
+          ${u.email ? `<a href="mailto:${esc(u.email)}" style="${btn}">Email</a>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function usersView(){ return document.querySelector('[data-view="admin-users"]'); }
+
+  function filtered(){
+    const q = uQuery.trim().toLowerCase();
+    return (usersCache || []).filter(u => {
+      if(uFilter !== 'todos' && !String(u.discipline || '').toLowerCase().includes(uFilter)) return false;
+      if(!q) return true;
+      return [u.full_name, u.username, u.email].some(x => String(x || '').toLowerCase().includes(q));
+    });
+  }
+
+  function renderUsersList(){
+    const box = document.getElementById('admUsersList');
+    if(!box) return;
+    const list = filtered();
+    if(!list.length){ box.innerHTML = noteHTML(usersCache && usersCache.length ? 'No hay usuarios con ese filtro.' : 'Todavía no hay usuarios registrados.'); return; }
+    const shown = list.slice(0, uShown);
+    box.innerHTML = shown.map(userRowHTML).join('') +
+      `<div style="text-align:center;color:var(--muted);font-size:12.5px;margin-top:10px">Mostrando ${shown.length} de ${list.length}</div>` +
+      (list.length > shown.length ? `<button id="admUsersMore" style="display:block;margin:10px auto 0;background:transparent;border:1px solid var(--green-hot);color:var(--green-hot);border-radius:12px;padding:10px 18px;font-weight:800;cursor:pointer">Ver más</button>` : '');
+  }
+
+  function chipCss(on){
+    return 'padding:7px 13px;border-radius:999px;font-weight:700;font-size:12.5px;cursor:pointer;' + (on
+      ? 'background:rgba(46,232,77,.12);border:1px solid rgba(116,255,58,.5);color:var(--green-hot)'
+      : 'background:transparent;border:1px solid rgba(255,255,255,.14);color:var(--muted)');
+  }
+
+  function ensureUsersUI(v){
+    if(document.getElementById('admUsers')) return;
+    v.querySelectorAll('.admin-note').forEach(el => el.remove());
+    const head = v.querySelector('.section-head');
+    if(head && !document.getElementById('admUsersCount')){
+      head.style.display = 'flex'; head.style.justifyContent = 'space-between'; head.style.alignItems = 'baseline';
+      head.insertAdjacentHTML('beforeend', '<span id="admUsersCount" style="color:var(--green-hot);font-weight:800;font-size:14px"></span>');
+    }
+    const wrap = document.createElement('div');
+    wrap.id = 'admUsers';
+    wrap.style.marginTop = '12px';
+    const chips = [['todos','Todos'],['skate','Skate'],['bmx','BMX'],['rollers','Rollers']];
+    wrap.innerHTML = '<input id="admUsersSearch" type="search" placeholder="Buscar nombre, @usuario o email" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:12px 14px;color:#fff;font-size:15px;margin-bottom:10px">' +
+      '<div id="admUsersChips" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">' +
+      chips.map(c => `<button data-ufilter="${c[0]}" style="${chipCss(c[0] === uFilter)}">${c[1]}</button>`).join('') + '</div>' +
+      '<div id="admUsersList"></div>';
+    v.appendChild(wrap);
+
+    document.getElementById('admUsersSearch').addEventListener('input', e => { uQuery = e.target.value || ''; uShown = PAGE; renderUsersList(); });
+    wrap.addEventListener('click', e => {
+      const chip = e.target.closest('[data-ufilter]');
+      if(chip){
+        uFilter = chip.dataset.ufilter; uShown = PAGE;
+        wrap.querySelectorAll('[data-ufilter]').forEach(b => b.style.cssText = chipCss(b.dataset.ufilter === uFilter));
+        renderUsersList(); return;
+      }
+      if(e.target.closest('#admUsersMore')){ uShown += PAGE; renderUsersList(); return; }
+      if(e.target.closest('a')) return;
+      const row = e.target.closest('.adm-user');
+      if(row){
+        const more = row.querySelector('.adm-user-more');
+        const open = more.style.display !== 'none';
+        more.style.display = open ? 'none' : 'block';
+        row.style.borderColor = open ? 'rgba(255,255,255,.08)' : 'rgba(116,255,58,.35)';
+      }
+    });
+  }
+
+  let usersBusy = false;
+  async function loadUsers(){
+    const v = usersView();
+    if(!v || usersBusy) return;
+    usersBusy = true;
+    try {
+      if(!(await isAdmin())){
+        v.querySelectorAll('.admin-note').forEach(el => el.remove());
+        const old = document.getElementById('admUsers'); if(old) old.remove();
+        v.insertAdjacentHTML('beforeend', noteHTML('Este panel es solo para administradores.'));
+        return;
+      }
+      ensureUsersUI(v);
+      const box = document.getElementById('admUsersList');
+      if(box && !usersCache) box.innerHTML = noteHTML('Cargando usuarios...');
+      const list = await fetchUsers(true);
+      if(!list){ if(box) box.innerHTML = noteHTML('No se pudo cargar la lista. Probá de nuevo.'); return; }
+      const c = document.getElementById('admUsersCount');
+      if(c) c.textContent = list.length + (list.length === 1 ? ' registrado' : ' registrados');
+      setUsersKpi(list.length);
+      renderUsersList();
+    } finally {
+      usersBusy = false;
+    }
+  }
+
   let loading = false;
   async function loadApprovals(){
     const v = view();
@@ -163,6 +334,7 @@
         return;
       }
 
+      fetchUsers(true).then(list => { if(list) setUsersKpi(list.length); }).catch(function(){});
       const subs = (window.SpotraBackend ? await window.SpotraBackend.listSubmissions() : []) || [];
       const photos = (window.SpotraBackend ? await window.SpotraBackend.listPendingPhotos() : []) || [];
       const events = (window.SpotraBackend && window.SpotraBackend.listPendingEvents ? await window.SpotraBackend.listPendingEvents() : []) || [];
@@ -350,8 +522,17 @@
       if(v.classList.contains('active')) loadApprovals();
     }).observe(v, { attributes: true, attributeFilter: ['class'] });
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchView);
-  else watchView();
+  function watchUsers(){
+    const v = usersView();
+    if(!v) return;
+    if(v.classList.contains('active')) loadUsers();
+    new MutationObserver(() => {
+      if(v.classList.contains('active')) loadUsers();
+    }).observe(v, { attributes: true, attributeFilter: ['class'] });
+  }
+  function boot(){ watchView(); watchUsers(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
 
-  window.SpotraAdmin = { loadApprovals };
+  window.SpotraAdmin = { loadApprovals, loadUsers };
 })();
