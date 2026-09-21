@@ -124,6 +124,31 @@
     closeModal();
   }
 
+  /* ---- Eliminar cuenta (borrado real vía RPC delete_my_account) ---- */
+  let deleting = false;
+  async function deleteAccount(btn){
+    if(deleting) return;
+    const input = document.getElementById('deleteConfirm');
+    const txt = (input && input.value || '').trim().toUpperCase();
+    if(txt !== 'ELIMINAR'){ notify('Escribí ELIMINAR para confirmar.'); if(input) input.focus(); return; }
+    const c = await db();
+    if(!c){ notify('Sin conexión. Probá de nuevo.'); return; }
+    deleting = true;
+    const label = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.textContent = 'Eliminando...'; }
+    const { error } = await c.rpc('delete_my_account');
+    if(error){
+      deleting = false;
+      if(btn){ btn.disabled = false; btn.textContent = label; }
+      notify('No se pudo eliminar la cuenta. ' + (error.message || ''));
+      return;
+    }
+    try { await c.auth.signOut(); } catch(err){}
+    try { localStorage.removeItem('spotraPendingProfile'); } catch(err){}
+    notify('Tu cuenta fue eliminada.');
+    setTimeout(function(){ location.hash = 'login'; location.reload(); }, 900);
+  }
+
   // interceptar guardado ANTES de los handlers maqueta
   document.addEventListener('click', function(e){
     const save = e.target.closest('[data-save-settings]');
@@ -132,6 +157,12 @@
       const form = save.closest('.modal-form');
       const which = form ? form.dataset.form : '';
       if(which === 'editContact') saveContact(); else saveProfile();
+      return;
+    }
+    const del = e.target.closest('[data-delete-account]');
+    if(del){
+      e.preventDefault(); e.stopImmediatePropagation();
+      deleteAccount(del);
       return;
     }
     const pass = e.target.closest('[data-change-password]');
