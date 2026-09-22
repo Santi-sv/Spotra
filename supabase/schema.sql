@@ -266,7 +266,7 @@ create unique index if not exists waitlist_telefono_key ON public.waitlist USING
 -- ---------------------------------------------------------------------
 -- Vista del ranking
 -- ---------------------------------------------------------------------
-create or replace view public.rider_rankings as
+create or replace view public.rider_rankings with (security_invoker = true) as
  SELECT discipline,
     profile_id,
     max(username) AS username,
@@ -894,3 +894,15 @@ end $function$;
 
 revoke all on function public.admin_delete_user(uuid) from public, anon;
 grant execute on function public.admin_delete_user(uuid) to authenticated;
+
+-- ---------------------------------------------------------------------
+-- Agregado 21/09/2026 · Security Advisor
+-- ---------------------------------------------------------------------
+-- 1) rider_rankings: la vista pasa a respetar la RLS de quien consulta.
+--    event_results ya es de lectura pública, así que el ranking sigue igual.
+alter view public.rider_rankings set (security_invoker = true);
+
+-- 2) spatial_ref_sys (tabla interna de PostGIS): nadie de afuera puede modificarla.
+--    La lectura se mantiene porque PostGIS la usa.
+revoke insert, update, delete, truncate, references, trigger
+  on public.spatial_ref_sys from anon, authenticated;
