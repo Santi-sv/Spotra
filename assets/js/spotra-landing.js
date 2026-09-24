@@ -314,7 +314,7 @@
       accessTitle:'Acceso privado', enter:'Entrar', enterBio:'Entrar con Face ID',
       bioSetup:'Activa Face ID / Touch ID en este dispositivo. Despues, cada vez que abras el enlace te pide la cara o la huella.',
       bioAdd:'Activar Face ID / Touch ID', bioSkip:'Entrar sin activarlo',
-      bioFail:'No se pudo verificar. Proba de nuevo.', bioNo:'Este dispositivo no pudo registrar Face ID.',
+      bioFail:'No se pudo verificar. Proba de nuevo.', bioNo:'Este dispositivo no pudo registrar Face ID.', bioReset:'Entrar sin Face ID en este dispositivo',
       opening:'Abriendo la app...',
       steps:['Inicio','Mapa','Eventos','Market','Foro','Perfil'],
       caps:['Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.',
@@ -347,7 +347,7 @@
       accessTitle:'Acceso privado', enter:'Entrar', enterBio:'Entrar con Face ID',
       bioSetup:'Activa Face ID / Touch ID en este dispositivo. Despues, cada vez que abras el enlace te pide la cara o la huella.',
       bioAdd:'Activar Face ID / Touch ID', bioSkip:'Entrar sin activarlo',
-      bioFail:'No se pudo verificar. Intenta de nuevo.', bioNo:'Este dispositivo no pudo registrar Face ID.',
+      bioFail:'No se pudo verificar. Intenta de nuevo.', bioNo:'Este dispositivo no pudo registrar Face ID.', bioReset:'Entrar sin Face ID en este dispositivo',
       opening:'Abriendo la app...',
       steps:['Inicio','Mapa','Eventos','Mercado','Foro','Perfil'],
       caps:['Tu red rider al abrir: spots cercanos, eventos y accesos rapidos.',
@@ -380,7 +380,7 @@
       accessTitle:'Acesso privado', enter:'Entrar', enterBio:'Entrar com Face ID',
       bioSetup:'Ative Face ID / Touch ID neste aparelho. Depois, toda vez que abrir o link ele pede seu rosto ou digital.',
       bioAdd:'Ativar Face ID / Touch ID', bioSkip:'Entrar sem ativar',
-      bioFail:'Nao foi possivel verificar. Tente de novo.', bioNo:'Este aparelho nao conseguiu registrar Face ID.',
+      bioFail:'Nao foi possivel verificar. Tente de novo.', bioNo:'Este aparelho nao conseguiu registrar Face ID.', bioReset:'Entrar sem Face ID neste aparelho',
       opening:'Abrindo o app...',
       steps:['Inicio','Mapa','Eventos','Mercado','Forum','Perfil'],
       caps:['Sua rede rider ao abrir: picos proximos, eventos e atalhos.',
@@ -413,7 +413,7 @@
       accessTitle:'Private access', enter:'Enter', enterBio:'Enter with Face ID',
       bioSetup:'Turn on Face ID / Touch ID on this device. From then on, the link will ask for your face or fingerprint.',
       bioAdd:'Turn on Face ID / Touch ID', bioSkip:'Enter without it',
-      bioFail:'Could not verify. Try again.', bioNo:'This device could not register Face ID.',
+      bioFail:'Could not verify. Try again.', bioNo:'This device could not register Face ID.', bioReset:'Enter without Face ID on this device',
       opening:'Opening the app...',
       steps:['Home','Map','Events','Market','Forum','Profile'],
       caps:['Your rider network at a glance: nearby spots, events and shortcuts.',
@@ -1068,6 +1068,7 @@
     +       '<button class="sg-link" type="button" id="sgSkip">' + esc(t('bioSkip')) + '</button>'
     +     '</div>'
     +     '<div class="sg-msg" id="sgAccMsg"></div>'
+    +     '<button class="sg-link" type="button" id="sgReset" style="display:none">' + esc(t('bioReset')) + '</button>'
     +   '</div>'
     + '</div>';
     document.body.appendChild(el);
@@ -1077,6 +1078,7 @@
     var addBtn = el.querySelector('#sgAdd');
     var skipBtn = el.querySelector('#sgSkip');
     var msg = el.querySelector('#sgAccMsg');
+    var resetBtn = el.querySelector('#sgReset');
 
     function say(kind, text){ msg.className = 'sg-msg ' + kind; msg.textContent = text; }
     function enterApp(){
@@ -1092,6 +1094,7 @@
         bioLogin().then(enterApp).catch(function(err){
           console.warn('[SPOTRA] Face ID:', err);
           say('err', t('bioFail'));
+          resetBtn.style.display = 'block';
         });
         return;
       }
@@ -1109,6 +1112,9 @@
       });
     });
     skipBtn.addEventListener('click', function(){ unlockRemembered(); enterApp(); });
+    // Si la huella guardada ya no existe (se borró, otro perfil), no dejar al usuario encerrado.
+    // Seguro: esta pantalla solo aparece después de abrir el enlace con la palabra correcta.
+    resetBtn.addEventListener('click', function(){ lsDel(KEY_BIO); enterApp(); });
   }
 
   /* ---------- arranque ---------- */
