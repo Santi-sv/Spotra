@@ -525,23 +525,23 @@ alter table public.waitlist_settings enable row level security;
 drop policy if exists "admins manage registrations" on public.event_registrations;
 create policy "admins manage registrations" on public.event_registrations
   for all
-  using ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
+  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
 
 drop policy if exists "authenticated can read registrations" on public.event_registrations;
 create policy "authenticated can read registrations" on public.event_registrations
   for select
-  using ((auth.role() = 'authenticated'::text));
+  using (((select auth.role()) = 'authenticated'::text));
 
 drop policy if exists "users cancel their registration" on public.event_registrations;
 create policy "users cancel their registration" on public.event_registrations
   for delete
-  using ((profile_id = auth.uid()));
+  using ((profile_id = (select auth.uid())));
 
 drop policy if exists "users register themselves" on public.event_registrations;
 create policy "users register themselves" on public.event_registrations
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (profile_id = auth.uid())));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (profile_id = (select auth.uid()))));
 
 drop policy if exists "results are public" on public.event_results;
 create policy "results are public" on public.event_results
@@ -551,8 +551,8 @@ create policy "results are public" on public.event_results
 drop policy if exists "admins can manage events" on public.events;
 create policy "admins can manage events" on public.events
   for all
-  using ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
+  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
 
 drop policy if exists "approved events are public" on public.events;
 create policy "approved events are public" on public.events
@@ -562,52 +562,52 @@ create policy "approved events are public" on public.events
 drop policy if exists "authenticated users can create events" on public.events;
 create policy "authenticated users can create events" on public.events
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (organizer_id = auth.uid()) AND (status = 'pending'::spotra_status)));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (organizer_id = (select auth.uid())) AND (status = 'pending'::spotra_status)));
 
 drop policy if exists "registered users can read their events" on public.events;
 create policy "registered users can read their events" on public.events
   for select
   using ((EXISTS ( SELECT 1
    FROM event_registrations r
-  WHERE ((r.event_id = events.id) AND (r.profile_id = auth.uid())))));
+  WHERE ((r.event_id = events.id) AND (r.profile_id = (select auth.uid()))))));
 
 drop policy if exists "users can read their own events" on public.events;
 create policy "users can read their own events" on public.events
   for select
-  using ((organizer_id = auth.uid()));
+  using ((organizer_id = (select auth.uid())));
 
 drop policy if exists "insert own photos" on public.place_photos;
 create policy "insert own photos" on public.place_photos
   for insert
   to authenticated
-  with check (((uploaded_by = auth.uid()) AND (status = 'pending'::text)));
+  with check (((uploaded_by = (select auth.uid())) AND (status = 'pending'::text)));
 
 drop policy if exists "read approved photos" on public.place_photos;
 create policy "read approved photos" on public.place_photos
   for select
-  using (((status = 'approved'::text) OR (uploaded_by = auth.uid()) OR (COALESCE(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text)));
+  using (((status = 'approved'::text) OR (uploaded_by = (select auth.uid())) OR (COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text)));
 
 drop policy if exists "admins can update submissions" on public.place_submissions;
 create policy "admins can update submissions" on public.place_submissions
   for update
-  using ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
+  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
 
 drop policy if exists "authenticated users can submit places" on public.place_submissions;
 create policy "authenticated users can submit places" on public.place_submissions
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (submitted_by = auth.uid())));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (submitted_by = (select auth.uid()))));
 
 drop policy if exists "users can read their own submissions" on public.place_submissions;
 create policy "users can read their own submissions" on public.place_submissions
   for select
-  using (((submitted_by = auth.uid()) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((submitted_by = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
 
 drop policy if exists "admins can manage places" on public.places;
 create policy "admins can manage places" on public.places
   for all
-  using ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check ((((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
+  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
 
 drop policy if exists "approved places are public" on public.places;
 create policy "approved places are public" on public.places
@@ -617,7 +617,7 @@ create policy "approved places are public" on public.places
 drop policy if exists "author or admin deletes comments" on public.post_comments;
 create policy "author or admin deletes comments" on public.post_comments
   for delete
-  using (((author_id = auth.uid()) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((author_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
 
 drop policy if exists "comments are public" on public.post_comments;
 create policy "comments are public" on public.post_comments
@@ -627,7 +627,7 @@ create policy "comments are public" on public.post_comments
 drop policy if exists "users comment as themselves" on public.post_comments;
 create policy "users comment as themselves" on public.post_comments
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (author_id = auth.uid())));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (author_id = (select auth.uid()))));
 
 drop policy if exists "likes are public" on public.post_likes;
 create policy "likes are public" on public.post_likes
@@ -637,17 +637,17 @@ create policy "likes are public" on public.post_likes
 drop policy if exists "users like as themselves" on public.post_likes;
 create policy "users like as themselves" on public.post_likes
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (profile_id = auth.uid())));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (profile_id = (select auth.uid()))));
 
 drop policy if exists "users remove their likes" on public.post_likes;
 create policy "users remove their likes" on public.post_likes
   for delete
-  using ((profile_id = auth.uid()));
+  using ((profile_id = (select auth.uid())));
 
 drop policy if exists "author or admin deletes posts" on public.posts;
 create policy "author or admin deletes posts" on public.posts
   for delete
-  using (((author_id = auth.uid()) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((author_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
 
 drop policy if exists "posts are public" on public.posts;
 create policy "posts are public" on public.posts
@@ -657,44 +657,44 @@ create policy "posts are public" on public.posts
 drop policy if exists "users create their posts" on public.posts;
 create policy "users create their posts" on public.posts
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (author_id = auth.uid())));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (author_id = (select auth.uid()))));
 
 drop policy if exists "users can insert their own profile" on public.profiles;
 create policy "users can insert their own profile" on public.profiles
   for insert
-  with check ((auth.uid() = id));
+  with check (((select auth.uid()) = id));
 
 drop policy if exists "users can read their own profile" on public.profiles;
 create policy "users can read their own profile" on public.profiles
   for select
-  using (((auth.uid() = id) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using ((((select auth.uid()) = id) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
 
 drop policy if exists "users can update their own profile" on public.profiles;
 create policy "users can update their own profile" on public.profiles
   for update
-  using ((auth.uid() = id))
-  with check ((auth.uid() = id));
+  using (((select auth.uid()) = id))
+  with check (((select auth.uid()) = id));
 
 drop policy if exists "users create their subscriptions" on public.push_subscriptions;
 create policy "users create their subscriptions" on public.push_subscriptions
   for insert
-  with check (((auth.role() = 'authenticated'::text) AND (profile_id = auth.uid())));
+  with check ((((select auth.role()) = 'authenticated'::text) AND (profile_id = (select auth.uid()))));
 
 drop policy if exists "users delete their subscriptions" on public.push_subscriptions;
 create policy "users delete their subscriptions" on public.push_subscriptions
   for delete
-  using (((profile_id = auth.uid()) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((profile_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
 
 drop policy if exists "users read their subscriptions" on public.push_subscriptions;
 create policy "users read their subscriptions" on public.push_subscriptions
   for select
-  using (((profile_id = auth.uid()) OR (((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((profile_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
 
 drop policy if exists "waitlist_delete_admin" on public.waitlist;
 create policy "waitlist_delete_admin" on public.waitlist
   for delete
   to authenticated
-  using ((COALESCE(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
+  using ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
 
 drop policy if exists "waitlist_insert_public" on public.waitlist;
 create policy "waitlist_insert_public" on public.waitlist
@@ -706,14 +706,14 @@ drop policy if exists "waitlist_select_admin" on public.waitlist;
 create policy "waitlist_select_admin" on public.waitlist
   for select
   to authenticated
-  using ((COALESCE(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
+  using ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
 
 drop policy if exists "waitlist_settings_admin" on public.waitlist_settings;
 create policy "waitlist_settings_admin" on public.waitlist_settings
   for all
   to authenticated
-  using ((COALESCE(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text))
-  with check ((COALESCE(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
+  using ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text))
+  with check ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
 
 drop policy if exists "auth upload place-images" on storage.objects;
 create policy "auth upload place-images" on storage.objects
@@ -778,26 +778,26 @@ create policy "approved listings are public" on public.listings
 drop policy if exists "sellers read their listings" on public.listings;
 create policy "sellers read their listings" on public.listings
   for select
-  using (seller_id = auth.uid());
+  using (seller_id = (select auth.uid()));
 
 -- Publicar: solo como uno mismo, nace pendiente y sin vender
 drop policy if exists "sellers create listings" on public.listings;
 create policy "sellers create listings" on public.listings
   for insert
-  with check (auth.role() = 'authenticated'::text and seller_id = auth.uid() and status = 'pending'::spotra_status and sold = false);
+  with check ((select auth.role()) = 'authenticated'::text and seller_id = (select auth.uid()) and status = 'pending'::spotra_status and sold = false);
 
 -- Eliminar: el vendedor o el admin
 drop policy if exists "seller or admin deletes listings" on public.listings;
 create policy "seller or admin deletes listings" on public.listings
   for delete
-  using (seller_id = auth.uid() or coalesce(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text);
+  using (seller_id = (select auth.uid()) or coalesce((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text);
 
 -- Moderación: el admin ve y edita todo (aprobar / rechazar)
 drop policy if exists "admins manage listings" on public.listings;
 create policy "admins manage listings" on public.listings
   for all
-  using (coalesce(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text)
-  with check (coalesce(((auth.jwt() -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text);
+  using (coalesce((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text)
+  with check (coalesce((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text);
 
 -- Marcar vendido: solo el vendedor (el vendedor no puede editar nada más)
 create or replace function public.mark_listing_sold(p_listing_id uuid)
