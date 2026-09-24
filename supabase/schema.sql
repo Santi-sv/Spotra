@@ -262,6 +262,17 @@ create index if not exists post_comments_post_idx ON public.post_comments USING 
 create index if not exists posts_created_idx ON public.posts USING btree (created_at DESC);
 create index if not exists push_subscriptions_profile_idx ON public.push_subscriptions USING btree (profile_id);
 create unique index if not exists waitlist_telefono_key ON public.waitlist USING btree (telefono);
+-- índices de claves foráneas (24/09/2026)
+create index if not exists places_approved_by_idx          on public.places (approved_by);
+create index if not exists places_created_by_idx           on public.places (created_by);
+create index if not exists place_submissions_submitted_by_idx on public.place_submissions (submitted_by);
+create index if not exists place_photos_uploaded_by_idx    on public.place_photos (uploaded_by);
+create index if not exists events_organizer_idx            on public.events (organizer_id);
+create index if not exists event_registrations_profile_idx on public.event_registrations (profile_id);
+create index if not exists event_results_profile_idx       on public.event_results (profile_id);
+create index if not exists posts_author_idx                on public.posts (author_id);
+create index if not exists post_likes_profile_idx          on public.post_likes (profile_id);
+create index if not exists post_comments_author_idx        on public.post_comments (author_id);
 
 -- ---------------------------------------------------------------------
 -- Vista del ranking
@@ -915,7 +926,7 @@ revoke insert, update, delete, truncate, references, trigger
 create or replace function public.enforce_account_type()
  returns trigger
  language plpgsql
- security definer
+ security invoker
  set search_path to 'public'
 as $function$
 begin
@@ -930,6 +941,8 @@ drop trigger if exists profiles_account_type_guard on public.profiles;
 create trigger profiles_account_type_guard
   before insert or update on public.profiles
   for each row execute function public.enforce_account_type();
+
+revoke execute on function public.enforce_account_type() from public, anon, authenticated;
 
 -- ---------------------------------------------------------------------
 -- Agregado 24/09/2026 · políticas consolidadas (reemplazan a las de arriba)
