@@ -906,3 +906,27 @@ alter view public.rider_rankings set (security_invoker = true);
 --    La lectura se mantiene porque PostGIS la usa.
 revoke insert, update, delete, truncate, references, trigger
   on public.spatial_ref_sys from anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- Agregado 22/09/2026 · blindaje admin paso 1
+-- ---------------------------------------------------------------------
+-- 1) Disparador: si alguien intenta guardarse como admin sin tener el rol real,
+--    se guarda como rider. No corta el registro, solo lo degrada.
+create or replace function public.enforce_account_type()
+ returns trigger
+ language plpgsql
+ security definer
+ set search_path to 'public'
+as $function$
+begin
+  if new.account_type::text = 'admin'
+     and coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+    new.account_type := 'rider';
+  end if;
+  return new;
+end $function$;
+
+drop trigger if exists profiles_account_type_guard on public.profiles;
+create trigger profiles_account_type_guard
+  before insert or update on public.profiles
+  for each row execute function public.enforce_account_type();
