@@ -1077,3 +1077,50 @@ create policy "users update their subscriptions" on public.push_subscriptions
   for update
   using (profile_id = (select auth.uid()))
   with check (profile_id = (select auth.uid()));
+
+-- ---------------------------------------------------------------------
+-- Agregado 24/09/2026 · blindaje admin paso 2 (Face ID)
+-- ---------------------------------------------------------------------
+-- 1) Dispositivos con Face ID de cada admin
+create table if not exists public.admin_passkeys (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  credential_id text not null unique,
+  public_key text not null,
+  counter bigint not null default 0,
+  transports text[] not null default '{}',
+  device_name text not null check (char_length(device_name) between 1 and 40),
+  created_at timestamptz not null default now(),
+  last_used_at timestamptz
+);
+create index if not exists admin_passkeys_user_idx on public.admin_passkeys (user_id);
+
+-- 2) Desafíos de un solo uso (vencen a los 2 minutos)
+create table if not exists public.admin_challenges (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  purpose text not null check (purpose in ('register','auth')),
+  challenge text not null,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists admin_challenges_user_idx on public.admin_challenges (user_id, purpose);
+
+-- 3) Registro de auditoría de seguridad
+create table if not exists public.admin_audit_log (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users(id) on delete set null,
+  action text not null,
+  detail jsonb not null default '{}'::jsonb,
+  ip text,
+  created_at timestamptz not null default now()
+);
+create index if not exists admin_audit_log_user_idx on public.admin_audit_log (user_id, action, created_at desc);
+
+-- Cerrar todo acceso desde la app
+alter table public.admin_passkeys   enable row level security;
+alter table public.admin_challenges enable row level security;
+alter table public.admin_audit_log  enable row level security;
+revoke all on table public.admin_passkeys   from anon, authenticated;
+revoke all on table public.admin_challenges from anon, authenticated;
+revoke all on table public.admin_audit_log  from anon, authenticated;
