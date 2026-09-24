@@ -65,7 +65,7 @@
     const row = {
       id: user.id,
       full_name: pending.fullName || meta.full_name || (user.email || 'Rider').split('@')[0],
-      account_type: pending.accountType || meta.account_type || 'rider',
+      account_type: (function(t){ return t === 'brand' ? 'brand' : 'rider'; })(pending.accountType || meta.account_type),
       email: user.email || null,
       phone: pending.phone || null,
       country_code: pending.countryCode || 'UY',
@@ -83,6 +83,26 @@
     const { data: prof } = await client.from('profiles')
       .select('id, full_name, account_type').eq('id', user.id).maybeSingle();
     return prof;
+  }
+
+
+  /* ---------- rol real (viene firmado por Supabase en el token) ---------- */
+  function jwtRole(session){
+    try {
+      const t = session && session.access_token;
+      if(!t) return '';
+      const p = JSON.parse(atob(t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      return (p.app_metadata && p.app_metadata.role) || '';
+    } catch(err){ return ''; }
+  }
+
+  function markAdmin(isAdmin){
+    document.body.dataset.isAdmin = isAdmin ? '1' : '0';
+    document.body.dataset.authReady = '1';
+    window.SPOTRA_IS_ADMIN = !!isAdmin;
+    if(!isAdmin && /^admin-/.test((location.hash || '').slice(1)) && window.setRole){
+      window.setRole('rider');
+    }
   }
 
   /* ---------- estado de la interfaz según sesión ---------- */
@@ -103,6 +123,9 @@
     });
     ensureLogoutButton(authed);
 
+    const isAdmin = jwtRole(session) === 'admin';
+    markAdmin(authed && isAdmin);
+
     if(authed){
       profile = await ensureProfile();
       const name = (profile && profile.full_name)
@@ -110,7 +133,7 @@
         || (session.user.email || '').split('@')[0];
       if(window.setUserName) window.setUserName(name || 'Rider');
     }
-    return { session, profile };
+    return { session, profile, isAdmin: authed && isAdmin };
   }
 
   async function doLogout(){
@@ -145,9 +168,9 @@
     }
   });
 
-  function roleHome(accountType){
+  function roleHome(accountType, isAdmin){
+    if(isAdmin || window.SPOTRA_IS_ADMIN) return 'admin';
     if(accountType === 'brand') return 'brand';
-    if(accountType === 'admin') return 'admin';
     return 'rider';
   }
 
@@ -166,7 +189,7 @@
       const { data, error } = await client.auth.signUp({
         email: f.email,
         password: f.password,
-        options: { data: { full_name: f.fullName, account_type: f.accountType } }
+        options: { data: { full_name: f.fullName, account_type: (f.accountType === 'brand' ? 'brand' : 'rider') } }
       });
       if(error){ notify(traducir(error.message)); return; }
 
@@ -180,7 +203,7 @@
         const first = ((profile && profile.full_name) || f.fullName || 'rider').split(' ')[0];
         notify('Cuenta creada. Bienvenido a SPOTRA, ' + first + '.');
         await applyAuthUI();
-        if(window.setRole) window.setRole(roleHome(f.accountType));
+        if(window.setRole) window.setRole(roleHome(f.accountType, false));
       } else {
         notify('Te enviamos un email para confirmar tu cuenta. Confirmalo y luego iniciá sesión.');
       }
@@ -226,7 +249,7 @@
       const accountType = (ui.profile && ui.profile.account_type) || 'rider';
       const first = (((ui.profile && ui.profile.full_name) || identifier).split(' ')[0]).split('@')[0];
       notify('Bienvenido de vuelta, ' + first + '.');
-      if(window.setRole) window.setRole(roleHome(accountType));
+      if(window.setRole) window.setRole(roleHome(accountType, ui.isAdmin));
     } catch(err){
       console.error('[SPOTRA] login error:', err);
       notify('Error al iniciar sesión: ' + ((err && err.message) ? err.message : 'reintentá'));
@@ -333,7 +356,7 @@
         closeRecovery();
         recBusy = false;
         const ui = await applyAuthUI();
-        if(window.setRole) window.setRole(roleHome(ui.profile && ui.profile.account_type));
+        if(window.setRole) window.setRole(roleHome(ui.profile && ui.profile.account_type, ui.isAdmin));
       }, 800);
     } catch(err){
       console.error('[SPOTRA] updateUser:', err);
@@ -364,10 +387,10 @@
     if(/type=recovery/.test(location.hash) || /[?&]type=recovery/.test(location.search)){
       openRecovery();
     }
-    applyAuthUI().then(({ session, profile }) => {
+    applyAuthUI().then(({ session, profile, isAdmin }) => {
       const h = location.hash;
       if(session && (h === '#login' || h === '#signup' || h === '' || h === '#')){
-        if(window.setRole) window.setRole(roleHome(profile && profile.account_type));
+        if(window.setRole) window.setRole(roleHome(profile && profile.account_type, isAdmin));
       }
     });
   }
@@ -379,11 +402,11 @@
     if(client && client.auth && client.auth.onAuthStateChange){
       client.auth.onAuthStateChange((event, session) => {
         if(event === 'PASSWORD_RECOVERY'){ openRecovery(); return; }
-        applyAuthUI().then(({ profile }) => {
+        applyAuthUI().then(({ profile, isAdmin }) => {
           if(event === 'SIGNED_IN'){
             const h = location.hash;
             if(h === '#login' || h === '#signup' || h === '' || h === '#'){
-              if(window.setRole) window.setRole(roleHome(profile && profile.account_type));
+              if(window.setRole) window.setRole(roleHome(profile && profile.account_type, isAdmin));
             }
           }
         });
