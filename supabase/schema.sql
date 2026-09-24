@@ -930,3 +930,137 @@ drop trigger if exists profiles_account_type_guard on public.profiles;
 create trigger profiles_account_type_guard
   before insert or update on public.profiles
   for each row execute function public.enforce_account_type();
+
+-- ---------------------------------------------------------------------
+-- Agregado 24/09/2026 · políticas consolidadas (reemplazan a las de arriba)
+-- ---------------------------------------------------------------------
+-- ===================== event_registrations =====================
+drop policy if exists "admins manage registrations" on public.event_registrations;
+drop policy if exists "users cancel their registration" on public.event_registrations;
+drop policy if exists "users register themselves" on public.event_registrations;
+drop policy if exists "authenticated can read registrations" on public.event_registrations;
+
+drop policy if exists "event_registrations_select" on public.event_registrations;
+create policy "event_registrations_select" on public.event_registrations
+  for select using (
+    (select auth.role()) = 'authenticated'
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "event_registrations_insert" on public.event_registrations;
+create policy "event_registrations_insert" on public.event_registrations
+  for insert with check (
+    ((select auth.role()) = 'authenticated' and profile_id = (select auth.uid()))
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "event_registrations_update" on public.event_registrations;
+create policy "event_registrations_update" on public.event_registrations
+  for update
+  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
+  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "event_registrations_delete" on public.event_registrations;
+create policy "event_registrations_delete" on public.event_registrations
+  for delete using (
+    profile_id = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- ===================== events =====================
+drop policy if exists "admins can manage events" on public.events;
+drop policy if exists "authenticated users can create events" on public.events;
+drop policy if exists "approved events are public" on public.events;
+drop policy if exists "registered users can read their events" on public.events;
+drop policy if exists "users can read their own events" on public.events;
+
+drop policy if exists "events_select" on public.events;
+create policy "events_select" on public.events
+  for select using (
+    status = 'approved'::spotra_status
+    or organizer_id = (select auth.uid())
+    or exists (select 1 from public.event_registrations r
+                where r.event_id = events.id and r.profile_id = (select auth.uid()))
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "events_insert" on public.events;
+create policy "events_insert" on public.events
+  for insert with check (
+    ((select auth.role()) = 'authenticated'
+      and organizer_id = (select auth.uid())
+      and status = 'pending'::spotra_status)
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "events_update" on public.events;
+create policy "events_update" on public.events
+  for update
+  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
+  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "events_delete" on public.events;
+create policy "events_delete" on public.events
+  for delete using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- ===================== listings =====================
+drop policy if exists "admins manage listings" on public.listings;
+drop policy if exists "seller or admin deletes listings" on public.listings;
+drop policy if exists "sellers create listings" on public.listings;
+drop policy if exists "approved listings are public" on public.listings;
+drop policy if exists "sellers read their listings" on public.listings;
+
+drop policy if exists "listings_select" on public.listings;
+create policy "listings_select" on public.listings
+  for select using (
+    (status = 'approved'::spotra_status and sold = false)
+    or seller_id = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "listings_insert" on public.listings;
+create policy "listings_insert" on public.listings
+  for insert with check (
+    ((select auth.role()) = 'authenticated'
+      and seller_id = (select auth.uid())
+      and status = 'pending'::spotra_status
+      and sold = false)
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "listings_update" on public.listings;
+create policy "listings_update" on public.listings
+  for update
+  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
+  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "listings_delete" on public.listings;
+create policy "listings_delete" on public.listings
+  for delete using (
+    seller_id = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- ===================== places =====================
+drop policy if exists "admins can manage places" on public.places;
+drop policy if exists "approved places are public" on public.places;
+
+drop policy if exists "places_select" on public.places;
+create policy "places_select" on public.places
+  for select using (
+    status = 'approved'::spotra_status
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "places_insert" on public.places;
+create policy "places_insert" on public.places
+  for insert with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "places_update" on public.places;
+create policy "places_update" on public.places
+  for update
+  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
+  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "places_delete" on public.places;
+create policy "places_delete" on public.places
+  for delete using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- ===================== push_subscriptions =====================
+-- Esta política existía en la base pero no en el respaldo.
+drop policy if exists "users update their subscriptions" on public.push_subscriptions;
+create policy "users update their subscriptions" on public.push_subscriptions
+  for update
+  using (profile_id = (select auth.uid()))
+  with check (profile_id = (select auth.uid()));
