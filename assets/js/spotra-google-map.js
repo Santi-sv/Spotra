@@ -10,13 +10,36 @@
   let userMarker = null;
   let userLocation = null;
 
-  /* Mapa realista: estilo estándar de Google. Solo se ocultan comercios, salud e íconos de transporte
-     para que los pines de SPOTRA se lean bien. Parques, agua, calles y edificios quedan como en Google Maps. */
-  const realStyle = [
+  /* Mapa realista: de día el estilo estándar de Google; de noche su versión oscura.
+     En los dos se ocultan comercios, salud e íconos de transporte para que se lean los pines. */
+  const HIDE = [
     { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
     { featureType: 'poi.medical', stylers: [{ visibility: 'off' }] },
     { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }
   ];
+  const nightStyle = [
+    { elementType: 'geometry', stylers: [{ color: '#1f2a24' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#1f2a24' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#8f9a92' }] },
+    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d6ded8' }] },
+    { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#9fb2a4' }] },
+    { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#20402a' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6fae7f' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#36423b' }] },
+    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a231e' }] },
+    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#a3aea6' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#4c5a51' }] },
+    { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a231e' }] },
+    { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#cfd8d2' }] },
+    { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2c3831' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#14242c' }] },
+    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#5f7480' }] }
+  ];
+  const isDark = () => document.documentElement.classList.contains('theme-dark');
+  const mapStyle = () => (isDark() ? nightStyle : []).concat(HIDE);
+  window.addEventListener('spotra-theme', () => {
+    if(map && !cfg().GOOGLE_MAP_ID) map.setOptions({ styles: mapStyle() });
+  });
 
   const isMobile = () => window.matchMedia('(max-width:760px)').matches;
   let entries = [];
@@ -367,7 +390,7 @@
       fullscreenControl: false,
       streetViewControl: false,
       mapTypeControl: false,
-      styles: cfg().GOOGLE_MAP_ID ? undefined : realStyle,
+      styles: cfg().GOOGLE_MAP_ID ? undefined : mapStyle(),
       mapId: cfg().GOOGLE_MAP_ID || undefined
     };
     map = new google.maps.Map(canvas, options);
