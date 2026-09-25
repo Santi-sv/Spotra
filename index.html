@@ -1147,6 +1147,43 @@ html.theme-light body.map-mode .map-sheet-handle{background:rgba(0,0,0,.16)}
 html.theme-light body.map-mode .sheet-close{background:#f1f4f1;border-color:transparent;color:#0b0f0c}
 html.theme-light body.map-mode .spot-info-row,html.theme-light body.map-mode .map-list-item,html.theme-light body.map-mode [data-view="map"] .event-row{background:#f5f7f5;border-color:rgba(0,0,0,.06)}
 html.theme-light body.map-mode [data-view="map"] .ghost-btn{color:#12a52f;border-color:rgba(18,165,47,.5);background:rgba(46,232,77,.08)}
+
+/* ===== Botones de las barras (noche: fondo verde con bordes oscuros · día: invertido) ===== */
+.nav-avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:13px;line-height:1;color:#06130a;background:var(--green-hot);border:2px solid transparent}
+.bottom-nav button.active .nav-avatar{box-shadow:0 0 0 2px currentColor}
+@media(max-width:760px){
+  .bottom-nav{padding:6px}
+  .bottom-nav button{margin:0 3px;border-radius:16px;border:1px solid transparent}
+  html.pwa .bottom-nav{padding:6px 6px env(safe-area-inset-bottom)}
+}
+html.theme-dark .topbar .icon-btn{background:rgba(0,0,0,.32);border:1.5px solid rgba(0,0,0,.6);color:#ffffff;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+html.theme-dark .bottom-nav button.active{background:rgba(0,0,0,.34);border-color:rgba(0,0,0,.6);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+html.theme-dark .nav{background:rgba(0,0,0,.28);border:1.5px solid rgba(0,0,0,.55)}
+html.theme-light body.map-mode .topbar .icon-btn{background:#ffffff;border:1.5px solid rgba(0,0,0,.12);color:#0b0f0c;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+html.theme-light body.map-mode .bottom-nav button.active{background:rgba(46,232,77,.14);border-color:rgba(18,165,47,.38);color:#0e8a28}
+html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
+
+/* ===== Agregar spot: entra en la pantalla del celular sin scroll ===== */
+@media(max-width:760px){
+  .modal{padding:18px 18px calc(16px + env(safe-area-inset-bottom));max-height:94vh;max-height:94dvh}
+  .modal-head h3{font-size:24px}
+  .modal .hint{font-size:12.5px;margin-bottom:10px}
+  [data-form="spot"] .seg{margin-top:0;gap:8px}
+  [data-form="spot"] .seg button{height:40px;border-radius:12px}
+  [data-form="spot"] .form-grid{gap:8px;margin-top:8px}
+  [data-form="spot"] .field{height:46px;border-radius:14px;padding:0 13px}
+  [data-form="spot"] .field svg{width:18px;height:18px;flex-shrink:0}
+  [data-form="spot"] .field input{font-size:15px}
+  [data-form="spot"]>div[style*="margin-top:14px"]{margin-top:10px!important}
+  [data-form="spot"] #spotUseLoc{padding:7px 12px!important;font-size:12.5px!important}
+  [data-form="spot"] .spot-pick-map{height:clamp(130px,22vh,220px)!important;height:clamp(130px,22dvh,220px)!important}
+  [data-form="spot"] .dropzone{padding:12px 14px;margin-top:10px}
+  [data-form="spot"] .dz-prompt{display:flex;align-items:center;justify-content:center;gap:10px}
+  [data-form="spot"] .dropzone svg{width:22px;height:22px;margin:0}
+  [data-form="spot"] .dropzone .dz-preview{height:110px}
+  [data-form="spot"] .dz-prompt br,[data-form="spot"] .dz-prompt b{display:none}
+  [data-form="spot"] [data-submit="spot"]{height:50px!important;margin-top:12px!important}
+}
 /* App instalada (PWA): barra inferior pegada al borde, como app nativa */
 @media(max-width:760px){
   html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1197,7 +1234,6 @@ html.theme-light body.map-mode [data-view="map"] .ghost-btn{color:#12a52f;border
           <div id="notifList"><div style="color:var(--muted);font-size:13px;padding:6px 2px">Sin novedades por ahora.</div></div>
         </div>
       </div>
-      <button class="profile-mini" data-route="profile" aria-label="Abrir perfil"></button>
       <button class="ghost-btn" data-route="signin">Iniciar sesión</button>
       <button class="primary-btn" data-route="signup">Crear cuenta <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
     </div>
@@ -1470,7 +1506,7 @@ html.theme-light body.map-mode [data-view="map"] .ghost-btn{color:#12a52f;border
     <button data-route="events"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>Eventos</button>
     <button data-route="community"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-5 4V5Z"/><path d="M8 9h8M8 12h5"/></svg>Foro</button>
     <button data-route="market"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>Market</button>
-    <button data-route="profile"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Perfil</button>
+    <button data-route="profile"><span class="nav-avatar" data-user-initial aria-hidden="true">S</span>Perfil</button>
   </nav>
   <nav class="bottom-nav cols-4" data-role-nav="admin" aria-label="Navegación admin">
     <button class="active" data-route="admin-approvals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Aprobar</button>
@@ -1501,7 +1537,7 @@ html.theme-light body.map-mode [data-view="map"] .ghost-btn{color:#12a52f;border
 
     <!-- SPOT -->
     <div class="modal-form" data-form="spot">
-      <p class="hint">Tu spot queda <b style="color:#ffd24a">pendiente de aprobación</b> del admin antes de aparecer en el mapa.</p>
+      <p class="hint">Queda <b style="color:#ffd24a">pendiente de aprobación</b> antes de aparecer en el mapa.</p>
       <div class="seg" data-seg="spotType"><button class="active" data-v="Street spot">Street</button><button data-v="Skatepark">Skatepark</button><button data-v="Tienda">Tienda</button></div>
       <div class="form-grid" id="spotForm" style="grid-template-columns:1fr">
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Nombre del spot (ej. Ledges del Buen Pastor)"></div>
@@ -1510,10 +1546,10 @@ html.theme-light body.map-mode [data-view="map"] .ghost-btn{color:#12a52f;border
       </div>
       <div style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px">
-          <span style="color:var(--muted);font-size:13px">Marcá la ubicación exacta tocando el mapa</span>
+          <span style="color:var(--muted);font-size:13px">Tocá el mapa para marcar el lugar</span>
           <button type="button" id="spotUseLoc" style="background:var(--green-hot);color:#06100a;border:0;border-radius:999px;padding:9px 14px;font-weight:800;font-size:13px;white-space:nowrap">Usar mi ubicación</button>
         </div>
-        <div id="spotPickMap" style="height:240px;border-radius:16px;overflow:hidden;background:#0c1014"></div>
+        <div id="spotPickMap" class="spot-pick-map" style="height:240px;border-radius:16px;overflow:hidden;background:#0c1014"></div>
         <input type="hidden" id="spotLat"><input type="hidden" id="spotLng">
       </div>
       <label class="dropzone" id="dzSpot">
@@ -1735,6 +1771,7 @@ function storedUserName(){
 function setUserName(value){
   const first = String(value || 'Santiago').trim().split(/\s+/)[0] || 'Santiago';
   document.querySelectorAll('[data-user-name]').forEach(el => { el.textContent = first; });
+  document.querySelectorAll('[data-user-initial]').forEach(el => { el.textContent = first.charAt(0).toUpperCase(); });
   return first;
 }
 setUserName(storedUserName());
