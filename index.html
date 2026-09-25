@@ -1099,7 +1099,16 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   body.map-mode .spot-detail .cover{height:128px}
   body.map-mode.map-sheet-open .fab,body.map-mode.map-sheet-open .map-list-btn{display:none}
 }
+/* App instalada (PWA): barra inferior pegada al borde, como app nativa */
+@media(max-width:760px){
+  html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+  html.pwa .main{padding-bottom:calc(80px + env(safe-area-inset-bottom))}
+  html.pwa .fab{bottom:calc(66px + env(safe-area-inset-bottom))}
+  html.pwa body.map-mode .map-stage{bottom:calc(62px + env(safe-area-inset-bottom))}
+  html.pwa body.map-mode .map-list-sheet,html.pwa body.map-mode .spot-detail{bottom:calc(66px + env(safe-area-inset-bottom))}
+}
 </style>
+<script>(function(){try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone)document.documentElement.classList.add('pwa');}catch(e){}})();</script>
 <style id="spotra-gate-lock">html.gate-lock body>*:not(.spotra-gate){display:none!important}html.gate-lock,html.gate-lock body{background:#070907!important}</style>
 <script>(function(){var open=false;try{if(sessionStorage.getItem('spotra_session')==='ok')open=true;else if(!localStorage.getItem('spotra_bio_id')&&localStorage.getItem('spotra_access')==='ok')open=true;}catch(e){open=false;}if(!open)document.documentElement.classList.add('gate-lock');})();</script>
 </head>
