@@ -1184,6 +1184,51 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
   [data-form="spot"] .dz-prompt br,[data-form="spot"] .dz-prompt b{display:none}
   [data-form="spot"] [data-submit="spot"]{height:50px!important;margin-top:12px!important}
 }
+.settings-list .admin-only{display:none}
+body[data-is-admin="1"] .settings-list .admin-only{display:flex}
+
+/* ===== Sesiones ===== */
+.map-sessions-pill{position:absolute;left:22px;top:150px;z-index:6;height:36px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#f5f7f4;background:rgba(7,10,8,.94);border:1px solid rgba(46,232,77,.55);box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.map-sessions-pill[hidden]{display:none}
+.map-sessions-pill i{width:9px;height:9px;border-radius:50%;background:#2ee84d;box-shadow:0 0 0 0 rgba(46,232,77,.6);animation:sesPulse 1.8s infinite}
+@keyframes sesPulse{0%{box-shadow:0 0 0 0 rgba(46,232,77,.6)}80%,100%{box-shadow:0 0 0 9px rgba(46,232,77,0)}}
+.map-osm{position:absolute;left:6px;bottom:28px;z-index:5;font-size:10px;line-height:1;padding:3px 5px;border-radius:4px;color:#333;background:rgba(255,255,255,.75);text-decoration:none}
+html.theme-dark .map-osm{color:#dfe6e0;background:rgba(0,0,0,.5)}
+.list-live{min-width:24px;height:24px;border-radius:12px;padding:0 7px;display:grid;place-items:center;background:#2ee84d;color:#06130a;font-size:12px;font-weight:800;flex-shrink:0}
+.ses-head{margin:16px 0 8px}
+.ses-card{border:1px solid rgba(46,232,77,.55);border-radius:18px;padding:12px;margin-top:10px;background:rgba(46,232,77,.05)}
+.ses-top{display:flex;align-items:center;gap:10px}
+.ses-av,.ses-face{border-radius:50%;background:#1c2a20 center/cover no-repeat;display:grid;place-items:center;color:#2ee84d;font-weight:800;flex-shrink:0}
+.ses-av{width:42px;height:42px;border:2px solid #2ee84d;font-size:16px}
+.ses-tx{min-width:0}
+.ses-tx b{display:block;font-size:15px;font-weight:600}
+.ses-name{color:var(--green-hot)}
+.ses-tx small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.ses-note{margin:8px 0 0;font-size:13.5px;color:var(--text);opacity:.85}
+.ses-riders{display:flex;align-items:center;margin:10px 0}
+.ses-face{width:26px;height:26px;border:2px solid #0b100c;font-size:11px;margin-right:-8px}
+.ses-riders small{color:var(--muted);font-size:12.5px;margin-left:14px}
+.ses-riders .ses-face+small,.ses-riders small:first-child{margin-left:14px}
+.ses-riders small:first-child{margin-left:0}
+.ses-btn{width:100%;min-height:44px}
+.ses-end{color:#ff6b6b!important;border-color:rgba(255,107,107,.45)!important;background:rgba(255,107,107,.06)!important}
+.ses-create{width:100%;min-height:44px;margin-top:10px}
+.ses-place{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;border:1px solid rgba(46,232,77,.35);background:rgba(46,232,77,.06);margin-bottom:6px}
+.ses-place svg{width:20px;height:20px;color:var(--green-hot);flex-shrink:0}
+.ses-label{font-size:12px;color:var(--muted);margin:10px 0 6px}
+.ses-times{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ses-times .field,#sesDateWrap,[data-form="session"] .field{height:48px;border-radius:14px}
+[data-form="session"] .seg{margin-top:0}
+[data-form="session"] .seg button{height:40px;border-radius:12px}
+.seg.seg-4{grid-template-columns:repeat(4,1fr)}
+.ses-error{color:#ff6b6b;font-size:13px;min-height:0;margin:8px 0 0}
+.ses-error:empty{display:none}
+@media(max-width:760px){
+  body.map-mode .map-sessions-pill{left:12px;top:120px}
+}
+html.theme-light body.map-mode .map-sessions-pill{background:#ffffff;color:#0b0f0c;border-color:rgba(18,165,47,.5);box-shadow:0 4px 14px rgba(0,0,0,.14)}
+html.theme-light body.map-mode .ses-card{background:rgba(46,232,77,.07);border-color:rgba(18,165,47,.45)}
+html.theme-light body.map-mode .ses-face{border-color:#ffffff}
 /* App instalada (PWA): barra inferior pegada al borde, como app nativa */
 @media(max-width:760px){
   html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1288,9 +1333,11 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
             <button data-map-filter="spot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Spots</button>
             <button data-map-filter="store"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/></svg>Tiendas</button>
           </div>
+          <button type="button" class="map-sessions-pill" id="mapSessionsPill" hidden><i></i><span>Sesiones</span></button>
+          <a class="map-osm" href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap</a>
           <button type="button" class="map-list-btn" id="mapListBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.2" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.2" fill="currentColor" stroke="none"/></svg>Lista</button>
           <div class="map-list-sheet" id="mapListSheet" aria-hidden="true">
-            <div class="map-list-head"><h3>Lugares</h3><button type="button" class="sheet-close" id="mapListClose" aria-label="Cerrar lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+            <div class="map-list-head"><h3 id="mapListTitle">Lugares en esta zona</h3><button type="button" class="sheet-close" id="mapListClose" aria-label="Cerrar lista"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
             <div id="mapListItems"></div>
           </div>
         </div>
@@ -1311,6 +1358,7 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
             <a class="spot-info-row" id="spotWebRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span id="spotWeb"></span></a>
             <a class="spot-info-row" id="spotIgRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg><span id="spotIg"></span></a>
           </div>
+          <div id="spotSessions"></div>
           <div class="section-head" id="spotEventsHead" style="display:none"><h3>Próximos eventos</h3></div>
           <div id="spotEvents"></div>
           <div class="spot-actions">
@@ -1512,6 +1560,7 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
     <button class="active" data-route="admin-approvals"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Aprobar</button>
     <button data-route="admin-users"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="2.6"/><path d="M3 19a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.2"/></svg>Usuarios</button>
     <button data-route="admin-security"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.5 10.5V9a1.5 1.5 0 0 1 3 0v1.5"/></svg>Seguridad</button>
+    <button data-open-modal="adminSettings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Ajustes</button>
   </nav>
 </div>
 
@@ -1529,6 +1578,7 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
       <p class="hint">¿Qué querés sumar a la comunidad?</p>
       <div class="create-menu">
         <button class="create-opt" data-open-modal="post"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg></div><div><b>Publicación del foro</b><span>Compartí una sesión, un clip, una duda o un spot.</span></div></button>
+        <button class="create-opt" data-ses-menu><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M17 8v6M14 11h6"/></svg></div><div><b>Crear sesión</b><span>Avisá dónde y cuándo vas a rodar</span></div></button>
         <button class="create-opt" data-open-modal="spot"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></div><div><b>Spot o skatepark</b><span>Sumalo al mapa colaborativo. Pasa por aprobación.</span></div></button>
         <button class="create-opt" data-open-modal="event"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div><b>Competencia o evento</b><span>Organizá una fecha en un spot existente.</span></div></button>
         <button class="create-opt" data-open-modal="product"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg></div><div><b>Producto usado</b><span>Vendé lo que ya no uses en el marketplace.</span></div></button>
@@ -1644,6 +1694,32 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
 
 
     <!-- PERFIL / CONFIG -->
+    <div class="modal-form" data-form="session">
+      <p class="hint">Se publica <b style="color:var(--green-hot)">al instante</b> y se ve en el mapa hasta que termina.</p>
+      <div class="ses-place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><b id="sesPlaceName">Spot</b></div>
+      <input type="hidden" id="sesPlaceId">
+      <div class="ses-label">Día</div>
+      <div class="seg" id="sesDay"><button class="active" data-v="0">Hoy</button><button data-v="1">Mañana</button><button data-v="other">Otro día</button></div>
+      <div class="field" id="sesDateWrap" style="display:none;margin-top:8px"><input type="date" id="sesDate" aria-label="Fecha"></div>
+      <div class="ses-times">
+        <div><div class="ses-label">Desde</div><div class="field"><input type="time" id="sesFrom" aria-label="Desde"></div></div>
+        <div><div class="ses-label">Hasta</div><div class="field"><input type="time" id="sesTo" aria-label="Hasta"></div></div>
+      </div>
+      <div class="ses-label">Disciplina</div>
+      <div class="seg seg-4" id="sesDisc"><button class="active" data-v="skate">Skate</button><button data-v="bmx">BMX</button><button data-v="rollers">Rollers</button><button data-v="todas">Todas</button></div>
+      <div class="field" style="margin-top:10px"><input id="sesNote" maxlength="140" placeholder="Nota (opcional): traigo cajón"></div>
+      <p class="ses-error" id="sesError"></p>
+      <button type="button" class="primary-btn" id="sesSubmit" style="width:100%;margin-top:10px;height:52px">Publicar sesión</button>
+    </div>
+    <div class="modal-form" data-form="adminSettings">
+      <p class="hint">Opciones de tu cuenta de administrador.</p>
+      <div class="settings-list">
+        <button data-role-set="rider" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>Cambiar a cuenta rider</span><b>›</b></button>
+        <button data-route="admin-waitlist" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Lista de espera de la landing</span><b>›</b></button>
+        <button data-route="admin-security" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/></svg>Seguridad</span><b>›</b></button>
+        <button data-logout><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-2"/><path d="M19 12H9M16 9l3 3-3 3"/></svg>Cerrar sesión</span><b>›</b></button>
+      </div>
+    </div>
     <div class="modal-form" data-form="settings">
       <p class="hint">Gestioná tu perfil y la seguridad de tu cuenta desde un panel privado.</p>
       <div class="settings-list">
@@ -1651,6 +1727,7 @@ html.theme-light body.map-mode .nav-avatar{background:#0b0f0c;color:#2ee84d}
           <button id="pushBtn"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span data-push-label>Activar notificaciones</span></span><b>›</b></button>
         </div>
         <div id="pushHint" style="display:none;color:var(--muted);font-size:13px;line-height:1.5;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,210,74,.3);background:rgba(255,210,74,.06)"></div>
+        <button class="admin-only" data-role-set="admin" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Cambiar a cuenta admin</span><b>›</b></button>
         <button data-open-modal="editProfile"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>Nombre y apellido</span><b>›</b></button>
         <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
         <button data-open-modal="password"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Cambiar contraseña</span><b>›</b></button>
@@ -1711,8 +1788,8 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="assets/js/spotra-backend.js?v=17"></script>
-<script src="assets/js/spotra-google-map.js?v=13"></script>
+<script src="assets/js/spotra-backend.js?v=18"></script>
+<script src="assets/js/spotra-google-map.js?v=14"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'map', brand:'brand-home', admin:'admin-approvals' };
@@ -1961,7 +2038,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -2139,6 +2216,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-admin.js?v=14"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
+<script src="assets/js/spotra-sessions.js?v=1"></script>
 <script src="assets/js/spotra-market.js?v=1"></script>
 <script src="assets/js/spotra-forum.js?v=1"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
