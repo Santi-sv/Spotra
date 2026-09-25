@@ -1292,3 +1292,9 @@ create policy "session_participants_delete" on public.session_participants
     profile_id = (select auth.uid())
     or exists (select 1 from public.sessions s where s.id = session_id and s.created_by = (select auth.uid()))
     or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+
+-- ---------- Lugares importados de OpenStreetMap (25/09/2026) ----------
+-- Datos de Brasil y Argentina: ver osm-brasil-argentina.sql (© colaboradores de OpenStreetMap, ODbL).
+alter table public.places add column if not exists osm_id text;
+create unique index if not exists places_osm_id_key on public.places (osm_id);
