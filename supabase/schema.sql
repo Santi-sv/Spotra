@@ -1124,3 +1124,171 @@ alter table public.admin_audit_log  enable row level security;
 revoke all on table public.admin_passkeys   from anon, authenticated;
 revoke all on table public.admin_challenges from anon, authenticated;
 revoke all on table public.admin_audit_log  from anon, authenticated;
+
+
+-- =====================================================================
+-- SPOTRA · Sesiones de riders (paso 2)
+-- Un rider publica que va a rodar en un spot (día, hora de inicio y fin).
+-- Se ve en el mapa hasta que termina. Otros riders se suman.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- ---------- Tablas ----------
+create table if not exists public.sessions (
+  id uuid primary key default gen_random_uuid(),
+  place_id uuid not null references public.places(id) on delete cascade,
+  created_by uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  username text not null,
+  avatar_url text,
+  discipline text not null default 'todas'
+    check (discipline in ('todas','skate','bmx','rollers')),
+  note text check (note is null or char_length(note) <= 140),
+  starts_at timestamptz not null,
+  ends_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  constraint sessions_time_check
+    check (ends_at > starts_at and ends_at <= starts_at + interval '8 hours')
+);
+
+create table if not exists public.session_participants (
+  session_id uuid not null references public.sessions(id) on delete cascade,
+  profile_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  username text not null,
+  avatar_url text,
+  created_at timestamptz not null default now(),
+  primary key (session_id, profile_id)
+);
+
+create index if not exists sessions_ends_at_idx on public.sessions (ends_at);
+create index if not exists sessions_place_id_idx on public.sessions (place_id);
+create index if not exists sessions_created_by_idx on public.sessions (created_by);
+create index if not exists session_participants_profile_id_idx on public.session_participants (profile_id);
+
+-- ---------- Reglas al crear una sesión ----------
+-- El autor, usuario y avatar los pone el servidor (no se pueden falsear desde el celular).
+create or replace function public.sessions_before_insert()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_username text;
+  v_avatar text;
+  v_active int;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  new.created_by := auth.uid();
+  new.created_at := now();
+
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)), p.avatar_url
+    into v_username, v_avatar
+    from public.profiles p where p.id = auth.uid();
+  if v_username is null then raise exception 'Completá tu perfil antes de crear una sesión.'; end if;
+  new.username := v_username;
+  new.avatar_url := v_avatar;
+
+  if not exists (select 1 from public.places pl where pl.id = new.place_id and pl.status = 'approved') then
+    raise exception 'El spot no existe o no está aprobado.';
+  end if;
+  if new.starts_at < now() - interval '15 minutes' then raise exception 'La sesión no puede empezar en el pasado.'; end if;
+  if new.starts_at > now() + interval '7 days' then raise exception 'Solo podés crear sesiones hasta 7 días adelante.'; end if;
+
+  select count(*) into v_active from public.sessions s
+    where s.created_by = auth.uid() and s.ends_at > now();
+  if v_active >= 3 then raise exception 'Ya tenés 3 sesiones activas. Esperá a que termine alguna.'; end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists sessions_before_insert on public.sessions;
+create trigger sessions_before_insert
+  before insert on public.sessions
+  for each row execute function public.sessions_before_insert();
+
+-- ---------- Reglas al sumarse ----------
+create or replace function public.session_participants_before_insert()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_username text;
+  v_avatar text;
+  v_owner uuid;
+  v_ends timestamptz;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  new.profile_id := auth.uid();
+  new.created_at := now();
+
+  select s.created_by, s.ends_at into v_owner, v_ends
+    from public.sessions s where s.id = new.session_id;
+  if v_owner is null then raise exception 'La sesión no existe.'; end if;
+  if v_ends <= now() then raise exception 'Esta sesión ya terminó.'; end if;
+  if v_owner = auth.uid() then raise exception 'Ya sos el organizador de esta sesión.'; end if;
+
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)), p.avatar_url
+    into v_username, v_avatar
+    from public.profiles p where p.id = auth.uid();
+  if v_username is null then raise exception 'Completá tu perfil antes de sumarte.'; end if;
+  new.username := v_username;
+  new.avatar_url := v_avatar;
+  return new;
+end;
+$$;
+
+drop trigger if exists session_participants_before_insert on public.session_participants;
+create trigger session_participants_before_insert
+  before insert on public.session_participants
+  for each row execute function public.session_participants_before_insert();
+
+
+-- ---------- Seguridad (RLS) ----------
+-- Solo riders logueados ven sesiones, y solo las que no terminaron. Nunca la gente sin cuenta.
+alter table public.sessions enable row level security;
+alter table public.session_participants enable row level security;
+revoke all on table public.sessions from anon;
+revoke all on table public.session_participants from anon;
+revoke update on table public.sessions from authenticated;
+revoke update on table public.session_participants from authenticated;
+
+drop policy if exists "sessions_select" on public.sessions;
+create policy "sessions_select" on public.sessions
+  for select using (
+    ((select auth.role()) = 'authenticated' and ends_at > now())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "sessions_insert" on public.sessions;
+create policy "sessions_insert" on public.sessions
+  for insert with check (
+    (select auth.role()) = 'authenticated' and created_by = (select auth.uid()));
+
+-- el autor la borra para terminarla antes; el admin modera
+drop policy if exists "sessions_delete" on public.sessions;
+create policy "sessions_delete" on public.sessions
+  for delete using (
+    created_by = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "session_participants_select" on public.session_participants;
+create policy "session_participants_select" on public.session_participants
+  for select using (
+    ((select auth.role()) = 'authenticated'
+      and exists (select 1 from public.sessions s where s.id = session_id and s.ends_at > now()))
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "session_participants_insert" on public.session_participants;
+create policy "session_participants_insert" on public.session_participants
+  for insert with check (
+    (select auth.role()) = 'authenticated' and profile_id = (select auth.uid()));
+
+-- cada uno se baja solo; el organizador puede sacar a alguien; el admin modera
+drop policy if exists "session_participants_delete" on public.session_participants;
+create policy "session_participants_delete" on public.session_participants
+  for delete using (
+    profile_id = (select auth.uid())
+    or exists (select 1 from public.sessions s where s.id = session_id and s.created_by = (select auth.uid()))
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
