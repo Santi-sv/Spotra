@@ -10,18 +10,16 @@
   let userMarker = null;
   let userLocation = null;
 
-  const darkStyle = [
-    { elementType: 'geometry', stylers: [{ color: '#061009' }] },
-    { elementType: 'labels.text.fill', stylers: [{ color: '#aeb8ae' }] },
-    { elementType: 'labels.text.stroke', stylers: [{ color: '#061009' }] },
-    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d7ded6' }] },
-    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#172018' }] },
-    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0a0f0b' }] },
-    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#8f998f' }] },
-    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#08140d' }] }
+  /* Mapa realista: estilo estándar de Google. Solo se ocultan comercios, salud e íconos de transporte
+     para que los pines de SPOTRA se lean bien. Parques, agua, calles y edificios quedan como en Google Maps. */
+  const realStyle = [
+    { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+    { featureType: 'poi.medical', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }
   ];
+
+  const isMobile = () => window.matchMedia('(max-width:760px)').matches;
+  let entries = [];
 
   function loadGoogleMaps(){
     const key = cfg().GOOGLE_MAPS_API_KEY;
@@ -57,33 +55,120 @@
     return canvas;
   }
 
-  /* Pines estilo Waze: cada tipo tiene su icono para identificarlo de un vistazo.
-     skatepark = rampa (blanco), spot = escaleras (gris), tienda = local (verde), evento = calendario (lima).
-     El seleccionado se agranda y suma anillo verde. Sin glow pesado para no ensuciar el mapa. */
+  /* Pines redondos: círculo negro con borde blanco y el ícono del tipo.
+     skatepark = rampa (verde), spot = escaleras (blanco), tienda = local (gris), evento = calendario (lima).
+     El seleccionado se agranda y el borde pasa a verde. */
+  const PIN_COLORS = { skatepark: '#2ee84d', street_spot: '#ffffff', store: '#b9c4bb', event_venue: '#c8ff3c' };
+  const PIN_GLYPHS = {
+    skatepark: '<path d="M4 16h16M5 16c2-7 5-7 7-2 2 4 5 4 7-2"/>',
+    street_spot: '<path d="M4 19h4v-4h4v-4h4V7h4"/>',
+    store: '<path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/>',
+    event_venue: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>'
+  };
+
+  function pinGlyph(type){
+    const color = PIN_COLORS[type] || '#ffffff';
+    const glyph = PIN_GLYPHS[type] || PIN_GLYPHS.street_spot;
+    return { color, glyph };
+  }
+
   function markerIcon(type, selected){
-    const colors = {
-      store: '#2ee84d',
-      skatepark: '#ffffff',
-      street_spot: '#c3cfc6',
-      event_venue: '#9cff48'
-    };
-    const glyphs = {
-      skatepark: '<path d="M4 16h16M5 16c2-7 5-7 7-2 2 4 5 4 7-2"/>',
-      street_spot: '<path d="M4 19h4v-4h4v-4h4V7h4"/>',
-      store: '<path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/>',
-      event_venue: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>'
-    };
-    const color = colors[type] || '#c3cfc6';
-    const glyph = glyphs[type] || glyphs.street_spot;
-    const ring = selected ? '<path fill="none" stroke="#2ee84d" stroke-width="4" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/>' : '';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="68" viewBox="0 0 52 68"><path fill="${color}" stroke="#061009" stroke-width="1.5" d="M26 2C13.9 2 4 11.8 4 23.9 4 41.4 26 66 26 66s22-24.6 22-42.1C48 11.8 38.1 2 26 2Z"/>${ring}<circle cx="26" cy="24" r="13.5" fill="#061009"/><g transform="translate(13.8,11.8) scale(1.02)" fill="none" stroke="${color}" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">${glyph}</g></svg>`;
-    const w = selected ? 50 : 38;
-    const h = selected ? 65 : 50;
+    const { color, glyph } = pinGlyph(type);
+    const border = selected ? '#2ee84d' : '#ffffff';
+    const bw = selected ? 4 : 3;
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52"><circle cx="26" cy="28" r="22" fill="rgba(0,0,0,.28)"/><circle cx="26" cy="26" r="22" fill="#0b0f0c" stroke="${border}" stroke-width="${bw}"/><g transform="translate(14,14)" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</g></svg>`;
+    const size = selected ? 54 : 40;
     return {
       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: new google.maps.Size(w, h),
-      anchor: new google.maps.Point(w / 2, h - 2)
+      scaledSize: new google.maps.Size(size, size),
+      anchor: new google.maps.Point(size / 2, size / 2)
     };
+  }
+
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  /* ---------- hojas (ficha y lista) ---------- */
+  function syncSheets(){
+    const d = document.getElementById('spotSheet');
+    const l = document.getElementById('mapListSheet');
+    const open = !!((d && d.classList.contains('open')) || (l && l.classList.contains('open')));
+    document.body.classList.toggle('map-sheet-open', open);
+  }
+
+  function openDetail(){
+    closeList();
+    const sheet = document.getElementById('spotSheet');
+    if(!sheet) return;
+    sheet.classList.add('open');
+    sheet.scrollTop = 0;
+    syncSheets();
+  }
+
+  function closeDetail(){
+    const sheet = document.getElementById('spotSheet');
+    if(sheet) sheet.classList.remove('open');
+    if(isMobile()) selectMarker(null);
+    syncSheets();
+  }
+
+  function closeList(){
+    const list = document.getElementById('mapListSheet');
+    if(list){ list.classList.remove('open'); list.setAttribute('aria-hidden', 'true'); }
+    syncSheets();
+  }
+
+  function renderList(){
+    const box = document.getElementById('mapListItems');
+    if(!box) return;
+    if(!entries.length){
+      box.innerHTML = '<div class="map-list-empty">No hay lugares para este filtro todavía.</div>';
+      return;
+    }
+    const rows = entries.map((e, i) => {
+      const d = userLocation ? distanceMeters(userLocation, { lat: e.place.lat, lng: e.place.lng }) : null;
+      return { i, e, d };
+    });
+    if(userLocation) rows.sort((x, y) => x.d - y.d);
+    else rows.sort((x, y) => String(x.e.place.name).localeCompare(String(y.e.place.name), 'es'));
+    box.innerHTML = rows.slice(0, 60).map(r => {
+      const p = r.e.place;
+      const { color, glyph } = pinGlyph(p.type);
+      const label = p.label || (window.SpotraBackend ? window.SpotraBackend.labelForType(p.type) : '');
+      const sub = [label, p.meta || p.address || ''].filter(Boolean).join(' · ');
+      const dist = r.d != null ? formatDistance(r.d).replace(/^a /, '') : '';
+      return `<button type="button" class="map-list-item" data-list-idx="${r.i}">`
+        + `<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span>`
+        + `<span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span>`
+        + (dist ? `<em>${esc(dist)}</em>` : '')
+        + '</button>';
+    }).join('');
+  }
+
+  function openList(){
+    const list = document.getElementById('mapListSheet');
+    if(!list) return;
+    const sheet = document.getElementById('spotSheet');
+    if(sheet) sheet.classList.remove('open');
+    renderList();
+    list.classList.add('open');
+    list.setAttribute('aria-hidden', 'false');
+    list.scrollTop = 0;
+    syncSheets();
+  }
+
+  function focusEntry(idx){
+    const e = entries[idx];
+    if(!e) return;
+    closeList();
+    selectMarker(e.marker);
+    if(map){
+      map.panTo(e.marker.getPosition());
+      if(map.getZoom() < 14) map.setZoom(15);
+    }
+    updateDetail(e.place);
+    openDetail();
   }
 
   function selectMarker(marker){
@@ -199,6 +284,7 @@
     if(!map || !window.SpotraBackend) return;
     const places = await window.SpotraBackend.listPlaces({ type: activeType });
     clearMarkers();
+    entries = [];
     const bounds = new google.maps.LatLngBounds();
     places.forEach(place => {
       if(!Number.isFinite(place.lat) || !Number.isFinite(place.lng)) return;
@@ -209,16 +295,21 @@
         icon: markerIcon(place.type, false)
       });
       marker.__spotraType = place.type;
-      marker.addListener('click', () => { selectMarker(marker); map.panTo(marker.getPosition()); updateDetail(place); });
+      marker.addListener('click', () => { selectMarker(marker); map.panTo(marker.getPosition()); updateDetail(place); openDetail(); });
       markers.push(marker);
+      entries.push({ place, marker });
       bounds.extend(marker.getPosition());
     });
     selectedMarker = null;
-    if(places[0]){
-      if(markers[0]) selectMarker(markers[0]);
-      updateDetail(places[0]);
+    // en compu la ficha lateral siempre se ve: arranca con el primer lugar. En el celular espera a que toques un pin.
+    if(entries[0] && !isMobile()){
+      selectMarker(entries[0].marker);
+      updateDetail(entries[0].place);
     }
-    if(markers.length > 1) map.fitBounds(bounds, 64);
+    const list = document.getElementById('mapListSheet');
+    if(list && list.classList.contains('open')) renderList();
+    const pad = isMobile() ? { top: 130, right: 40, bottom: 80, left: 40 } : 64;
+    if(markers.length > 1) map.fitBounds(bounds, pad);
     else if(markers.length === 1) {
       map.setCenter(markers[0].getPosition());
       map.setZoom(14);
@@ -251,7 +342,9 @@
       };
       map.panTo(loc);
       map.setZoom(15);
+      selectMarker(null);
       updateDetail(place);
+      openDetail();
     });
   }
 
@@ -268,18 +361,19 @@
       center: cfg().DEFAULT_CENTER || { lat: -34.9011, lng: -56.1645 },
       zoom: cfg().DEFAULT_ZOOM || 12,
       disableDefaultUI: true,
-      zoomControl: true,
+      zoomControl: !isMobile(),
       gestureHandling: 'greedy',
       clickableIcons: false,
       fullscreenControl: false,
       streetViewControl: false,
       mapTypeControl: false,
-      styles: cfg().GOOGLE_MAP_ID ? undefined : darkStyle,
+      styles: cfg().GOOGLE_MAP_ID ? undefined : realStyle,
       mapId: cfg().GOOGLE_MAP_ID || undefined
     };
     map = new google.maps.Map(canvas, options);
     canvas.closest('.map-stage')?.classList.add('google-live');
     initialized = true;
+    map.addListener('click', () => { closeList(); if(isMobile()) closeDetail(); });
     setupSearch();
     addLocateControl();
     await refresh(activeType);
@@ -314,6 +408,8 @@
       map.panTo(ll);
       map.setZoom(15);
       if(currentDetail) updateDetail(currentDetail);
+      const list = document.getElementById('mapListSheet');
+      if(list && list.classList.contains('open')) renderList();
     }, () => {
       if(btn) btn.classList.remove('loading');
       if(window.toast) window.toast('No pudimos obtener tu ubicación. Revisá los permisos.');
@@ -339,6 +435,11 @@
   }
 
   document.addEventListener('click', event => {
+    if(event.target.closest('#mapListBtn')){ event.preventDefault(); openList(); return; }
+    if(event.target.closest('#mapListClose')){ event.preventDefault(); closeList(); return; }
+    if(event.target.closest('#spotSheetClose')){ event.preventDefault(); closeDetail(); return; }
+    const item = event.target.closest('[data-list-idx]');
+    if(item){ event.preventDefault(); focusEntry(parseInt(item.dataset.listIdx, 10)); return; }
     const directions = event.target.closest('#spotDirectionsBtn');
     if(directions && directions.dataset.directions){
       event.preventDefault();
