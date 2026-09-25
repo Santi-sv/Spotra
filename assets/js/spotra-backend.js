@@ -165,6 +165,7 @@
       lat,
       lng,
       googlePlaceId: row.google_place_id || row.googlePlaceId || '',
+      source: row.source || '',
       imageUrl: row.image_url || row.imageUrl || 'assets/banners/banner-skatepark-4.webp',
       rating: row.rating,
       description: row.description || '',
@@ -212,16 +213,20 @@
     const type = normalizeType(options.type || 'all');
     const db = await client();
     if(db){
-      let query = db
-        .from('places')
-        .select('id, google_place_id, type, name, description, city, country_code, address, latitude, longitude, image_url, rating, contact_phone, website, instagram, updated_at')
-        .eq('status', 'approved')
-        .order('updated_at', { ascending: false })
-        .limit(120);
-      if(type !== 'all') query = query.eq('type', type);
-      const { data, error } = await query;
-      if(!error && Array.isArray(data)) return data.map(normalizePlace);
-      console.warn('[SPOTRA] Supabase places fallback:', error);
+      // Trae todos los lugares aprobados en tandas de 1000 (Supabase devuelve hasta 1000 por pedido).
+      const cols = 'id, google_place_id, type, source, name, description, city, country_code, address, latitude, longitude, image_url, rating, contact_phone, website, instagram';
+      const rows = [];
+      let failed = null;
+      for(let from = 0; from < 10000; from += 1000){
+        let query = db.from('places').select(cols).eq('status', 'approved').order('id', { ascending: true }).range(from, from + 999);
+        if(type !== 'all') query = query.eq('type', type);
+        const { data, error } = await query;
+        if(error){ failed = error; break; }
+        rows.push(...(data || []));
+        if(!data || data.length < 1000) break;
+      }
+      if(!failed) return rows.map(normalizePlace);
+      console.warn('[SPOTRA] Supabase places fallback:', failed);
     }
     return seedPlaces.filter(place => type === 'all' || place.type === type).map(normalizePlace);
   }
