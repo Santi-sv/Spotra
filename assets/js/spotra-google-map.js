@@ -41,6 +41,12 @@
     if(map && !cfg().GOOGLE_MAP_ID) map.setOptions({ styles: mapStyle() });
   });
 
+  // idioma del mapa: el elegido en SPOTRA (clave spotra_lang, compartida con la landing)
+  function mapsLang(){
+    let v = '';
+    try { v = (localStorage.getItem('spotra_lang') || navigator.language || 'es').toLowerCase(); } catch(e){ v = 'es'; }
+    return v.startsWith('pt') ? 'pt-BR' : v.startsWith('en') ? 'en' : 'es';
+  }
   const isMobile = () => window.matchMedia('(max-width:760px)').matches;
   let entries = [];
 
@@ -52,7 +58,7 @@
     window.__spotraGoogleLoading = new Promise((resolve, reject) => {
       window.__spotraGoogleReady = () => resolve(true);
       const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&libraries=places&callback=__spotraGoogleReady`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&language=${encodeURIComponent(mapsLang())}&callback=__spotraGoogleReady`;
       script.async = true;
       script.defer = true;
       script.onerror = reject;
@@ -433,37 +439,127 @@
     if(idx >= 0) focusEntry(idx);
   }
 
+  /* ---------- buscador ----------
+     Busca primero en los lugares de SPOTRA (instantáneo y gratis). Para ciudades y direcciones
+     usa OpenStreetMap (Nominatim), solo cuando el rider lo pide (Enter o "Buscar en el mapa"). */
+  const fold = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let searchTimer = null;
+  function tr(t){ return window.SpotraI18n ? window.SpotraI18n.t(t) : t; }
+
+  function localMatches(q){
+    const words = fold(q).split(/\s+/).filter(Boolean);
+    if(!words.length || !allPlaces) return [];
+    const out = [];
+    for(const p of allPlaces){
+      const name = fold(p.name), hay = name + ' ' + fold(p.city) + ' ' + fold(p.address);
+      if(!words.every(w => hay.includes(w))) continue;
+      const score = name.startsWith(words[0]) ? 0 : words.every(w => name.includes(w)) ? 1 : 2;
+      out.push({ p, score });
+      if(out.length > 400) break;
+    }
+    out.sort((x, y) => x.score - y.score || String(x.p.name).localeCompare(String(y.p.name)));
+    return out.slice(0, 8).map(o => o.p);
+  }
+
+  function resultsBox(){ return document.getElementById('mapSearchResults'); }
+  function closeSearch(){ const r = resultsBox(); if(r){ r.innerHTML = ''; r.hidden = true; } }
+
+  function renderSearch(q, geo){
+    const box = resultsBox();
+    if(!box) return;
+    const local = localMatches(q);
+    let html = '';
+    local.forEach(p => {
+      const { color, glyph } = pinGlyph(p.type);
+      const sub = [p.city, p.countryCode || p.country_code].filter(Boolean).join(' · ');
+      html += `<button type="button" class="msr-item" data-search-place="${esc(p.id)}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span><span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span></button>`;
+    });
+    if(geo === 'loading') html += `<div class="msr-note">${esc(tr('Buscando...'))}</div>`;
+    else if(Array.isArray(geo)){
+      if(!geo.length) html += `<div class="msr-note">${esc(tr('No encontramos ese lugar.'))}</div>`;
+      geo.forEach((g, i) => {
+        html += `<button type="button" class="msr-item msr-geo" data-search-geo="${i}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></span><span class="tx"><b>${esc(g.name)}</b><small>${esc(g.sub)}</small></span></button>`;
+      });
+    } else {
+      html += `<button type="button" class="msr-item msr-more" data-search-geo-go><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span><span class="tx"><b>${esc(tr('Buscar ciudad o dirección'))}</b><small>«${esc(q)}»</small></span></button>`;
+    }
+    box.innerHTML = html;
+    box.hidden = false;
+  }
+
+  let geoResults = [];
+  async function geoSearch(q){
+    renderSearch(q, 'loading');
+    try {
+      let lang = 'es';
+      try { lang = mapsLang(); } catch(e){}
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=' + encodeURIComponent(lang) + '&q=' + encodeURIComponent(q);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = res.ok ? await res.json() : [];
+      geoResults = (data || []).map(d => {
+        const parts = String(d.display_name || '').split(', ');
+        return { name: parts[0] || d.name || q, sub: parts.slice(1, 4).join(', '), lat: parseFloat(d.lat), lng: parseFloat(d.lon), type: d.addresstype || d.type || '' };
+      }).filter(g => Number.isFinite(g.lat) && Number.isFinite(g.lng));
+    } catch(e){ geoResults = []; }
+    const input = document.getElementById('mapSearchInput');
+    if(input && input.value.trim() === q) renderSearch(q, geoResults);
+  }
+
+  function goToPlace(id){
+    closeSearch();
+    const input = document.getElementById('mapSearchInput');
+    if(input) input.blur();
+    let idx = entries.findIndex(e => e.place.id === id);
+    if(idx < 0 && activeType !== 'all'){
+      document.querySelectorAll('[data-map-filter]').forEach(b => b.classList.toggle('active', b.dataset.mapFilter === 'all'));
+      refresh('all').then(() => { const i = entries.findIndex(e => e.place.id === id); if(i >= 0) focusEntry(i); });
+      return;
+    }
+    if(idx >= 0) focusEntry(idx);
+  }
+
+  function goToGeo(i){
+    const g = geoResults[i];
+    if(!g || !map) return;
+    closeSearch();
+    const input = document.getElementById('mapSearchInput');
+    if(input) input.blur();
+    map.panTo({ lat: g.lat, lng: g.lng });
+    const city = /city|town|village|municipality|state|county|suburb|neighbourhood/.test(g.type);
+    map.setZoom(city ? 13 : 16);
+  }
+
   function setupSearch(){
     const input = document.getElementById('mapSearchInput');
-    if(!input || searchBox || !(google.maps.places && google.maps.places.SearchBox)) return;
-    searchBox = new google.maps.places.SearchBox(input);
-    map.addListener('bounds_changed', () => searchBox.setBounds(map.getBounds()));
-    searchBox.addListener('places_changed', () => {
-      const places = searchBox.getPlaces();
-      const result = places && places[0];
-      if(!result || !result.geometry || !result.geometry.location) return;
-      const loc = result.geometry.location;
-      const place = {
-        id: result.place_id,
-        googlePlaceId: result.place_id,
-        isGoogleResult: true,
-        type: activeType,
-        label: window.SpotraBackend.labelForType(activeType),
-        name: result.name,
-        meta: result.formatted_address || result.vicinity || 'Resultado de Google Places',
-        address: result.formatted_address || result.vicinity || '',
-        lat: loc.lat(),
-        lng: loc.lng(),
-        imageUrl: 'assets/banners/banner-skatepark-4.webp',
-        stats: [result.rating ? String(result.rating) : '--', 'Google', 'OK']
-      };
-      map.panTo(loc);
-      map.setZoom(15);
-      selectMarker(null);
-      updateDetail(place);
-      openDetail();
+    if(!input || searchBox) return;
+    searchBox = true;
+    input.setAttribute('enterkeyhint', 'search');
+    input.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = input.value.trim();
+      if(q.length < 2){ closeSearch(); return; }
+      searchTimer = setTimeout(() => renderSearch(q), 150);
+    });
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Escape'){ closeSearch(); input.blur(); return; }
+      if(e.key !== 'Enter') return;
+      e.preventDefault();
+      const q = input.value.trim();
+      if(q.length < 2) return;
+      const local = localMatches(q);
+      if(local.length) goToPlace(local[0].id);
+      else geoSearch(q);
+    });
+    document.addEventListener('click', e => {
+      const t = e.target;
+      let el;
+      if((el = t.closest('[data-search-place]'))){ e.preventDefault(); goToPlace(el.dataset.searchPlace); return; }
+      if((el = t.closest('[data-search-geo]'))){ e.preventDefault(); goToGeo(parseInt(el.dataset.searchGeo, 10)); return; }
+      if(t.closest('[data-search-geo-go]')){ e.preventDefault(); geoSearch(input.value.trim()); return; }
+      if(!t.closest('.map-tools')) closeSearch();
     });
   }
+
 
   async function init(){
     if(initialized && map){
