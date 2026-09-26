@@ -1395,6 +1395,14 @@ html.theme-light body:not(.auth-mode) .mkt-seg.tabs button.active{background:#2e
 .rep-actions button{min-height:34px;padding:0 10px;font-size:12px}
 html.theme-light body:not(.auth-mode) .rep-reasons button{background:#f5f7f5;border-color:rgba(0,0,0,.08)}
 html.theme-light body:not(.auth-mode) .rep-reasons button.active{background:rgba(46,232,77,.16);border-color:rgba(18,165,47,.55);color:#0e8a28}
+/* ===== Seguir riders ===== */
+.follow-btn{display:inline-flex;align-items:center;height:26px;padding:0 11px;margin-left:6px;border-radius:999px;font-size:12px;font-weight:800;vertical-align:middle;color:#06130a;background:#2ee84d;border:1px solid #2ee84d;cursor:pointer}
+.follow-btn[hidden]{display:none}
+.follow-btn.on{background:transparent;color:var(--green-hot);border-color:rgba(46,232,77,.55)}
+.ses-top .follow-btn{margin-left:auto;flex-shrink:0}
+.follow-counts{display:flex;gap:16px;margin-top:10px}
+.follow-counts button{background:none;border:0;padding:0;color:var(--muted);font-size:14px;cursor:pointer}
+.follow-counts b{color:var(--text);font-size:16px}
 /* App instalada (PWA): barra inferior pegada al borde, como app nativa */
 @media(max-width:760px){
   html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1604,6 +1612,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
               <p data-profile-handle></p>
               <div class="profile-meta"><span data-profile-discipline></span><span data-profile-location></span></div>
               <p class="profile-bio" data-profile-bio style="margin-top:8px;color:var(--muted);font-size:14px"></p>
+              <div class="follow-counts"><button type="button" data-follow-list="followers"><b id="followersCount">0</b> <span>Seguidores</span></button><button type="button" data-follow-list="following"><b id="followingCount">0</b> <span>Siguiendo</span></button></div>
             </div>
           </div>
           <div class="social-grid">
@@ -1887,6 +1896,9 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <p class="ses-error" id="reportError"></p>
       <button type="button" class="primary-btn" id="reportSend" style="width:100%;margin-top:12px;height:52px">Enviar reporte</button>
       <p class="theme-hint" style="margin-top:10px">El admin lo revisa. La persona no sabe quién la reportó.</p>
+    </div>
+    <div class="modal-form" data-form="follows">
+      <div id="followList"></div>
     </div>
     <div class="modal-form" data-form="blocked">
       <p class="hint">No ves nada de lo que publican. Ellos no se enteran.</p>
@@ -2250,7 +2262,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -2424,15 +2436,16 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=2"></script>
+<script src="assets/js/spotra-i18n.js?v=3"></script>
+<script src="assets/js/spotra-follow.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
 <script src="assets/js/spotra-admin.js?v=14"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-safety.js?v=1"></script>
-<script src="assets/js/spotra-sessions.js?v=3"></script>
+<script src="assets/js/spotra-sessions.js?v=4"></script>
 <script src="assets/js/spotra-market.js?v=2"></script>
-<script src="assets/js/spotra-forum.js?v=2"></script>
+<script src="assets/js/spotra-forum.js?v=3"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=4"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
