@@ -29,7 +29,8 @@
       .order('starts_at', { ascending: true })
       .limit(500);
     if(error){ console.warn('[SPOTRA] sesiones:', error.message); return; }
-    sessions = data || [];
+    const S = window.SpotraSafety;
+    sessions = (data || []).filter(s => !(S && S.isBlocked(s.created_by)));
     reindex();
   }
 
@@ -96,12 +97,14 @@
     if(mine) action = `<button type="button" class="ghost-btn ses-btn ses-end" data-ses-end="${esc(s.id)}">Terminar sesión</button>`;
     else if(joined) action = `<button type="button" class="ghost-btn ses-btn" data-ses-leave="${esc(s.id)}">Me bajo</button>`;
     else action = `<button type="button" class="primary-btn ses-btn" data-ses-join="${esc(s.id)}">Me sumo</button>`;
-    return `<div class="ses-card">`
+    return `<div class="ses-card" data-author="${esc(s.created_by)}">`
       + `<div class="ses-top">${avatarHTML(s.username, s.avatar_url, 'ses-av')}<div class="ses-tx">`
       + `<b><span class="ses-name">${esc(s.username)}</span> va a rodar</b>`
       + `<small>${esc(whenLabel(s))} · ${esc(DISC[s.discipline] || 'Todas')}</small></div></div>`
       + (s.note ? `<p class="ses-note">“${esc(s.note)}”</p>` : '')
-      + going + action + '</div>';
+      + going + action
+      + `<button type="button" class="report-link" data-report="session" data-report-id="${esc(s.id)}" data-report-user="${esc(s.created_by)}" data-report-name="${esc(s.username)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>Reportar</button>`
+      + '</div>';
   }
 
   function renderForPlace(place){
@@ -238,6 +241,7 @@
   });
 
   setTimeout(load, 1200);
+  window.addEventListener('spotra-blocks', () => load());
   setInterval(() => { if(!document.hidden) load(); }, 90000);
   document.addEventListener('visibilitychange', () => { if(!document.hidden) load(); });
 
