@@ -231,6 +231,11 @@
     'Listo, gracias.':['Pronto, obrigado.','Done, thanks.'],'No se pudo guardar. Probá de nuevo.':['Não foi possível salvar. Tente de novo.','Could not save. Try again.'],
     'La fecha de nacimiento ya está guardada. Escribinos si hay un error.':['A data de nascimento já está salva. Fale com a gente se houver um erro.','Your date of birth is already saved. Contact us if it is wrong.'],
     'Llegaste al límite de reportes por hoy.':['Você chegou ao limite de denúncias de hoje.','You reached today\'s report limit.'],'No podés reportarte a vos mismo.':['Você não pode denunciar a si mesmo.','You cannot report yourself.'],
+    'Seguir':['Seguir','Follow'],'Siguiendo':['Seguindo','Following'],'Seguidores':['Seguidores','Followers'],'Quitar':['Remover','Remove'],'Dejar de seguir':['Deixar de seguir','Unfollow'],
+    'Iniciá sesión para seguir riders.':['Entre para seguir riders.','Log in to follow riders.'],'Dejaste de seguir a este rider.':['Você deixou de seguir este rider.','You unfollowed this rider.'],
+    'Ahora seguís a este rider.':['Agora você segue este rider.','You now follow this rider.'],'Todavía no te sigue nadie.':['Ninguém segue você ainda.','Nobody follows you yet.'],
+    'Todavía no seguís a nadie.':['Você ainda não segue ninguém.','You do not follow anyone yet.'],'No podés seguirte a vos mismo.':['Você não pode seguir a si mesmo.','You cannot follow yourself.'],
+    'Llegaste al límite de riders seguidos por hoy.':['Você chegou ao limite de riders seguidos hoje.','You reached today\'s follow limit.'],'Ese rider no existe.':['Esse rider não existe.','That rider does not exist.'],
     'Buscando...':['Buscando...','Searching...'],'No encontramos ese lugar.':['Não encontramos esse lugar.','We could not find that place.'],
     'Buscar ciudad o dirección':['Buscar cidade ou endereço','Search city or address'],
     'El mapa cambia de idioma al reabrir la app.':['O mapa muda de idioma ao reabrir o app.','The map changes language when you reopen the app.']
