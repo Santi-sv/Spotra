@@ -38,7 +38,7 @@
     const canDelete = uid && (p.authorId === uid || isAdmin);
     return `<article class="feed-card" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
       <div class="feed-head"><div class="avatar" ${avatar}></div>
-        <div><b>@${esc(p.username)}</b><div class="meta">${timeAgo(p.createdAt)}</div></div>
+        <div><b>@${esc(p.username)}</b> <button type="button" class="follow-btn" data-follow="${esc(p.authorId)}" data-follow-name="${esc(p.username)}" hidden>Seguir</button><div class="meta">${timeAgo(p.createdAt)}</div></div>
         ${canDelete ? `<span class="feed-del" data-post-del="${esc(p.id)}" title="Eliminar">×</span>` : ''}
         <span class="feed-flag" data-report="post" data-report-id="${esc(p.id)}" data-report-user="${esc(p.authorId)}" data-report-name="${esc(p.username)}" title="Reportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>
       </div>
