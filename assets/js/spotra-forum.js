@@ -36,10 +36,11 @@
   function postHTML(p){
     const avatar = p.avatarUrl ? `style="background-image:url('${esc(p.avatarUrl)}')"` : '';
     const canDelete = uid && (p.authorId === uid || isAdmin);
-    return `<article class="feed-card" data-post-id="${esc(p.id)}">
+    return `<article class="feed-card" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
       <div class="feed-head"><div class="avatar" ${avatar}></div>
         <div><b>@${esc(p.username)}</b><div class="meta">${timeAgo(p.createdAt)}</div></div>
         ${canDelete ? `<span class="feed-del" data-post-del="${esc(p.id)}" title="Eliminar">×</span>` : ''}
+        <span class="feed-flag" data-report="post" data-report-id="${esc(p.id)}" data-report-user="${esc(p.authorId)}" data-report-name="${esc(p.username)}" title="Reportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>
       </div>
       <p class="lead" style="font-size:15px;white-space:pre-line">${esc(p.content)}</p>
       ${p.imageUrl ? `<div class="feed-media" style="background-image:url('${esc(p.imageUrl)}')"></div>` : ''}
@@ -94,7 +95,7 @@
   function renderComments(box, postId, comments){
     const rows = comments.map(c => {
       const canDel = uid && (c.author_id === uid || isAdmin);
-      return `<div class="cmt-row"><div><b>@${esc(c.username || 'rider')}</b> ${esc(c.content)}</div>${canDel ? `<span class="del" data-cmt-del="${esc(c.id)}" data-cmt-post="${esc(postId)}">×</span>` : ''}</div>`;
+      return `<div class="cmt-row" data-author="${esc(c.author_id)}"><div><b>@${esc(c.username || 'rider')}</b> ${esc(c.content)}</div><span class="cmt-flag" data-report="comment" data-report-id="${esc(c.id)}" data-report-user="${esc(c.author_id)}" data-report-name="${esc(c.username || 'rider')}" title="Reportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>${canDel ? `<span class="del" data-cmt-del="${esc(c.id)}" data-cmt-post="${esc(postId)}">×</span>` : ''}</div>`;
     }).join('');
     box.innerHTML = (rows || '<div class="meta">Sin comentarios todavía.</div>') +
       `<div class="cmt-input"><input placeholder="Escribí un comentario..." data-cmt-input="${esc(postId)}" maxlength="500"><button data-cmt-send="${esc(postId)}">Enviar</button></div>`;
