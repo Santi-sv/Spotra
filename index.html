@@ -1261,6 +1261,32 @@ html.theme-light body:not(.auth-mode) .chat-sheet{background:rgba(255,255,255,0.
 html.theme-light body:not(.auth-mode) .chat-card{background:rgba(246,249,247,0.96);box-shadow:0 -28px 70px rgba(0,0,0,0.245)}
 html.theme-light body:not(.auth-mode) .seller-bubble{background:rgba(10,22,14,0.072)}
 html.theme-light body:not(.auth-mode) .chat-input{border:1px solid rgba(0,0,0,0.128);background:rgba(10,22,14,0.036)}
+/* ===== Buscador del mapa ===== */
+.map-tools,.map-stage.google-live .map-tools{z-index:8;flex-wrap:wrap}
+.map-tools .search{flex:1 1 100%}
+.map-tools .search input[type="search"]::-webkit-search-cancel-button{-webkit-appearance:none}
+.map-search-results{flex:1 1 100%;max-height:52vh;overflow-y:auto;border-radius:20px;padding:6px;background:rgba(8,12,9,.97);border:1px solid rgba(255,255,255,.12);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.map-search-results[hidden]{display:none}
+.msr-item{width:100%;display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:14px;text-align:left;color:var(--text);background:transparent;border:0}
+.msr-item+.msr-item{margin-top:2px}
+.msr-item .ic{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;flex-shrink:0;background:#0b0f0c;border:2px solid rgba(255,255,255,.85);color:var(--green-hot)}
+.msr-item .ic svg{width:18px;height:18px}
+.msr-item .tx{min-width:0;flex:1}
+.msr-item b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msr-item small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msr-geo .ic,.msr-more .ic{background:transparent;border-color:rgba(46,232,77,.5)}
+.msr-note{padding:12px;color:var(--muted);font-size:13.5px}
+html.theme-light body:not(.auth-mode) .map-search-results{background:#ffffff;border-color:rgba(0,0,0,.08);box-shadow:0 14px 36px rgba(0,0,0,.18)}
+html.theme-light body:not(.auth-mode) .msr-geo .ic,html.theme-light body:not(.auth-mode) .msr-more .ic{border-color:rgba(18,165,47,.45)}
+
+/* ===== Perfil: el nombre empieza debajo de la portada (se lee en día y en noche) ===== */
+.profile-identity{align-items:start}
+.profile-identity>div:last-child{padding-top:78px}
+@media(max-width:760px){
+  .profile-identity>div:last-child{padding-top:64px}
+  .profile-identity h1{font-size:28px}
+}
+
 /* ===== Sesiones ===== */
 .map-sessions-pill{position:absolute;left:22px;top:150px;z-index:6;height:36px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:13px;color:#f5f7f4;background:rgba(7,10,8,.94);border:1px solid rgba(46,232,77,.55);box-shadow:0 6px 18px rgba(0,0,0,.3)}
 .map-sessions-pill[hidden]{display:none}
@@ -1306,7 +1332,8 @@ html.theme-light body:not(.auth-mode) .ses-face{border-color:#ffffff}
 .theme-hint{font-size:12px;color:var(--muted);margin:6px 0 12px}
 #themeSeg{margin-top:0}
 html.theme-light body:not(.auth-mode) .seg button.active{background:rgba(46,232,77,.16);border-color:rgba(18,165,47,.55);color:#0e8a28}
-#themeSeg button{height:40px;border-radius:12px}
+#themeSeg button,#langSeg button{height:40px;border-radius:12px}
+#langSeg{margin-top:0}
 /* App instalada (PWA): barra inferior pegada al borde, como app nativa */
 @media(max-width:760px){
   html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1417,7 +1444,8 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <div class="map-layout">
         <div class="map-stage">
           <div class="map-tools">
-            <label class="search" for="mapSearchInput"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="mapSearchInput" placeholder="Buscar spots, skateparks, tiendas..." autocomplete="off"></label>
+            <label class="search" for="mapSearchInput"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input id="mapSearchInput" type="search" placeholder="Buscar spots, skateparks, tiendas..." autocomplete="off"></label>
+            <div class="map-search-results" id="mapSearchResults" hidden></div>
           </div>
           <div class="map-kind-row">
             <button class="active" data-map-filter="all"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Todos</button>
@@ -1817,6 +1845,9 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <div class="ses-label" style="margin-top:4px">Apariencia</div>
       <div class="seg" id="themeSeg"><button type="button" data-theme-set="auto">Automático</button><button type="button" data-theme-set="light">Día</button><button type="button" data-theme-set="dark">Noche</button></div>
       <p class="theme-hint">Automático: modo día de 06:00 a 21:00 y modo noche de 21:00 a 06:00.</p>
+      <div class="ses-label">Idioma</div>
+      <div class="seg" id="langSeg" translate="no"><button type="button" data-lang-set="es">Español</button><button type="button" data-lang-set="pt">Português</button><button type="button" data-lang-set="en">English</button></div>
+      <div style="height:12px"></div>
       <div class="settings-list">
         <div id="pushBox" style="display:none">
           <button id="pushBtn"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span data-push-label>Activar notificaciones</span></span><b>›</b></button>
@@ -1884,7 +1915,7 @@ if('serviceWorker' in navigator){
 }
 </script>
 <script src="assets/js/spotra-backend.js?v=18"></script>
-<script src="assets/js/spotra-google-map.js?v=14"></script>
+<script src="assets/js/spotra-google-map.js?v=15"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'map', brand:'brand-home', admin:'admin-approvals' };
@@ -2307,11 +2338,12 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
+<script src="assets/js/spotra-i18n.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
 <script src="assets/js/spotra-admin.js?v=14"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
-<script src="assets/js/spotra-sessions.js?v=1"></script>
+<script src="assets/js/spotra-sessions.js?v=2"></script>
 <script src="assets/js/spotra-market.js?v=1"></script>
 <script src="assets/js/spotra-forum.js?v=1"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
