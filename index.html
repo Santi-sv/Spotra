@@ -1334,6 +1334,67 @@ html.theme-light body:not(.auth-mode) .ses-face{border-color:#ffffff}
 html.theme-light body:not(.auth-mode) .seg button.active{background:rgba(46,232,77,.16);border-color:rgba(18,165,47,.55);color:#0e8a28}
 #themeSeg button,#langSeg button{height:40px;border-radius:12px}
 #langSeg{margin-top:0}
+
+/* ===== Redes sociales con sus logos reales ===== */
+.social-logo{box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.social-ig{background:radial-gradient(circle at 30% 107%,#fdf497 0%,#fdf497 5%,#fd5949 45%,#d6249f 60%,#285aeb 90%)}
+.social-tk,html.theme-light body:not(.auth-mode) .social-tk{background:#000;border:1px solid rgba(255,255,255,.14)}
+.social-tk svg{width:20px;height:20px;filter:drop-shadow(-1.3px -1px 0 #25f4ee) drop-shadow(1.3px 1px 0 #fe2c55)}
+.social-fb{background:transparent;box-shadow:none;border-radius:50%}
+.social-fb svg{width:100%!important;height:100%!important}
+.social-mail{background:linear-gradient(135deg,#74ff3a,#19b335);border:0;color:#06130a!important}
+html.theme-light body:not(.auth-mode) .social-mail{background:linear-gradient(135deg,#74ff3a,#19b335);border:0;color:#06130a!important}
+
+/* ===== Market compacto: más lugar para los productos ===== */
+.mkt-compact{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;margin-bottom:10px}
+.mkt-seg.tabs{margin:0;display:inline-flex;gap:0;padding:3px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04)}
+.mkt-seg.tabs button{height:34px;padding:0 14px;border-radius:999px;border:0;background:transparent;font-size:13px}
+.mkt-seg.tabs button.active{background:var(--green-hot);color:#06130a}
+.mkt-compact .publish-btn{height:40px;padding:0 14px;display:inline-flex;align-items:center;gap:6px}
+.mkt-compact .publish-btn svg{width:16px;height:16px}
+.mkt-filters{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;margin:0 0 14px;padding-bottom:2px}
+.mkt-filters::-webkit-scrollbar{display:none}
+.mkt-filters .filter-row{display:flex;flex-wrap:nowrap;gap:8px;margin:0!important;flex-shrink:0}
+.mkt-filters .filter-row[style*="none"]{display:none!important}
+.mkt-filters #mktDistChips{display:inline-flex;gap:8px}
+.mkt-filters .filter-row button{height:34px;padding:0 13px;font-size:13px;white-space:nowrap;border-radius:999px}
+.mkt-filters #mktNearBtn svg{width:15px;height:15px}
+@media(max-width:760px){
+  .mkt-compact{grid-template-columns:1fr auto;grid-template-areas:"title pub" "seg seg";row-gap:8px;margin-top:4px}
+  .mkt-compact>div:first-child{grid-area:title}
+  .mkt-compact .kicker{display:none}
+  .market-head.mkt-compact .h1{font-size:28px}
+  .mkt-compact .mkt-seg{grid-area:seg;justify-self:start}
+  .mkt-compact .publish-btn{grid-area:pub}
+  .mkt-filters{margin:0 -14px 12px;padding:0 14px 2px}
+}
+html.theme-light body:not(.auth-mode) .mkt-seg.tabs{background:#ffffff;border-color:rgba(0,0,0,.08)}
+html.theme-light body:not(.auth-mode) .mkt-seg.tabs button{background:transparent;border:0}
+html.theme-light body:not(.auth-mode) .mkt-seg.tabs button.active{background:#2ee84d;color:#06130a}
+
+/* ===== Reportar y bloquear ===== */
+.feed-flag,.cmt-flag{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;color:var(--muted);cursor:pointer;margin-left:auto;opacity:.7}
+.feed-flag svg,.cmt-flag svg{width:15px;height:15px}
+.feed-head .feed-del+.feed-flag{margin-left:4px}
+.cmt-flag{width:24px;height:24px;margin-left:6px}
+.cmt-flag svg{width:12px;height:12px}
+.report-link{display:inline-flex;align-items:center;gap:6px;margin-top:12px;padding:6px 2px;background:none;border:0;color:var(--muted);font-size:12.5px;cursor:pointer}
+.report-link svg{width:13px;height:13px}
+.rep-reasons{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rep-reasons button{min-height:42px;border-radius:12px;padding:0 10px;font-size:13px;font-weight:700;color:var(--text);border:1px solid var(--line);background:rgba(255,255,255,.04)}
+.rep-reasons button.active{border-color:#2ee84d;background:rgba(46,232,77,.14);color:var(--green-hot)}
+.rep-block{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:14px;color:var(--text)}
+.rep-block input{width:20px;height:20px;accent-color:#2ee84d}
+.blk-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);margin-top:8px}
+.blk-row .ghost-btn{min-height:36px;padding:0 12px;font-size:13px}
+.rep-row{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;padding:12px;border-radius:16px;border:1px solid rgba(255,107,107,.35);background:rgba(255,107,107,.05);margin-bottom:10px}
+.rep-tx{min-width:0}
+.rep-tx small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.rep-tx p{font-size:13px;margin-top:6px}
+.rep-actions{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.rep-actions button{min-height:34px;padding:0 10px;font-size:12px}
+html.theme-light body:not(.auth-mode) .rep-reasons button{background:#f5f7f5;border-color:rgba(0,0,0,.08)}
+html.theme-light body:not(.auth-mode) .rep-reasons button.active{background:rgba(46,232,77,.16);border-color:rgba(18,165,47,.55);color:#0e8a28}
 /* App instalada (PWA): barra inferior pegada al borde, como app nativa */
 @media(max-width:760px){
   html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1513,18 +1574,20 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     </section>
 
     <section class="view" data-view="market">
-      <div class="market-head">
+      <div class="market-head mkt-compact">
         <div>
           <div class="kicker">Usados entre riders</div>
           <h1 class="h1">Market</h1>
         </div>
-        <button class="ghost-btn publish-btn" data-open-modal="product">Publicar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
+        <div class="mkt-seg tabs" id="mktTabs"><button class="active" data-mkt-tab="explore">Explorar</button><button data-mkt-tab="mine">Mis publicaciones</button></div>
+        <button class="ghost-btn publish-btn" data-open-modal="product" aria-label="Publicar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg><span>Publicar</span></button>
       </div>
-      <div class="tabs" id="mktTabs" style="margin-top:8px"><button class="active" data-mkt-tab="explore">Explorar</button><button data-mkt-tab="mine">Mis publicaciones</button></div>
-      <div class="filter-row" id="mktCats" style="margin-top:2px"><button class="active" data-mkt-cat="all">Todo</button><button data-mkt-cat="tablas">Tablas</button><button data-mkt-cat="ruedas">Ruedas</button><button data-mkt-cat="bicis">Bicis</button><button data-mkt-cat="protecciones">Protecc.</button><button data-mkt-cat="ropa">Ropa</button><button data-mkt-cat="otros">Otros</button></div>
-      <div class="filter-row" id="mktDist" style="margin-top:2px">
+      <div class="mkt-filters">
+      <div class="filter-row" id="mktDist">
         <button id="mktNearBtn" data-mkt-near><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Cerca de mí</button>
         <span id="mktDistChips" style="display:none"><button data-mkt-dist="5">5 km</button><button data-mkt-dist="20">20 km</button><button data-mkt-dist="50">50 km</button><button class="active" data-mkt-dist="0">Todos</button></span>
+      </div>
+      <div class="filter-row" id="mktCats"><button class="active" data-mkt-cat="all">Todo</button><button data-mkt-cat="tablas">Tablas</button><button data-mkt-cat="ruedas">Ruedas</button><button data-mkt-cat="bicis">Bicis</button><button data-mkt-cat="protecciones">Protecc.</button><button data-mkt-cat="ropa">Ropa</button><button data-mkt-cat="otros">Otros</button></div>
       </div>
       <div class="product-grid" id="mktGrid"><div class="meta" style="grid-column:1/-1;margin-top:10px">Cargando publicaciones...</div></div>
       <div id="mktDetail" style="display:none"></div>
@@ -1544,10 +1607,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
             </div>
           </div>
           <div class="social-grid">
-            <button data-social="instagram"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/><circle cx="16.5" cy="7.6" r="1" fill="#fff" stroke="none"/></svg></span>Instagram</button>
-            <button data-social="tiktok"><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M15.7 3c.4 2.5 1.8 4.1 4.3 4.3v3.1c-1.5.1-2.8-.3-4.2-1.1v5.8c0 5.8-6.3 7.6-9.7 4.3-2.2-2.1-2.1-5.8.3-7.8 1.4-1.2 3-1.6 5-1.2v3.3c-.6-.2-1.2-.2-1.8 0-1.7.5-2.4 2.5-1.3 3.8 1.1 1.4 3.7 1.1 4.1-1.1.1-.4.1-.8.1-1.2V3h3.2Z"/></svg></span>TikTok</button>
-            <button data-social="facebook"><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M14.4 8.1H16V5.2c-.3 0-1.3-.1-2.5-.1-2.5 0-4.2 1.5-4.2 4.4v2.5H6.5v3.2h2.8V23h3.4v-7.8h2.8l.4-3.2h-3.2V9.8c0-.9.3-1.7 1.7-1.7Z"/></svg></span>Facebook</button>
-            <button data-social="email"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M4 8l8 5 8-5"/></svg></span>Email</button>
+            <button data-social="instagram"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1.2" fill="#fff" stroke="none"/></svg></span>Instagram</button>
+            <button data-social="tiktok"><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></span>TikTok</button>
+            <button data-social="facebook"><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#0866FF"/><path fill="#fff" d="M15.12 15.47l.53-3.47h-3.33V9.75c0-.95.47-1.87 1.96-1.87h1.51V4.93s-1.37-.23-2.69-.23c-2.74 0-4.53 1.66-4.53 4.66V12H5.52v3.47h3.05V24a12.1 12.1 0 0 0 3.75 0v-8.53h2.8Z"/></svg></span>Facebook</button>
+            <button data-social="email"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/></svg></span>Email</button>
           </div>
         </div>
 
@@ -1646,6 +1709,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg></div><div class="num">–</div><div class="lbl">Eventos pendientes</div></div>
         <div class="kpi"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 3v18M5 4h12l-2 4 2 4H5"/></svg></div><div class="num">–</div><div class="lbl">Productos pendientes</div></div>
       </div>
+      <div id="adminReports"></div>
       <div class="sub-tabs">
         <button class="active" data-route="admin-approvals">Aprobaciones <span class="count-chip">0</span></button>
         <button data-route="admin-users">Usuarios</button>
@@ -1814,6 +1878,27 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 
 
     <!-- PERFIL / CONFIG -->
+    <div class="modal-form" data-form="report">
+      <p class="hint" id="reportWhat">—</p>
+      <div class="ses-label">¿Qué pasa?</div>
+      <div class="rep-reasons" id="reportReasons"></div>
+      <div class="field" style="margin-top:10px"><input id="reportDetails" maxlength="500" placeholder="Contanos más (opcional)"></div>
+      <label class="rep-block" id="reportBlockRow"><input type="checkbox" id="reportBlock"> <span>Bloquear también a <b id="reportBlockName"></b></span></label>
+      <p class="ses-error" id="reportError"></p>
+      <button type="button" class="primary-btn" id="reportSend" style="width:100%;margin-top:12px;height:52px">Enviar reporte</button>
+      <p class="theme-hint" style="margin-top:10px">El admin lo revisa. La persona no sabe quién la reportó.</p>
+    </div>
+    <div class="modal-form" data-form="blocked">
+      <p class="hint">No ves nada de lo que publican. Ellos no se enteran.</p>
+      <div id="blockedList"></div>
+    </div>
+    <div class="modal-form" data-form="birth">
+      <p class="hint">Para cuidar a los riders menores de edad, necesitamos tu fecha de nacimiento. <b style="color:var(--green-hot)">No se muestra en tu perfil</b> y no se puede cambiar después.</p>
+      <div class="ses-label">Fecha de nacimiento</div>
+      <div class="field"><input type="date" id="birthDate" aria-label="Fecha de nacimiento"></div>
+      <p class="ses-error" id="birthError"></p>
+      <button type="button" class="primary-btn" id="birthSave" style="width:100%;margin-top:14px;height:52px">Guardar</button>
+    </div>
     <div class="modal-form" data-form="session">
       <p class="hint">Se publica <b style="color:var(--green-hot)">al instante</b> y se ve en el mapa hasta que termina.</p>
       <div class="ses-place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><b id="sesPlaceName">Spot</b></div>
@@ -1854,6 +1939,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         </div>
         <div id="pushHint" style="display:none;color:var(--muted);font-size:13px;line-height:1.5;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,210,74,.3);background:rgba(255,210,74,.06)"></div>
         <button class="admin-only" data-role-set="admin" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Cambiar a cuenta admin</span><b>›</b></button>
+        <button data-open-modal="blocked"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Usuarios bloqueados</span><b>›</b></button>
         <button data-open-modal="editProfile"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>Nombre y apellido</span><b>›</b></button>
         <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
         <button data-open-modal="password"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Cambiar contraseña</span><b>›</b></button>
@@ -2164,7 +2250,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -2338,14 +2424,15 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=1"></script>
+<script src="assets/js/spotra-i18n.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
 <script src="assets/js/spotra-admin.js?v=14"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
-<script src="assets/js/spotra-sessions.js?v=2"></script>
-<script src="assets/js/spotra-market.js?v=1"></script>
-<script src="assets/js/spotra-forum.js?v=1"></script>
+<script src="assets/js/spotra-safety.js?v=1"></script>
+<script src="assets/js/spotra-sessions.js?v=3"></script>
+<script src="assets/js/spotra-market.js?v=2"></script>
+<script src="assets/js/spotra-forum.js?v=2"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=4"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
