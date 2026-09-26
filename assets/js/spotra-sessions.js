@@ -100,7 +100,8 @@
     return `<div class="ses-card" data-author="${esc(s.created_by)}">`
       + `<div class="ses-top">${avatarHTML(s.username, s.avatar_url, 'ses-av')}<div class="ses-tx">`
       + `<b><span class="ses-name">${esc(s.username)}</span> va a rodar</b>`
-      + `<small>${esc(whenLabel(s))} · ${esc(DISC[s.discipline] || 'Todas')}</small></div></div>`
+      + `<small>${esc(whenLabel(s))} · ${esc(DISC[s.discipline] || 'Todas')}</small></div>`
+      + `<button type="button" class="follow-btn" data-follow="${esc(s.created_by)}" data-follow-name="${esc(s.username)}" hidden>Seguir</button></div>`
       + (s.note ? `<p class="ses-note">“${esc(s.note)}”</p>` : '')
       + going + action
       + `<button type="button" class="report-link" data-report="session" data-report-id="${esc(s.id)}" data-report-user="${esc(s.created_by)}" data-report-name="${esc(s.username)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>Reportar</button>`
