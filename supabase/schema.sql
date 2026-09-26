@@ -1298,3 +1298,145 @@ create policy "session_participants_delete" on public.session_participants
 -- Datos de Brasil y Argentina: ver osm-brasil-argentina.sql (© colaboradores de OpenStreetMap, ODbL).
 alter table public.places add column if not exists osm_id text;
 create unique index if not exists places_osm_id_key on public.places (osm_id);
+
+
+-- =====================================================================
+-- SPOTRA · Fecha de nacimiento + Reportar y bloquear
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- ---------- Fecha de nacimiento ----------
+-- Privada (el perfil solo lo ve su dueño). Se pide una sola vez y después no se puede cambiar
+-- (solo el admin), para que nadie la ajuste para saltarse límites de edad.
+alter table public.profiles add column if not exists birth_date date;
+alter table public.profiles drop constraint if exists profiles_birth_date_check;
+alter table public.profiles add constraint profiles_birth_date_check
+  check (birth_date is null or birth_date >= date '1920-01-01');
+
+create or replace function public.profiles_lock_birth_date()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.birth_date is not distinct from old.birth_date then return new; end if;
+  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin' then return new; end if;
+  if old.birth_date is not null then
+    raise exception 'La fecha de nacimiento ya está guardada. Escribinos si hay un error.';
+  end if;
+  if new.birth_date > (current_date - interval '8 years')::date then
+    raise exception 'Revisá la fecha de nacimiento.';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_lock_birth_date on public.profiles;
+create trigger profiles_lock_birth_date
+  before update of birth_date on public.profiles
+  for each row execute function public.profiles_lock_birth_date();
+
+-- ¿Es mayor de 18? (para funciones solo +18, como la ubicación en tiempo real)
+create or replace function public.is_adult(uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((select p.birth_date <= (current_date - interval '18 years')::date
+                   from public.profiles p where p.id = uid), false);
+$$;
+revoke all on function public.is_adult(uuid) from public, anon;
+grant execute on function public.is_adult(uuid) to authenticated;
+
+-- ---------- Reportes ----------
+create table if not exists public.reports (
+  id uuid primary key default gen_random_uuid(),
+  reporter_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  target_type text not null check (target_type in ('post','comment','listing','session','user')),
+  target_id text not null check (char_length(target_id) <= 80),
+  target_user uuid references public.profiles(id) on delete set null,
+  target_name text check (target_name is null or char_length(target_name) <= 120),
+  reason text not null check (reason in ('spam','acoso','inapropiado','estafa','peligroso','otro')),
+  details text check (details is null or char_length(details) <= 500),
+  status text not null default 'open' check (status in ('open','resolved','dismissed')),
+  created_at timestamptz not null default now(),
+  constraint reports_once unique (reporter_id, target_type, target_id)
+);
+create index if not exists reports_status_idx on public.reports (status, created_at desc);
+
+create or replace function public.reports_before_insert()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare v_count int;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  new.reporter_id := auth.uid();
+  new.status := 'open';
+  new.created_at := now();
+  if new.target_user = auth.uid() then raise exception 'No podés reportarte a vos mismo.'; end if;
+  select count(*) into v_count from public.reports r
+    where r.reporter_id = auth.uid() and r.created_at > now() - interval '1 day';
+  if v_count >= 20 then raise exception 'Llegaste al límite de reportes por hoy.'; end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists reports_before_insert on public.reports;
+create trigger reports_before_insert
+  before insert on public.reports
+  for each row execute function public.reports_before_insert();
+
+alter table public.reports enable row level security;
+revoke all on table public.reports from anon;
+
+drop policy if exists "reports_insert" on public.reports;
+create policy "reports_insert" on public.reports
+  for insert with check ((select auth.role()) = 'authenticated' and reporter_id = (select auth.uid()));
+
+drop policy if exists "reports_select" on public.reports;
+create policy "reports_select" on public.reports
+  for select using (
+    reporter_id = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "reports_update_admin" on public.reports;
+create policy "reports_update_admin" on public.reports
+  for update using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
+  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "reports_delete_admin" on public.reports;
+create policy "reports_delete_admin" on public.reports
+  for delete using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- ---------- Bloqueos ----------
+-- Cada rider maneja su propia lista. El bloqueado no se entera.
+create table if not exists public.blocks (
+  blocker_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  blocked_id uuid not null references public.profiles(id) on delete cascade,
+  blocked_name text check (blocked_name is null or char_length(blocked_name) <= 120),
+  created_at timestamptz not null default now(),
+  primary key (blocker_id, blocked_id),
+  constraint blocks_not_self check (blocker_id <> blocked_id)
+);
+
+alter table public.blocks enable row level security;
+revoke all on table public.blocks from anon;
+revoke update on table public.blocks from authenticated;
+
+drop policy if exists "blocks_select_own" on public.blocks;
+create policy "blocks_select_own" on public.blocks
+  for select using (blocker_id = (select auth.uid()));
+
+drop policy if exists "blocks_insert_own" on public.blocks;
+create policy "blocks_insert_own" on public.blocks
+  for insert with check ((select auth.role()) = 'authenticated' and blocker_id = (select auth.uid()));
+
+drop policy if exists "blocks_delete_own" on public.blocks;
+create policy "blocks_delete_own" on public.blocks
+  for delete using (blocker_id = (select auth.uid()));
