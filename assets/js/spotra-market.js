@@ -58,7 +58,7 @@
     const d = withDist(l);
     const meta = [l.city, d != null ? `<span class="mkt-dist-badge">${fmtDist(d)}</span>` : ''].filter(Boolean).join(' · ');
     const img = l.photos[0] ? `style="background-image:url('${esc(l.photos[0])}')"` : 'style="background:#15251b"';
-    return `<article class="product-card" data-ml-open="${esc(l.id)}" style="cursor:pointer">
+    return `<article class="product-card" data-ml-open="${esc(l.id)}" data-author="${esc(l.sellerId)}" style="cursor:pointer">
       <div class="product-img" ${img}></div>
       <div class="product-body">
         <div class="price">${esc(fmtPrice(l))}</div>
@@ -155,7 +155,8 @@
       <h2 style="font-size:19px;margin-top:2px">${esc(l.title)}</h2>
       <div class="meta" style="margin-top:4px">${esc(l.username)}${l.city ? ' · ' + esc(l.city) : ''}${dd != null ? ' · ' + fmtDist(dd) : ''} · ${daysAgo(l.createdAt)}</div>
       ${l.description ? `<p class="spot-desc">${esc(l.description)}</p>` : ''}
-      ${wa ? `<a class="primary-btn" href="${esc(wa)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin-top:16px;text-decoration:none">Contactar por WhatsApp</a>` : ''}`;
+      ${wa ? `<a class="primary-btn" href="${esc(wa)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin-top:16px;text-decoration:none">Contactar por WhatsApp</a>` : ''}
+      <button type="button" class="report-link" data-report="listing" data-report-id="${esc(l.id)}" data-report-user="${esc(l.sellerId)}" data-report-name="${esc(l.username)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>Reportar publicación</button>`;
   }
 
   /* ================= Cerca de mí ================= */
