@@ -1440,3 +1440,66 @@ create policy "blocks_insert_own" on public.blocks
 drop policy if exists "blocks_delete_own" on public.blocks;
 create policy "blocks_delete_own" on public.blocks
   for delete using (blocker_id = (select auth.uid()));
+
+
+-- =====================================================================
+-- SPOTRA · Seguir riders
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+create table if not exists public.follows (
+  follower_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  followed_id uuid not null references public.profiles(id) on delete cascade,
+  follower_name text,
+  followed_name text,
+  created_at timestamptz not null default now(),
+  primary key (follower_id, followed_id),
+  constraint follows_not_self check (follower_id <> followed_id)
+);
+create index if not exists follows_followed_idx on public.follows (followed_id);
+
+-- Los nombres los pone el servidor (desde profiles), no el celular.
+create or replace function public.follows_before_insert()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_count int;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  new.follower_id := auth.uid();
+  new.created_at := now();
+  if new.followed_id = auth.uid() then raise exception 'No podés seguirte a vos mismo.'; end if;
+  select count(*) into v_count from public.follows f
+    where f.follower_id = auth.uid() and f.created_at > now() - interval '1 day';
+  if v_count >= 200 then raise exception 'Llegaste al límite de riders seguidos por hoy.'; end if;
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)) into new.follower_name from public.profiles p where p.id = auth.uid();
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)) into new.followed_name from public.profiles p where p.id = new.followed_id;
+  if new.followed_name is null then raise exception 'Ese rider no existe.'; end if;
+  return new;
+end;
+$$;
+revoke all on function public.follows_before_insert() from public, anon, authenticated;
+
+drop trigger if exists follows_before_insert on public.follows;
+create trigger follows_before_insert
+  before insert on public.follows
+  for each row execute function public.follows_before_insert();
+
+alter table public.follows enable row level security;
+revoke all on table public.follows from anon;
+revoke update on table public.follows from authenticated;
+
+-- cada uno ve a quién sigue y quién lo sigue
+drop policy if exists "follows_select_own" on public.follows;
+create policy "follows_select_own" on public.follows
+  for select using (follower_id = (select auth.uid()) or followed_id = (select auth.uid()));
+
+drop policy if exists "follows_insert_own" on public.follows;
+create policy "follows_insert_own" on public.follows
+  for insert with check ((select auth.role()) = 'authenticated' and follower_id = (select auth.uid()));
+
+-- dejar de seguir; y cada uno puede sacar a un seguidor
+drop policy if exists "follows_delete_own" on public.follows;
+create policy "follows_delete_own" on public.follows
+  for delete using (follower_id = (select auth.uid()) or followed_id = (select auth.uid()));
