@@ -58,7 +58,7 @@
     if(a <= now) return 'En curso · hasta ' + hm(b);
     const diff = Math.round((dayStart(a) - dayStart(now)) / 86400000);
     const day = diff === 0 ? 'Hoy' : diff === 1 ? 'Mañana'
-      : a.toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'numeric' });
+      : a.toLocaleDateString(window.SpotraI18n ? window.SpotraI18n.mapsLang() : 'es', { weekday: 'short', day: 'numeric', month: 'numeric' });
     return day.charAt(0).toUpperCase() + day.slice(1) + ' ' + hm(a) + ' – ' + hm(b);
   }
 
