@@ -104,6 +104,7 @@
       + `<button type="button" class="follow-btn" data-follow="${esc(s.created_by)}" data-follow-name="${esc(s.username)}" hidden>Seguir</button></div>`
       + (s.note ? `<p class="ses-note">“${esc(s.note)}”</p>` : '')
       + going + action
+      + `<button type="button" class="ses-share" data-ses-share="${esc(s.id)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>Compartir</button>`
       + `<button type="button" class="report-link" data-report="session" data-report-id="${esc(s.id)}" data-report-user="${esc(s.created_by)}" data-report-name="${esc(s.username)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg>Reportar</button>`
       + '</div>';
   }
@@ -183,14 +184,15 @@
     busy = true; btn.disabled = true; btn.textContent = 'Publicando...';
     try {
       const c = await db();
-      const { error } = await c.from('sessions').insert({
+      const { data: created, error } = await c.from('sessions').insert({
         place_id: placeId,
         starts_at: start.toISOString(),
         ends_at: end.toISOString(),
         discipline: discBtn ? discBtn.dataset.v : 'todas',
         note: note || null
-      });
+      }).select('id').single();
       if(error){ err.textContent = error.message || 'No se pudo publicar. Probá de nuevo.'; return; }
+      if(created && created.id) notifyRiders(created.id);
       if(window.closeModal) window.closeModal();
       say('Sesión publicada. Ya se ve en el mapa.');
       await load();
@@ -200,6 +202,22 @@
     } finally {
       busy = false; btn.disabled = false; btn.textContent = 'Publicar sesión';
     }
+  }
+
+  // Avisa a seguidores y riders cercanos (lo hace el servidor: Edge Function session-push)
+  async function notifyRiders(id){
+    try {
+      const c = await db();
+      const { data } = await c.auth.getSession();
+      const token = data && data.session && data.session.access_token;
+      const cfg = window.SPOTRA_CONFIG || {};
+      if(!token || !cfg.SUPABASE_URL) return;
+      await fetch(String(cfg.SUPABASE_URL).replace(/\/+$/, '') + '/functions/v1/session-push', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': cfg.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ sessionId: id })
+      });
+    } catch(e){ console.warn('[SPOTRA] aviso de sesión:', e); }
   }
 
   /* ---------- sumarse / bajarse / terminar ---------- */
@@ -227,6 +245,17 @@
     if((el = t.closest('[data-ses-join]'))){ e.preventDefault(); act('join', el.dataset.sesJoin, el); return; }
     if((el = t.closest('[data-ses-leave]'))){ e.preventDefault(); act('leave', el.dataset.sesLeave, el); return; }
     if((el = t.closest('[data-ses-end]'))){ e.preventDefault(); act('end', el.dataset.sesEnd, el); return; }
+    if((el = t.closest('[data-ses-share]'))){
+      e.preventDefault();
+      const s = sessions.find(x => x.id === el.dataset.sesShare);
+      if(!s || !window.spotraShare) return;
+      const L = window.SpotraI18n ? window.SpotraI18n.lang() : 'es';
+      const place = currentPlace && currentPlace.id === s.place_id ? currentPlace.name : 'SPOTRA';
+      const when = window.SpotraI18n ? window.SpotraI18n.t(whenLabel(s)) : whenLabel(s);
+      const text = ({ es: `@${s.username} va a rodar en ${place} · ${when}. Sumate en SPOTRA`, pt: `@${s.username} vai andar em ${place} · ${when}. Vem pelo SPOTRA`, en: `@${s.username} is riding at ${place} · ${when}. Join on SPOTRA` })[L];
+      window.spotraShare({ title: place, text, url: window.spotraPlaceUrl(s.place_id) });
+      return;
+    }
     if(t.closest('[data-ses-new]')){ e.preventDefault(); openCreate(currentPlace); return; }
     if(t.closest('[data-ses-menu]')){
       e.preventDefault();
