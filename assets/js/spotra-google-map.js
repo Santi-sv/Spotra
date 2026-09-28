@@ -329,6 +329,8 @@
     const name = document.getElementById('spotName');
     const meta = document.getElementById('spotMeta');
     const cover = document.getElementById('spotCover');
+    const shareBtn = document.getElementById('spotShareBtn');
+    if(shareBtn) shareBtn.style.display = place && place.id && !place.isGoogleResult ? '' : 'none';
     const directions = document.getElementById('spotDirectionsBtn');
     if(type) type.textContent = place.label || window.SpotraBackend.labelForType(place.type);
     if(name) name.textContent = place.name;
@@ -422,6 +424,14 @@
     if(list && list.classList.contains('open')) renderList();
     if(!firstFit) return;
     firstFit = false;
+    // enlace de un aviso: /?place=ID#map abre ese spot
+    let deep = null;
+    try { deep = new URLSearchParams(location.search).get('place'); } catch(e){}
+    if(deep){
+      try { history.replaceState(null, '', location.pathname + location.hash); } catch(e){}
+      const di = entries.findIndex(e => e.place.id === deep);
+      if(di >= 0){ focusEntry(di); return; }
+    }
     const pad = isMobile() ? { top: 130, right: 40, bottom: 80, left: 40 } : 64;
     if(markers.length > 1) map.fitBounds(bounds, pad);
     else if(markers.length === 1){ map.setCenter(markers[0].getPosition()); map.setZoom(14); }
@@ -654,6 +664,14 @@
     if(event.target.closest('#spotSheetClose')){ event.preventDefault(); closeDetail(); return; }
     const item = event.target.closest('[data-list-idx]');
     if(item){ event.preventDefault(); focusEntry(parseInt(item.dataset.listIdx, 10)); return; }
+    if(event.target.closest('#spotShareBtn') && currentDetail && currentDetail.id){
+      event.preventDefault();
+      const L = window.SpotraI18n ? window.SpotraI18n.lang() : 'es';
+      const p = currentDetail;
+      const text = ({ es: `Mirá ${p.name} en SPOTRA`, pt: `Olha ${p.name} no SPOTRA`, en: `Check out ${p.name} on SPOTRA` })[L] || `Mirá ${p.name} en SPOTRA`;
+      if(window.spotraShare) window.spotraShare({ title: p.name, text, url: window.spotraPlaceUrl(p.id) });
+      return;
+    }
     const directions = event.target.closest('#spotDirectionsBtn');
     if(directions && directions.dataset.directions){
       event.preventDefault();
@@ -791,5 +809,5 @@
     }
   }
 
-  window.SpotraMaps = { init, refresh, setFilter, ensureApi: loadGoogleMaps, compressImage, current: () => currentDetail, openPlaceById, openDetail, closeDetail };
+  window.SpotraMaps = { init, refresh, setFilter, ensureApi: loadGoogleMaps, compressImage, current: () => currentDetail, center: () => { const c = map && map.getCenter ? map.getCenter() : null; return c ? { lat: c.lat(), lng: c.lng() } : null; }, openPlaceById, openDetail, closeDetail };
 })();
