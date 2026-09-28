@@ -1587,3 +1587,408 @@ create table if not exists public.session_notifications (
 create index if not exists session_notifications_profile_idx on public.session_notifications (profile_id, created_at desc);
 alter table public.session_notifications enable row level security;
 revoke all on table public.session_notifications from anon, authenticated;
+
+
+-- =====================================================================
+-- SPOTRA · Estado del spot en vivo (estilo Waze)
+-- Los riders avisan cómo está un spot ahora. Cada aviso vence solo.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+create table if not exists public.spot_status (
+  id uuid primary key default gen_random_uuid(),
+  place_id uuid not null references public.places(id) on delete cascade,
+  created_by uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  status text not null check (status in ('ok','mojado','lleno','echan','cerrado','obras')),
+  created_at timestamptz not null default now(),
+  expires_at timestamptz not null
+);
+create index if not exists spot_status_place_idx on public.spot_status (place_id, expires_at desc);
+
+-- Duración de cada estado y límites anti-spam los pone el servidor.
+create or replace function public.spot_status_before_insert()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare v_day int;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  new.created_by := auth.uid();
+  new.created_at := now();
+  new.expires_at := now() + case new.status
+    when 'ok' then interval '3 hours'
+    when 'mojado' then interval '3 hours'
+    when 'lleno' then interval '2 hours'
+    when 'echan' then interval '4 hours'
+    when 'cerrado' then interval '12 hours'
+    when 'obras' then interval '3 days'
+  end;
+  if not exists (select 1 from public.places p where p.id = new.place_id and p.status = 'approved') then
+    raise exception 'El spot no existe o no está aprobado.';
+  end if;
+  if exists (select 1 from public.spot_status s where s.place_id = new.place_id and s.created_by = auth.uid()
+             and s.created_at > now() - interval '30 minutes') then
+    raise exception 'Ya avisaste el estado de este spot hace poco.';
+  end if;
+  select count(*) into v_day from public.spot_status s where s.created_by = auth.uid() and s.created_at > now() - interval '1 day';
+  if v_day >= 30 then raise exception 'Llegaste al límite de avisos por hoy.'; end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists spot_status_before_insert on public.spot_status;
+create trigger spot_status_before_insert
+  before insert on public.spot_status
+  for each row execute function public.spot_status_before_insert();
+
+alter table public.spot_status enable row level security;
+revoke all on table public.spot_status from anon;
+revoke update on table public.spot_status from authenticated;
+
+-- solo riders logueados, y solo los avisos vigentes (el admin ve todo)
+drop policy if exists "spot_status_select" on public.spot_status;
+create policy "spot_status_select" on public.spot_status
+  for select using (
+    ((select auth.role()) = 'authenticated' and expires_at > now())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "spot_status_insert" on public.spot_status;
+create policy "spot_status_insert" on public.spot_status
+  for insert with check ((select auth.role()) = 'authenticated' and created_by = (select auth.uid()));
+
+drop policy if exists "spot_status_delete" on public.spot_status;
+create policy "spot_status_delete" on public.spot_status
+  for delete using (
+    created_by = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+
+-- =====================================================================
+-- SPOTRA · Menores de 18: cuenta vinculada a un responsable + reglas
+-- Edad mínima 13. De 13 a 17: solo mirar hasta vincular a madre, padre o tutor.
+-- El responsable habilita Sesiones (solo skateparks), Market (con su WhatsApp) y Avisos por zona.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- ---------- Fecha de nacimiento: mínimo 13 años; el responsable puede corregirla al vincular ----------
+create or replace function public.profiles_lock_birth_date()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.birth_date is not distinct from old.birth_date then return new; end if;
+  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin' then return new; end if;
+  if current_setting('spotra.guardian_ok', true) = '1' then return new; end if;
+  if old.birth_date is not null then
+    raise exception 'La fecha de nacimiento ya está guardada. Escribinos si hay un error.';
+  end if;
+  if new.birth_date > (current_date - interval '13 years')::date then
+    raise exception 'SPOTRA es para mayores de 13 años.';
+  end if;
+  return new;
+end;
+$$;
+
+-- ---------- Vínculos menor ↔ responsable ----------
+create table if not exists public.guardian_links (
+  minor_id uuid primary key references public.profiles(id) on delete cascade,
+  guardian_id uuid references public.profiles(id) on delete set null,
+  minor_name text,
+  guardian_name text,
+  code text unique,
+  code_expires_at timestamptz,
+  status text not null default 'pending' check (status in ('pending','active')),
+  allow_sessions boolean not null default false,
+  allow_market boolean not null default false,
+  allow_zone boolean not null default false,
+  guardian_whatsapp text check (guardian_whatsapp is null or char_length(guardian_whatsapp) <= 30),
+  created_at timestamptz not null default now(),
+  linked_at timestamptz,
+  constraint guardian_links_not_self check (guardian_id is null or guardian_id <> minor_id)
+);
+create index if not exists guardian_links_guardian_idx on public.guardian_links (guardian_id);
+
+create table if not exists public.guardian_attempts (
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now()
+);
+create index if not exists guardian_attempts_idx on public.guardian_attempts (profile_id, created_at desc);
+
+alter table public.guardian_links enable row level security;
+alter table public.guardian_attempts enable row level security;
+revoke all on table public.guardian_links from anon;
+revoke insert, update, delete on table public.guardian_links from authenticated;
+revoke all on table public.guardian_attempts from anon, authenticated;
+
+-- cada uno ve su vínculo (como menor o como responsable). Los cambios solo por las funciones de abajo.
+drop policy if exists "guardian_links_select" on public.guardian_links;
+create policy "guardian_links_select" on public.guardian_links
+  for select using (minor_id = (select auth.uid()) or guardian_id = (select auth.uid())
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- ---------- Reglas de edad ----------
+create or replace function public.is_minor(uid uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce((select p.birth_date > (current_date - interval '18 years')::date
+                   from public.profiles p where p.id = uid), false);
+$$;
+
+-- what: 'basic' (participar), 'adult', 'sessions', 'market', 'zone'
+create or replace function public.guardian_allows(uid uuid, what text)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_birth date; l public.guardian_links%rowtype;
+begin
+  if uid is null then return false; end if;
+  select p.birth_date into v_birth from public.profiles p where p.id = uid;
+  if v_birth is null then return false; end if;                               -- primero la fecha de nacimiento
+  if v_birth <= (current_date - interval '18 years')::date then return true; end if;   -- adulto
+  if what = 'adult' then return false; end if;
+  select * into l from public.guardian_links g where g.minor_id = uid and g.status = 'active';
+  if not found then return false; end if;                                      -- menor sin responsable: solo mirar
+  return case what
+    when 'basic' then true
+    when 'sessions' then l.allow_sessions
+    when 'market' then l.allow_market
+    when 'zone' then l.allow_zone
+    else false end;
+end;
+$$;
+
+revoke all on function public.is_minor(uuid) from public, anon;
+revoke all on function public.guardian_allows(uuid, text) from public, anon;
+grant execute on function public.is_minor(uuid) to authenticated, service_role;
+grant execute on function public.guardian_allows(uuid, text) to authenticated, service_role;
+
+-- ---------- Funciones para el menor y el responsable ----------
+create or replace function public.guardian_create_code()
+returns text
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_code text; v_name text;
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  if not public.is_minor(auth.uid()) then raise exception 'Solo las cuentas de menores necesitan un responsable.'; end if;
+  if exists (select 1 from public.guardian_links g where g.minor_id = auth.uid() and g.status = 'active') then
+    raise exception 'Ya tenés un responsable vinculado.';
+  end if;
+  v_code := upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8));
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)) into v_name from public.profiles p where p.id = auth.uid();
+  insert into public.guardian_links (minor_id, minor_name, code, code_expires_at, status)
+    values (auth.uid(), v_name, v_code, now() + interval '48 hours', 'pending')
+  on conflict (minor_id) do update
+    set code = excluded.code, code_expires_at = excluded.code_expires_at, minor_name = excluded.minor_name;
+  return v_code;
+end;
+$$;
+
+create or replace function public.guardian_accept(p_code text, p_birth date, p_whatsapp text)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare l public.guardian_links%rowtype; v_fails int; v_name text; v_wa text;
+begin
+  if auth.uid() is null then return json_build_object('ok', false, 'error', 'Tenés que iniciar sesión.'); end if;
+  if not public.is_adult(auth.uid()) then
+    return json_build_object('ok', false, 'error', 'El responsable tiene que ser mayor de 18 y tener su fecha de nacimiento cargada.');
+  end if;
+  select count(*) into v_fails from public.guardian_attempts a where a.profile_id = auth.uid() and a.created_at > now() - interval '1 hour';
+  if v_fails >= 8 then return json_build_object('ok', false, 'error', 'Demasiados intentos. Probá en una hora.'); end if;
+  select * into l from public.guardian_links g
+    where g.code = upper(trim(coalesce(p_code, ''))) and g.status = 'pending' and g.code_expires_at > now();
+  if not found then
+    insert into public.guardian_attempts (profile_id) values (auth.uid());
+    return json_build_object('ok', false, 'error', 'El código no existe o venció. Pedile uno nuevo.');
+  end if;
+  if l.minor_id = auth.uid() then return json_build_object('ok', false, 'error', 'No podés ser tu propio responsable.'); end if;
+  if p_birth is null or p_birth > (current_date - interval '13 years')::date then
+    return json_build_object('ok', false, 'error', 'SPOTRA es para mayores de 13 años.');
+  end if;
+  if p_birth <= (current_date - interval '18 years')::date then
+    return json_build_object('ok', false, 'error', 'Con esa fecha es mayor de 18 y no necesita responsable. Revisá la fecha.');
+  end if;
+  v_wa := nullif(regexp_replace(coalesce(p_whatsapp, ''), '[^0-9+]', '', 'g'), '');
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)) into v_name from public.profiles p where p.id = auth.uid();
+  update public.guardian_links
+    set guardian_id = auth.uid(), guardian_name = v_name, status = 'active', linked_at = now(),
+        code = null, code_expires_at = null, guardian_whatsapp = v_wa
+    where minor_id = l.minor_id;
+  perform set_config('spotra.guardian_ok', '1', true);   -- el responsable confirma la fecha de nacimiento
+  update public.profiles set birth_date = p_birth where id = l.minor_id;
+  return json_build_object('ok', true, 'minor', l.minor_name);
+end;
+$$;
+
+create or replace function public.guardian_set(p_minor uuid, p_sessions boolean, p_market boolean, p_zone boolean, p_whatsapp text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_wa text;
+begin
+  if not exists (select 1 from public.guardian_links g where g.minor_id = p_minor and g.guardian_id = auth.uid() and g.status = 'active') then
+    raise exception 'No sos responsable de esta cuenta.';
+  end if;
+  v_wa := nullif(regexp_replace(coalesce(p_whatsapp, ''), '[^0-9+]', '', 'g'), '');
+  if coalesce(p_market, false) and v_wa is null then raise exception 'Para habilitar el Market cargá tu WhatsApp.'; end if;
+  update public.guardian_links
+    set allow_sessions = coalesce(p_sessions, false), allow_market = coalesce(p_market, false),
+        allow_zone = coalesce(p_zone, false), guardian_whatsapp = v_wa
+    where minor_id = p_minor;
+  if not coalesce(p_zone, false) then
+    update public.rider_locations set mode = 'off', latitude = null, longitude = null where profile_id = p_minor;
+  end if;
+  if v_wa is not null then
+    update public.listings set whatsapp = v_wa where seller_id = p_minor;
+  end if;
+end;
+$$;
+
+create or replace function public.guardian_unlink(p_minor uuid)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not exists (select 1 from public.guardian_links g where g.minor_id = p_minor
+                 and (g.guardian_id = auth.uid() or g.minor_id = auth.uid())) then
+    raise exception 'No permitido.';
+  end if;
+  delete from public.guardian_links where minor_id = p_minor;
+  update public.rider_locations set mode = 'off', latitude = null, longitude = null where profile_id = p_minor;
+end;
+$$;
+
+create or replace function public.my_guardian_status()
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_birth date; l public.guardian_links%rowtype; v_wards json;
+begin
+  if auth.uid() is null then return null; end if;
+  select p.birth_date into v_birth from public.profiles p where p.id = auth.uid();
+  select * into l from public.guardian_links g where g.minor_id = auth.uid();
+  select coalesce(json_agg(json_build_object('minor_id', g.minor_id, 'minor_name', g.minor_name,
+           'allow_sessions', g.allow_sessions, 'allow_market', g.allow_market, 'allow_zone', g.allow_zone,
+           'whatsapp', g.guardian_whatsapp) order by g.linked_at), '[]'::json)
+    into v_wards from public.guardian_links g where g.guardian_id = auth.uid() and g.status = 'active';
+  return json_build_object(
+    'birth_set', v_birth is not null,
+    'minor', coalesce(v_birth > (current_date - interval '18 years')::date, false),
+    'linked', coalesce(l.status = 'active', false),
+    'code', case when l.status = 'pending' and l.code_expires_at > now() then l.code end,
+    'code_expires_at', case when l.status = 'pending' then l.code_expires_at end,
+    'guardian_name', l.guardian_name,
+    'allow_sessions', coalesce(l.allow_sessions, false),
+    'allow_market', coalesce(l.allow_market, false),
+    'allow_zone', coalesce(l.allow_zone, false),
+    'wards', v_wards);
+end;
+$$;
+
+revoke all on function public.guardian_create_code() from public, anon;
+revoke all on function public.guardian_accept(text, date, text) from public, anon;
+revoke all on function public.guardian_set(uuid, boolean, boolean, boolean, text) from public, anon;
+revoke all on function public.guardian_unlink(uuid) from public, anon;
+revoke all on function public.my_guardian_status() from public, anon;
+grant execute on function public.guardian_create_code() to authenticated;
+grant execute on function public.guardian_accept(text, date, text) to authenticated;
+grant execute on function public.guardian_set(uuid, boolean, boolean, boolean, text) to authenticated;
+grant execute on function public.guardian_unlink(uuid) to authenticated;
+grant execute on function public.my_guardian_status() to authenticated;
+
+-- ---------- Market: los productos de un menor muestran el WhatsApp del responsable ----------
+create or replace function public.listings_minor_whatsapp()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_wa text;
+begin
+  if public.is_minor(new.seller_id) then
+    select g.guardian_whatsapp into v_wa from public.guardian_links g where g.minor_id = new.seller_id and g.status = 'active';
+    if v_wa is null then raise exception 'Tu responsable tiene que cargar su WhatsApp para que puedas publicar.'; end if;
+    new.whatsapp := v_wa;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.listings_minor_whatsapp() from public, anon, authenticated;
+
+drop trigger if exists listings_minor_whatsapp on public.listings;
+create trigger listings_minor_whatsapp
+  before insert or update of whatsapp on public.listings
+  for each row execute function public.listings_minor_whatsapp();
+
+-- ---------- Reglas en el servidor (políticas restrictivas: se suman a las que ya existen) ----------
+-- admin siempre puede. Los demás, según su edad y lo que habilitó su responsable.
+do $$
+declare t text;
+begin
+  foreach t in array array['posts','post_comments','post_likes','follows','spot_status','place_submissions','place_photos','event_registrations']
+  loop
+    execute format('drop policy if exists "minors_basic" on public.%I', t);
+    execute format($p$create policy "minors_basic" on public.%I as restrictive for insert to authenticated
+      with check (public.guardian_allows((select auth.uid()), 'basic')
+        or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')$p$, t);
+  end loop;
+end $$;
+
+drop policy if exists "minors_adult" on public.events;
+create policy "minors_adult" on public.events as restrictive for insert to authenticated
+  with check (public.guardian_allows((select auth.uid()), 'adult')
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+drop policy if exists "minors_market" on public.listings;
+create policy "minors_market" on public.listings as restrictive for insert to authenticated
+  with check (public.guardian_allows((select auth.uid()), 'market')
+    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+
+-- sesiones de menores: solo si el responsable las habilitó y solo en skateparks
+drop policy if exists "minors_sessions" on public.sessions;
+create policy "minors_sessions" on public.sessions as restrictive for insert to authenticated
+  with check (
+    coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin'
+    or (public.guardian_allows((select auth.uid()), 'sessions')
+        and (not public.is_minor((select auth.uid()))
+             or exists (select 1 from public.places p where p.id = place_id and p.type = 'skatepark'))));
+
+drop policy if exists "minors_session_join" on public.session_participants;
+create policy "minors_session_join" on public.session_participants as restrictive for insert to authenticated
+  with check (
+    coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin'
+    or (public.guardian_allows((select auth.uid()), 'sessions')
+        and (not public.is_minor((select auth.uid()))
+             or exists (select 1 from public.sessions s join public.places p on p.id = s.place_id
+                        where s.id = session_id and p.type = 'skatepark'))));
+
+-- avisos por zona de menores: solo si el responsable los habilitó
+drop policy if exists "minors_zone_insert" on public.rider_locations;
+create policy "minors_zone_insert" on public.rider_locations as restrictive for insert to authenticated
+  with check (mode = 'off' or public.guardian_allows((select auth.uid()), 'zone'));
+drop policy if exists "minors_zone_update" on public.rider_locations;
+create policy "minors_zone_update" on public.rider_locations as restrictive for update to authenticated
+  using (true)
+  with check (mode = 'off' or public.guardian_allows((select auth.uid()), 'zone'));
