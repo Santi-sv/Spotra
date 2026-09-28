@@ -373,6 +373,7 @@
       addBtn.textContent = 'Agregar a SPOTRA';
     }
     renderGallery(place);
+    if(window.SpotraConditions) window.SpotraConditions.renderForPlace(place);
     if(window.SpotraSessions) window.SpotraSessions.renderForPlace(place);
     if(window.SpotraEvents) window.SpotraEvents.renderSpotEvents(place);
   }
