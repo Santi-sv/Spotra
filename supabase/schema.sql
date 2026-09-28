@@ -1503,3 +1503,87 @@ create policy "follows_insert_own" on public.follows
 drop policy if exists "follows_delete_own" on public.follows;
 create policy "follows_delete_own" on public.follows
   for delete using (follower_id = (select auth.uid()) or followed_id = (select auth.uid()));
+
+
+-- =====================================================================
+-- SPOTRA · Avisos de sesiones (ubicación del rider + registro de avisos)
+-- Lo usan spotra-location.js (la zona de cada rider) y la Edge Function session-push.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- ---------- Zona / ubicación de cada rider (privada: solo la ve su dueño) ----------
+create table if not exists public.rider_locations (
+  profile_id uuid primary key default auth.uid() references public.profiles(id) on delete cascade,
+  mode text not null default 'off' check (mode in ('live','zone','off')),
+  latitude double precision,
+  longitude double precision,
+  radius_km int not null default 10 check (radius_km in (5,10,25)),
+  lang text not null default 'es' check (lang in ('es','pt','en')),
+  tz text check (tz is null or char_length(tz) <= 64),
+  updated_at timestamptz not null default now(),
+  constraint rider_locations_coords check (
+    mode = 'off' or (latitude between -90 and 90 and longitude between -180 and 180))
+);
+create index if not exists rider_locations_geo_idx on public.rider_locations (latitude, longitude) where mode <> 'off';
+
+-- Reglas: "mientras uso la app" solo +18, coordenadas redondeadas a ~1 km, el dueño lo pone el servidor.
+create or replace function public.rider_locations_guard()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if auth.uid() is null then raise exception 'Tenés que iniciar sesión.'; end if;
+  if tg_op = 'INSERT' then new.profile_id := auth.uid();
+  elsif new.profile_id <> old.profile_id then raise exception 'No permitido.';
+  end if;
+  if new.mode = 'live' and not public.is_adult(auth.uid()) then
+    raise exception 'La ubicación mientras usás la app es solo para mayores de 18. Podés usar "Solo mi zona".';
+  end if;
+  if new.mode = 'off' then
+    new.latitude := null; new.longitude := null;
+  else
+    if new.latitude is null or new.longitude is null then raise exception 'Marcá tu zona primero.'; end if;
+    new.latitude := round(new.latitude::numeric, 2)::double precision;
+    new.longitude := round(new.longitude::numeric, 2)::double precision;
+  end if;
+  new.updated_at := now();
+  return new;
+end;
+$$;
+
+drop trigger if exists rider_locations_guard on public.rider_locations;
+create trigger rider_locations_guard
+  before insert or update on public.rider_locations
+  for each row execute function public.rider_locations_guard();
+
+alter table public.rider_locations enable row level security;
+revoke all on table public.rider_locations from anon;
+
+drop policy if exists "rider_locations_own_select" on public.rider_locations;
+create policy "rider_locations_own_select" on public.rider_locations
+  for select using (profile_id = (select auth.uid()));
+drop policy if exists "rider_locations_own_insert" on public.rider_locations;
+create policy "rider_locations_own_insert" on public.rider_locations
+  for insert with check ((select auth.role()) = 'authenticated' and profile_id = (select auth.uid()));
+drop policy if exists "rider_locations_own_update" on public.rider_locations;
+create policy "rider_locations_own_update" on public.rider_locations
+  for update using (profile_id = (select auth.uid())) with check (profile_id = (select auth.uid()));
+drop policy if exists "rider_locations_own_delete" on public.rider_locations;
+create policy "rider_locations_own_delete" on public.rider_locations
+  for delete using (profile_id = (select auth.uid()));
+
+-- ---------- Una sesión avisa una sola vez ----------
+alter table public.sessions add column if not exists notified_at timestamptz;
+
+-- ---------- Registro de avisos (tope diario por rider). Solo lo usa el servidor. ----------
+create table if not exists public.session_notifications (
+  session_id uuid not null references public.sessions(id) on delete cascade,
+  profile_id uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (session_id, profile_id)
+);
+create index if not exists session_notifications_profile_idx on public.session_notifications (profile_id, created_at desc);
+alter table public.session_notifications enable row level security;
+revoke all on table public.session_notifications from anon, authenticated;
