@@ -1422,6 +1422,42 @@ html.theme-light body:not(.auth-mode) .alert-opt{background:#f5f7f5;border-color
 html.theme-light body:not(.auth-mode) .alert-opt.active{background:rgba(46,232,77,.14);border-color:rgba(18,165,47,.55)}
 html.theme-light body:not(.auth-mode) .alert-opt em{color:#a36b00}
 html.theme-light body.map-mode #spotSheet.spot-detail,html.theme-light body.map-mode .map-list-sheet{background:#ffffff!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* ===== Estado del spot + clima ===== */
+.cond{margin:14px 0 4px}
+.cond-weather{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:13.5px}
+.cond-weather svg{width:20px;height:20px;color:#ffc233;flex-shrink:0}
+.cond-weather.wet svg{color:#3aa0ff}
+.cond-weather b{font-size:16px}
+.cond-weather span{color:var(--muted)}
+.cond-loading{color:var(--muted)}
+.cond-head{display:flex;align-items:center;justify-content:space-between;margin:14px 0 8px}
+.cond-head h3{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.cond-btn{height:32px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:800;color:var(--green-hot);background:transparent;border:1px solid rgba(46,232,77,.5)}
+.cond-chips{display:flex;flex-wrap:wrap;gap:8px}
+.cond-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);font-size:13px}
+.cond-chip i,.status-options i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.cond-chip small{color:var(--muted);font-size:12px}
+.cond-empty{color:var(--muted);font-size:13px}
+.cond-credit{display:block;margin-top:8px;color:var(--dim);font-size:10.5px}
+.status-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.status-options button{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 14px;border-radius:14px;font-size:14px;font-weight:700;text-align:left;color:var(--text);border:1px solid var(--line);background:rgba(255,255,255,.04)}
+html.theme-light body:not(.auth-mode) .cond-weather,html.theme-light body:not(.auth-mode) .cond-chip,html.theme-light body:not(.auth-mode) .status-options button{background:#f5f7f5;border-color:rgba(0,0,0,.08)}
+/* ===== Menores y responsable ===== */
+.grd-banner{margin:14px 0;padding:16px;border-radius:20px;border:1px solid rgba(255,194,51,.5);background:rgba(255,194,51,.08)}
+.grd-banner b{display:block;font-size:16px}
+.grd-banner p{margin:6px 0 12px;color:var(--muted);font-size:13.5px;line-height:1.45}
+.grd-banner .primary-btn,.grd-full{width:100%;min-height:48px;margin-top:10px}
+.grd-code{margin:14px 0 4px;padding:16px;border-radius:16px;text-align:center;font-family:var(--display);font-size:32px;letter-spacing:.18em;border:1px dashed rgba(46,232,77,.6);background:rgba(46,232,77,.08)}
+.grd-perm{display:flex;justify-content:space-between;gap:10px;padding:11px 12px;border-radius:12px;border:1px solid var(--line);margin-top:8px;font-size:14px}
+.grd-perm b{color:var(--muted);font-size:13px}
+.grd-perm b.on{color:var(--green-hot)}
+.grd-ward{padding:14px;border-radius:16px;border:1px solid var(--line);margin-top:10px}
+.grd-ward>b{display:block;font-size:15px;margin-bottom:8px}
+.grd-toggle{display:flex;align-items:center;gap:10px;padding:8px 0;font-size:14px}
+.grd-toggle input{width:20px;height:20px;accent-color:#2ee84d}
+.grd-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.grd-actions button{min-height:44px}
+html.theme-light body:not(.auth-mode) .grd-perm,html.theme-light body:not(.auth-mode) .grd-ward{background:#f5f7f5;border-color:rgba(0,0,0,.08)}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1570,6 +1606,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
             <a class="spot-info-row" id="spotWebRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span id="spotWeb"></span></a>
             <a class="spot-info-row" id="spotIgRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg><span id="spotIg"></span></a>
           </div>
+          <div id="spotConditions"></div>
           <div id="spotSessions"></div>
           <div class="section-head" id="spotEventsHead" style="display:none"><h3>Próximos eventos</h3></div>
           <div id="spotEvents"></div>
@@ -1647,6 +1684,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
           </div>
         </div>
 
+        <div id="guardianBanner"></div>
         <button class="profile-settings-entry panel" data-open-modal="settings">
           <span><b>Configuración</b><small>Privacidad, contacto, contraseña y seguridad de cuenta</small></span>
           <i>›</i>
@@ -1911,6 +1949,13 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 
 
     <!-- PERFIL / CONFIG -->
+    <div class="modal-form" data-form="guardian">
+      <div id="guardianBody"></div>
+    </div>
+    <div class="modal-form" data-form="status">
+      <p class="hint">¿Cómo está <b id="statusPlaceName">el spot</b> ahora? Tu aviso lo ven todos y vence solo en unas horas.</p>
+      <div class="status-options" id="statusOptions"></div>
+    </div>
     <div class="modal-form" data-form="report">
       <p class="hint" id="reportWhat">—</p>
       <div class="ses-label">¿Qué pasa?</div>
@@ -1996,6 +2041,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         <div id="pushHint" style="display:none;color:var(--muted);font-size:13px;line-height:1.5;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,210,74,.3);background:rgba(255,210,74,.06)"></div>
         <button class="admin-only" data-role-set="admin" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Cambiar a cuenta admin</span><b>›</b></button>
         <button data-open-alerts><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Avisos de sesiones</span><b>›</b></button>
+        <button data-open-guardian><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.2"/><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4 4 0 0 1 6.5-3"/></svg>Responsable / menores de 18</span><b>›</b></button>
         <button data-open-modal="blocked"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Usuarios bloqueados</span><b>›</b></button>
         <button data-open-modal="editProfile"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>Nombre y apellido</span><b>›</b></button>
         <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
@@ -2058,7 +2104,7 @@ if('serviceWorker' in navigator){
 }
 </script>
 <script src="assets/js/spotra-backend.js?v=18"></script>
-<script src="assets/js/spotra-google-map.js?v=17"></script>
+<script src="assets/js/spotra-google-map.js?v=18"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'map', brand:'brand-home', admin:'admin-approvals' };
@@ -2319,7 +2365,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -2493,7 +2539,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=5"></script>
+<script src="assets/js/spotra-i18n.js?v=7"></script>
 <script src="assets/js/spotra-follow.js?v=1"></script>
 <script src="assets/js/spotra-location.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2501,6 +2547,8 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-safety.js?v=1"></script>
+<script src="assets/js/spotra-guardian.js?v=1"></script>
+<script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=6"></script>
 <script src="assets/js/spotra-market.js?v=2"></script>
 <script src="assets/js/spotra-forum.js?v=3"></script>
