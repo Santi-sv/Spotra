@@ -1403,6 +1403,29 @@ html.theme-light body:not(.auth-mode) .rep-reasons button.active{background:rgba
 .follow-counts{display:flex;gap:16px;margin-top:10px}
 .follow-counts button{background:none;border:0;padding:0;color:var(--muted);font-size:14px;cursor:pointer}
 .follow-counts b{color:var(--text);font-size:16px}
+/* ===== Avisos de sesiones ===== */
+.alert-opts{display:grid;gap:8px}
+.alert-opt{text-align:left;padding:12px 14px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text)}
+.alert-opt b{display:block;font-size:15px}
+.alert-opt span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.alert-opt em{display:inline-block;margin-top:6px;font-style:normal;font-size:11px;font-weight:800;color:#ffd24a}
+.alert-opt.active{border-color:#2ee84d;background:rgba(46,232,77,.12)}
+.alert-opt.locked{opacity:.5}
+.alert-zone-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.alert-zone-btns .ghost-btn{min-height:44px;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 8px}
+.alert-zone-btns svg{width:16px;height:16px}
+#alertRadius{margin-top:0}
+#alertRadius button{height:40px;border-radius:12px}
+.alert-push{margin-top:12px;padding:10px 12px;border-radius:14px;border:1px solid rgba(255,210,74,.35);background:rgba(255,210,74,.08);display:grid;gap:8px;font-size:13px;color:var(--text)}
+.alert-push .ghost-btn{min-height:40px}
+html.theme-light body:not(.auth-mode) .alert-opt{background:#f5f7f5;border-color:rgba(0,0,0,.08)}
+html.theme-light body:not(.auth-mode) .alert-opt.active{background:rgba(46,232,77,.14);border-color:rgba(18,165,47,.55)}
+html.theme-light body:not(.auth-mode) .alert-opt em{color:#a36b00}
+html.theme-light body.map-mode #spotSheet.spot-detail,html.theme-light body.map-mode .map-list-sheet{background:#ffffff!important;backdrop-filter:none;-webkit-backdrop-filter:none}
+/* ===== Compartir ===== */
+#spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
+#spotShareBtn svg,.ses-share svg{width:17px;height:17px}
+.ses-share{display:inline-flex;align-items:center;gap:6px;margin:12px 14px 0 0;padding:6px 2px;background:none;border:0;color:var(--green-hot);font-size:13px;font-weight:800;cursor:pointer}
 /* App instalada (PWA): barra inferior pegada al borde, como app nativa */
 @media(max-width:760px){
   html.pwa .bottom-nav{left:0;right:0;bottom:0;height:calc(62px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);border-radius:0;border:0;border-top:1px solid rgba(46,232,77,.22);background:#070a08;box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
@@ -1552,6 +1575,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
           <div id="spotEvents"></div>
           <div class="spot-actions">
             <button class="primary-btn" id="spotDirectionsBtn">Cómo llegar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+            <button class="ghost-btn" id="spotShareBtn" style="display:none"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></svg>Compartir</button>
             <button class="ghost-btn" id="spotPhotoBtn" style="display:none">Subir foto</button>
             <button class="primary-btn" id="spotAddBtn" style="display:none">Agregar a SPOTRA <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg></button>
             <input type="file" id="spotPhotoInput" accept="image/*" hidden>
@@ -1897,6 +1921,26 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <button type="button" class="primary-btn" id="reportSend" style="width:100%;margin-top:12px;height:52px">Enviar reporte</button>
       <p class="theme-hint" style="margin-top:10px">El admin lo revisa. La persona no sabe quién la reportó.</p>
     </div>
+    <div class="modal-form" data-form="alerts">
+      <p class="hint">Te avisamos cuando alguien que seguís, o un rider cerca tuyo, crea una sesión. Nunca guardamos tu ubicación exacta: solo la zona (~1 km).</p>
+      <div class="alert-opts">
+        <button type="button" class="alert-opt" data-alert-mode="live"><b>Mientras uso la app</b><span>Tu zona se actualiza sola cuando abrís SPOTRA.</span><em>Solo mayores de 18</em></button>
+        <button type="button" class="alert-opt" data-alert-mode="zone"><b>Solo mi zona</b><span>Elegís tu zona una vez.</span></button>
+        <button type="button" class="alert-opt" data-alert-mode="off"><b>Nunca</b><span>Solo avisos de quienes seguís.</span></button>
+      </div>
+      <div id="alertZoneBox" style="display:none">
+        <div class="ses-label">Tu zona</div>
+        <div class="alert-zone-btns"><button type="button" class="ghost-btn" id="alertZoneMe"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Usar mi ubicación actual</button><button type="button" class="ghost-btn" id="alertZoneMap">Usar el centro del mapa</button></div>
+        <p class="theme-hint" id="alertZoneState">Todavía no marcaste tu zona.</p>
+      </div>
+      <div id="alertRadiusBox">
+        <div class="ses-label">Distancia</div>
+        <div class="seg" id="alertRadius"><button type="button" data-alert-radius="5">5 km</button><button type="button" class="active" data-alert-radius="10">10 km</button><button type="button" data-alert-radius="25">25 km</button></div>
+      </div>
+      <div id="alertPushBox" class="alert-push" style="display:none"><span>Para recibir avisos tenés que activar las notificaciones.</span><button type="button" class="ghost-btn" id="alertPushBtn">Activar notificaciones</button></div>
+      <p class="ses-error" id="alertError"></p>
+      <button type="button" class="primary-btn" id="alertSave" style="width:100%;margin-top:12px;height:52px">Guardar</button>
+    </div>
     <div class="modal-form" data-form="follows">
       <div id="followList"></div>
     </div>
@@ -1951,6 +1995,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         </div>
         <div id="pushHint" style="display:none;color:var(--muted);font-size:13px;line-height:1.5;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,210,74,.3);background:rgba(255,210,74,.06)"></div>
         <button class="admin-only" data-role-set="admin" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Cambiar a cuenta admin</span><b>›</b></button>
+        <button data-open-alerts><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Avisos de sesiones</span><b>›</b></button>
         <button data-open-modal="blocked"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>Usuarios bloqueados</span><b>›</b></button>
         <button data-open-modal="editProfile"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>Nombre y apellido</span><b>›</b></button>
         <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
@@ -2013,7 +2058,7 @@ if('serviceWorker' in navigator){
 }
 </script>
 <script src="assets/js/spotra-backend.js?v=18"></script>
-<script src="assets/js/spotra-google-map.js?v=15"></script>
+<script src="assets/js/spotra-google-map.js?v=17"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'map', brand:'brand-home', admin:'admin-approvals' };
@@ -2053,6 +2098,18 @@ function setRoute(route, push = true){
 }
 
 /* ===== Toast ===== */
+/* Compartir: menú del celular (WhatsApp, Instagram...) o copia el link */
+async function spotraShare(o){
+  const url = o.url || location.origin + '/';
+  try {
+    if(navigator.share){ await navigator.share({ title: o.title || 'SPOTRA', text: o.text || '', url }); return; }
+  } catch(e){ if(e && e.name === 'AbortError') return; }
+  const full = (o.text ? o.text + ' ' : '') + url;
+  try { await navigator.clipboard.writeText(full); toast('Link copiado. Pegalo donde quieras.'); }
+  catch(e){ window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener'); }
+}
+function spotraPlaceUrl(id){ return location.origin + '/?place=' + encodeURIComponent(id) + '#map'; }
+
 function toast(msg){
   const zone = document.getElementById('toastZone');
   const t = document.createElement('div');
@@ -2262,7 +2319,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -2436,14 +2493,15 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=3"></script>
+<script src="assets/js/spotra-i18n.js?v=5"></script>
 <script src="assets/js/spotra-follow.js?v=1"></script>
+<script src="assets/js/spotra-location.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
 <script src="assets/js/spotra-admin.js?v=14"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-safety.js?v=1"></script>
-<script src="assets/js/spotra-sessions.js?v=4"></script>
+<script src="assets/js/spotra-sessions.js?v=6"></script>
 <script src="assets/js/spotra-market.js?v=2"></script>
 <script src="assets/js/spotra-forum.js?v=3"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
