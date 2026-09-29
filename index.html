@@ -1470,6 +1470,38 @@ html.theme-light body:not(.auth-mode) .grd-perm,html.theme-light body:not(.auth-
 .nav-avatar.has-img{background-size:cover;background-position:center;color:transparent}
 @media(max-width:760px){.pa-initial{font-size:42px}.pa-edit{width:36px;height:36px}.pc-edit span{display:none}.pc-edit{width:36px;padding:0;justify-content:center}}
 html.theme-light body:not(.auth-mode) .pa-edit{border-color:#ffffff}
+/* ===== Foro: fotos completas, avatar con inicial ===== */
+.feed-img{display:block;width:100%;height:auto;max-height:75vh;object-fit:contain;margin-top:12px;border-radius:18px;background:rgba(0,0,0,.25);cursor:zoom-in}
+.feed-av{display:grid;place-items:center;border-radius:50%!important;font-family:var(--display);font-size:18px;color:#2ee84d;background-color:#0b0f0c!important;background-size:cover!important;background-position:center!important;border:2px solid rgba(46,232,77,.45)!important;padding:0;cursor:pointer}
+.rider-link{cursor:pointer}
+/* ===== Visor de fotos ===== */
+.lb{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;background:#050505}
+.lb.open{display:flex}
+body.lb-open{overflow:hidden}
+.lb-close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:2;width:44px;height:44px;border-radius:50%;font-size:28px;line-height:1;color:#fff;background:rgba(255,255,255,.14);border:0}
+.lb-scroll{flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch}
+.lb-scroll img{max-width:100%;max-height:100%;object-fit:contain;touch-action:pinch-zoom}
+.lb-scroll img.zoom{max-width:none;max-height:none;width:200%}
+.lb-cap{padding:14px 18px calc(18px + env(safe-area-inset-bottom));color:#eef2ee;font-size:15px}
+.lb-cap small{display:block;margin-top:6px;color:#9aa6a0}
+/* ===== Perfil estilo Instagram ===== */
+.rp-wrap{margin-top:14px}
+.rp-head{display:flex;align-items:baseline;gap:10px;margin:16px 2px 10px}
+.rp-head h3{font-family:var(--display);font-size:20px}
+.rp-head span{color:var(--muted);font-size:14px}
+.rp-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-radius:16px;overflow:hidden}
+.rp-tile{aspect-ratio:1/1;border:0;padding:0;background:#111 center/cover no-repeat;cursor:pointer}
+.rp-text{display:flex;align-items:center;justify-content:center;padding:8px;background:linear-gradient(135deg,#0f3319,#071007);color:#eef2ee;font-size:12px;line-height:1.3;text-align:center;overflow:hidden}
+.rp-text span{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.rp-empty{color:var(--muted);font-size:14px;padding:14px 4px}
+.rp-back{margin:4px 0 12px;background:none;border:0;color:var(--green-hot);font-weight:800;font-size:15px;cursor:pointer}
+.rp-stats{display:grid;grid-template-columns:repeat(3,1fr);margin-top:16px;padding:12px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);text-align:center}
+.rp-stats b{display:block;font-size:18px}
+.rp-stats span{color:var(--muted);font-size:12.5px}
+.rp-actions{display:flex;align-items:center;gap:12px;margin-top:12px}
+.rp-follow{flex:1;height:40px;padding:0 18px;font-size:14px;margin-left:0;justify-content:center}
+.rp-actions .report-link{margin-top:0}
+[data-view="rider"] .profile-avatar{cursor:zoom-in}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1579,6 +1611,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       </div>
     </section>
 
+
+    <section class="view" data-view="rider">
+      <div id="riderView"></div>
+    </section>
 
     <section class="view" data-view="map">
       <div class="map-layout">
@@ -1697,6 +1733,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         </div>
 
         <div id="guardianBanner"></div>
+        <div id="myPosts" class="rp-wrap"></div>
         <button class="profile-settings-entry panel" data-open-modal="settings">
           <span><b>Configuración</b><small>Privacidad, contacto, contraseña y seguridad de cuenta</small></span>
           <i>›</i>
@@ -1858,7 +1895,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <div class="seg" data-seg="spotType"><button class="active" data-v="Street spot">Street</button><button data-v="Skatepark">Skatepark</button><button data-v="Tienda">Tienda</button></div>
       <div class="form-grid" id="spotForm" style="grid-template-columns:1fr">
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Nombre del spot (ej. Ledges del Buen Pastor)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/></svg><input required placeholder="Ciudad y país (ej. Córdoba, Argentina)"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><input required placeholder="Ciudad y país (ej. Córdoba, Argentina)"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input placeholder="Descripción corta (obstáculos, superficie, horarios)"></div>
       </div>
       <div style="margin-top:14px">
@@ -1941,7 +1978,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         <span class="f-label">Precio</span>
         <div style="display:grid;grid-template-columns:96px 1fr;gap:8px">
           <div class="field full" style="padding-right:6px"><select required id="mlCurrency" style="min-width:0"><option value="UYU">$U</option><option value="USD">US$</option><option value="ARS">AR$</option><option value="BRL">R$</option></select></div>
-          <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M7 7h7a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h9"/></svg><input required id="mlPrice" type="number" min="1" inputmode="numeric" placeholder="3500"></div>
+          <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M16.5 6.5C15.6 5.3 14 4.5 12 4.5c-2.6 0-4.3 1.3-4.3 3.2 0 4.6 9 2.3 9 7.2 0 2-1.8 3.6-4.7 3.6-2.3 0-4-.9-5-2.3"/></svg><input required id="mlPrice" type="number" min="1" inputmode="numeric" placeholder="3500"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div><span class="f-label">Categoría</span><div class="field full"><select required id="mlCategory"><option value="tablas">Tablas</option><option value="ruedas">Ruedas</option><option value="bicis">Bicis</option><option value="protecciones">Protecciones</option><option value="ropa">Ropa</option><option value="otros" selected>Otros</option></select></div></div>
@@ -2551,7 +2588,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=8"></script>
+<script src="assets/js/spotra-i18n.js?v=9"></script>
 <script src="assets/js/spotra-follow.js?v=1"></script>
 <script src="assets/js/spotra-location.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2560,11 +2597,12 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-safety.js?v=1"></script>
 <script src="assets/js/spotra-avatar.js?v=1"></script>
+<script src="assets/js/spotra-riders.js?v=1"></script>
 <script src="assets/js/spotra-guardian.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
-<script src="assets/js/spotra-sessions.js?v=6"></script>
+<script src="assets/js/spotra-sessions.js?v=7"></script>
 <script src="assets/js/spotra-market.js?v=2"></script>
-<script src="assets/js/spotra-forum.js?v=3"></script>
+<script src="assets/js/spotra-forum.js?v=4"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=4"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
