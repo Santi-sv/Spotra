@@ -1,241 +1,814 @@
-/* SPOTRA · Foro (v1)
-   - Posts reales con foto opcional, publicados al instante.
-   - Likes y comentarios reales. El autor (o el admin) puede eliminar posts y comentarios.
-   - La preview de Inicio muestra los últimos posts reales. */
 (function(){
-  let uid = null;
-  let isAdmin = false;
-  let cache = [];
+  const cfg = () => (window.SpotraBackend && window.SpotraBackend.config) || window.SPOTRA_CONFIG || {};
+  let map;
+  let searchBox;
+  let markers = [];
+  let initialized = false;
+  let activeType = 'all';
+  let currentDetail = null;
+  let selectedMarker = null;
+  let userMarker = null;
+  let userLocation = null;
 
-  function toast(m){ (window.toast || function(x){ console.log('[SPOTRA]', x); })(m); }
-  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-  function B(){ return window.SpotraBackend || null; }
+  /* Mapa realista: de día el estilo estándar de Google; de noche su versión oscura.
+     En los dos se ocultan comercios, salud e íconos de transporte para que se lean los pines. */
+  const HIDE = [
+    { featureType: 'poi.business', stylers: [{ visibility: 'off' }] },
+    { featureType: 'poi.medical', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] }
+  ];
+  const nightStyle = [
+    { elementType: 'geometry', stylers: [{ color: '#1f2a24' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#1f2a24' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#8f9a92' }] },
+    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#d6ded8' }] },
+    { featureType: 'poi', elementType: 'labels.text.fill', stylers: [{ color: '#9fb2a4' }] },
+    { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#20402a' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#6fae7f' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#36423b' }] },
+    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a231e' }] },
+    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#a3aea6' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#4c5a51' }] },
+    { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a231e' }] },
+    { featureType: 'road.highway', elementType: 'labels.text.fill', stylers: [{ color: '#cfd8d2' }] },
+    { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#2c3831' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#14242c' }] },
+    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#5f7480' }] }
+  ];
+  const isDark = () => document.documentElement.classList.contains('theme-dark');
+  const mapStyle = () => (isDark() ? nightStyle : []).concat(HIDE);
+  window.addEventListener('spotra-theme', () => {
+    if(map && !cfg().GOOGLE_MAP_ID) map.setOptions({ styles: mapStyle() });
+  });
 
-  function timeAgo(d){
-    if(!(d instanceof Date) || isNaN(d)) return '';
-    const s = Math.floor((Date.now() - d.getTime()) / 1000);
-    if(s < 60) return 'ahora';
-    if(s < 3600) return 'hace ' + Math.floor(s / 60) + ' min';
-    if(s < 86400) return 'hace ' + Math.floor(s / 3600) + ' h';
-    if(s < 2592000) return 'hace ' + Math.floor(s / 86400) + ' d';
-    return 'hace ' + Math.floor(s / 2592000) + ' mes' + (Math.floor(s / 2592000) === 1 ? '' : 'es');
+  // idioma del mapa: el elegido en SPOTRA (clave spotra_lang, compartida con la landing)
+  function mapsLang(){
+    let v = '';
+    try { v = (localStorage.getItem('spotra_lang') || navigator.language || 'es').toLowerCase(); } catch(e){ v = 'es'; }
+    return v.startsWith('pt') ? 'pt-BR' : v.startsWith('en') ? 'en' : 'es';
+  }
+  const isMobile = () => window.matchMedia('(max-width:760px)').matches;
+  let entries = [];
+
+  function loadGoogleMaps(){
+    const key = cfg().GOOGLE_MAPS_API_KEY;
+    if(!key) return Promise.resolve(false);
+    if(window.google && window.google.maps) return Promise.resolve(true);
+    if(window.__spotraGoogleLoading) return window.__spotraGoogleLoading;
+    window.__spotraGoogleLoading = new Promise((resolve, reject) => {
+      window.__spotraGoogleReady = () => resolve(true);
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(key)}&language=${encodeURIComponent(mapsLang())}&callback=__spotraGoogleReady`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    }).catch(error => {
+      console.warn('[SPOTRA] Google Maps unavailable:', error);
+      return false;
+    });
+    return window.__spotraGoogleLoading;
   }
 
-  async function refreshIdentity(){
-    if(!B()) return;
-    uid = await B().getUserId();
-    isAdmin = false;
-    if(uid && B().getClient){
-      const c = await B().getClient();
-      const { data } = await c.auth.getSession();
-      isAdmin = !!(data?.session?.user?.app_metadata?.role === 'admin');
+  function ensureCanvas(){
+    const stage = document.querySelector('.map-stage');
+    if(!stage) return null;
+    let canvas = document.getElementById('googleMapCanvas');
+    if(!canvas){
+      canvas = document.createElement('div');
+      canvas.id = 'googleMapCanvas';
+      canvas.className = 'google-map-canvas';
+      canvas.setAttribute('aria-label', 'Mapa Google de SPOTRA');
+      stage.prepend(canvas);
     }
+    return canvas;
   }
 
-  /* ================= Feed ================= */
-  function postHTML(p){
-    const avatar = p.avatarUrl ? `style="background-image:url('${esc(p.avatarUrl)}')"` : '';
-    const initial = esc(String(p.username || 'R').charAt(0).toUpperCase());
-    const canDelete = uid && (p.authorId === uid || isAdmin);
-    return `<article class="feed-card" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
-      <div class="feed-head"><button type="button" class="avatar feed-av${p.avatarUrl ? ' has-img' : ''}" ${avatar} data-rider="${esc(p.authorId)}" aria-label="@${esc(p.username)}">${p.avatarUrl ? '' : initial}</button>
-        <div><b class="rider-link" data-rider="${esc(p.authorId)}">@${esc(p.username)}</b> <button type="button" class="follow-btn" data-follow="${esc(p.authorId)}" data-follow-name="${esc(p.username)}" hidden>Seguir</button><div class="meta">${timeAgo(p.createdAt)}</div></div>
-        ${canDelete ? `<span class="feed-del" data-post-del="${esc(p.id)}" title="Eliminar">×</span>` : ''}
-        <span class="feed-flag" data-report="post" data-report-id="${esc(p.id)}" data-report-user="${esc(p.authorId)}" data-report-name="${esc(p.username)}" title="Reportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>
-      </div>
-      <p class="lead" style="font-size:15px;white-space:pre-line">${esc(p.content)}</p>
-      ${p.imageUrl ? `<img class="feed-img" src="${esc(p.imageUrl)}" alt="" loading="lazy" data-lightbox="${esc(p.imageUrl)}">` : ''}
-      <div class="feed-actions">
-        <button data-post-like="${esc(p.id)}" class="${p.likedByMe ? 'liked' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg><span>${p.likes}</span></button>
-        <button data-post-cmt="${esc(p.id)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><span>${p.comments}</span></button>
-      </div>
-      <div class="cmt-box" data-cmt-box="${esc(p.id)}" style="display:none"></div>
-    </article>`;
+  /* Pines redondos: círculo negro con borde blanco y el ícono del tipo.
+     skatepark = rampa (verde), spot = escaleras (blanco), tienda = local (gris), evento = calendario (lima).
+     El seleccionado se agranda y el borde pasa a verde. */
+  const PIN_COLORS = { skatepark: '#2ee84d', street_spot: '#ffffff', store: '#b9c4bb', event_venue: '#c8ff3c' };
+  const PIN_GLYPHS = {
+    skatepark: '<path d="M4 16h16M5 16c2-7 5-7 7-2 2 4 5 4 7-2"/>',
+    street_spot: '<path d="M4 19h4v-4h4v-4h4V7h4"/>',
+    store: '<path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/>',
+    event_venue: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>'
+  };
+
+  function pinGlyph(type){
+    const color = PIN_COLORS[type] || '#ffffff';
+    const glyph = PIN_GLYPHS[type] || PIN_GLYPHS.street_spot;
+    return { color, glyph };
   }
 
-  async function renderFeed(){
-    const feed = document.getElementById('feed');
-    if(!feed || !B()) return;
-    await refreshIdentity();
-    cache = await B().listPosts({ limit: 40 });
-    if(!cache.length){
-      feed.innerHTML = '<div class="meta" style="margin-top:12px">Todavía no hay publicaciones. Sé el primero: contá dónde patinás hoy.</div>';
-      renderHomeForum();
+  const ridersAt = id => (window.SpotraSessions && id ? window.SpotraSessions.ridersAt(id) : 0);
+
+  function markerIcon(type, selected, riders){
+    const { color, glyph } = pinGlyph(type);
+    const live = riders > 0;
+    const border = (selected || live) ? '#2ee84d' : '#ffffff';
+    const bw = (selected || live) ? 4 : 3;
+    const halo = live ? '<circle cx="30" cy="30" r="28" fill="rgba(46,232,77,.30)"/>' : '';
+    const badge = live ? `<circle cx="47" cy="12" r="11" fill="#2ee84d" stroke="#0b0f0c" stroke-width="2"/><text x="47" y="16.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#06130a">${riders > 9 ? '9+' : riders}</text>` : '';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${halo}<circle cx="30" cy="32" r="21" fill="rgba(0,0,0,.28)"/><circle cx="30" cy="30" r="21" fill="#0b0f0c" stroke="${border}" stroke-width="${bw}"/><g transform="translate(18,18)" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</g>${badge}</svg>`;
+    const size = selected ? 64 : (live ? 58 : 48);
+    return {
+      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      scaledSize: new google.maps.Size(size, size),
+      anchor: new google.maps.Point(size / 2, size / 2)
+    };
+  }
+
+  /* ---------- agrupado de pines (clusters) ---------- */
+  let clusterer = null;
+  function loadClusterLib(){
+    if(window.markerClusterer) return Promise.resolve(true);
+    if(window.__spotraClusterLoading) return window.__spotraClusterLoading;
+    window.__spotraClusterLoading = new Promise(resolve => {
+      const sc = document.createElement('script');
+      sc.src = 'https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.min.js';
+      sc.async = true;
+      sc.onload = () => resolve(!!window.markerClusterer);
+      sc.onerror = () => resolve(false);
+      document.head.appendChild(sc);
+    });
+    return window.__spotraClusterLoading;
+  }
+
+  function clusterIcon(count, live){
+    const txt = count > 999 ? '999+' : String(count);
+    const ring = live ? '#2ee84d' : '#ffffff';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="rgba(46,232,77,.22)"/><circle cx="32" cy="33.5" r="23" fill="rgba(0,0,0,.25)"/><circle cx="32" cy="32" r="23" fill="#0b0f0c" stroke="${ring}" stroke-width="3.5"/><text x="32" y="37" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${txt.length > 3 ? 13 : 16}" font-weight="700" fill="#2ee84d">${txt}</text></svg>`;
+    const size = count > 99 ? 60 : 52;
+    return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, scaledSize: new google.maps.Size(size, size), anchor: new google.maps.Point(size / 2, size / 2) };
+  }
+
+  async function ensureClusterer(){
+    if(clusterer || !map) return clusterer;
+    const ok = await loadClusterLib();
+    if(!ok || !window.markerClusterer || !window.markerClusterer.MarkerClusterer) return null;
+    clusterer = new window.markerClusterer.MarkerClusterer({
+      map,
+      markers: [],
+      renderer: {
+        render: ({ count, position, markers: ms }) => new google.maps.Marker({
+          position,
+          icon: clusterIcon(count, (ms || []).some(m => m.__riders > 0)),
+          zIndex: 400 + count
+        })
+      }
+    });
+    return clusterer;
+  }
+
+  function applySessionIcons(){
+    entries.forEach(e => {
+      const r = ridersAt(e.place.id);
+      e.marker.__riders = r;
+      e.marker.setIcon(markerIcon(e.place.type, e.marker === selectedMarker, r));
+      e.marker.setZIndex(e.marker === selectedMarker ? 999 : (r > 0 ? 500 : 1));
+    });
+    if(clusterer && clusterer.render) clusterer.render();
+  }
+  window.addEventListener('spotra-sessions', () => {
+    applySessionIcons();
+    const list = document.getElementById('mapListSheet');
+    if(list && list.classList.contains('open')) renderList();
+  });
+
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+  }
+
+  /* ---------- hojas (ficha y lista) ---------- */
+  function syncSheets(){
+    const d = document.getElementById('spotSheet');
+    const l = document.getElementById('mapListSheet');
+    const open = !!((d && d.classList.contains('open')) || (l && l.classList.contains('open')));
+    document.body.classList.toggle('map-sheet-open', open);
+  }
+
+  function openDetail(){
+    closeList();
+    const sheet = document.getElementById('spotSheet');
+    if(!sheet) return;
+    sheet.classList.add('open');
+    sheet.scrollTop = 0;
+    syncSheets();
+  }
+
+  function closeDetail(){
+    const sheet = document.getElementById('spotSheet');
+    if(sheet) sheet.classList.remove('open');
+    if(isMobile()) selectMarker(null);
+    syncSheets();
+  }
+
+  function closeList(){
+    const list = document.getElementById('mapListSheet');
+    if(list){ list.classList.remove('open'); list.setAttribute('aria-hidden', 'true'); }
+    syncSheets();
+  }
+
+  let listMode = 'zone';
+  function renderList(){
+    const box = document.getElementById('mapListItems');
+    const title = document.getElementById('mapListTitle');
+    if(!box) return;
+    if(title) title.textContent = listMode === 'sessions' ? 'Sesiones activas' : 'Lugares en esta zona';
+    const bounds = map && map.getBounds ? map.getBounds() : null;
+    const ctr = map && map.getCenter ? map.getCenter() : null;
+    const ref = userLocation || (ctr ? { lat: ctr.lat(), lng: ctr.lng() } : null);
+    let rows = entries.map((e, i) => ({ i, e })).filter(r => listMode === 'sessions'
+      ? ridersAt(r.e.place.id) > 0
+      : (!bounds || bounds.contains(r.e.marker.getPosition())));
+    if(!rows.length){
+      box.innerHTML = '<div class="map-list-empty">' + (listMode === 'sessions'
+        ? 'Todavía no hay sesiones activas. Creá una desde la ficha de un spot.'
+        : 'No hay lugares en esta zona. Alejá el mapa para ver más.') + '</div>';
       return;
     }
-    feed.innerHTML = cache.map(postHTML).join('');
-    renderHomeForum();
-  }
-
-  /* ================= Preview en Inicio ================= */
-  function renderHomeForum(){
-    const box = document.getElementById('homeForum');
-    if(!box) return;
-    if(!cache.length){
-      box.innerHTML = '<div class="meta">Todavía no hay publicaciones en el foro. Creá la primera.</div>';
-      return;
-    }
-    box.innerHTML = cache.slice(0, 2).map(p =>
-      `<div class="forum-preview-row" data-route="community" style="cursor:pointer">
-        <div class="avatar" ${p.avatarUrl ? `style="background-image:url('${esc(p.avatarUrl)}')"` : ''}></div>
-        <div><b style="font-size:13.5px">@${esc(p.username)}</b><p>${esc(p.content.length > 110 ? p.content.slice(0, 110) + '…' : p.content)}</p></div>
-      </div>`).join('');
-  }
-
-  /* ================= Comentarios ================= */
-  async function toggleComments(postId){
-    const box = document.querySelector(`[data-cmt-box="${postId}"]`);
-    if(!box) return;
-    if(box.style.display !== 'none'){ box.style.display = 'none'; box.innerHTML = ''; return; }
-    box.style.display = '';
-    box.innerHTML = '<div class="meta">Cargando comentarios...</div>';
-    const comments = await B().listPostComments(postId);
-    renderComments(box, postId, comments);
-  }
-
-  function renderComments(box, postId, comments){
-    const rows = comments.map(c => {
-      const canDel = uid && (c.author_id === uid || isAdmin);
-      return `<div class="cmt-row" data-author="${esc(c.author_id)}"><div><b>@${esc(c.username || 'rider')}</b> ${esc(c.content)}</div><span class="cmt-flag" data-report="comment" data-report-id="${esc(c.id)}" data-report-user="${esc(c.author_id)}" data-report-name="${esc(c.username || 'rider')}" title="Reportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>${canDel ? `<span class="del" data-cmt-del="${esc(c.id)}" data-cmt-post="${esc(postId)}">×</span>` : ''}</div>`;
+    rows.forEach(r => { r.d = ref ? distanceMeters(ref, { lat: r.e.place.lat, lng: r.e.place.lng }) : null; });
+    rows.sort((x, y) => (x.d || 0) - (y.d || 0));
+    if(!userLocation) rows.forEach(r => { r.d = null; });
+    box.innerHTML = rows.slice(0, 60).map(r => {
+      const p = r.e.place;
+      const { color, glyph } = pinGlyph(p.type);
+      const label = p.label || (window.SpotraBackend ? window.SpotraBackend.labelForType(p.type) : '');
+      const sub = [label, p.meta || p.address || ''].filter(Boolean).join(' · ');
+      const dist = r.d != null ? formatDistance(r.d).replace(/^a /, '') : '';
+      return `<button type="button" class="map-list-item" data-list-idx="${r.i}">`
+        + `<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span>`
+        + `<span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span>`
+        + (ridersAt(p.id) > 0 ? `<span class="list-live">${ridersAt(p.id)}</span>` : '')
+        + (dist ? `<em>${esc(dist)}</em>` : '')
+        + '</button>';
     }).join('');
-    box.innerHTML = (rows || '<div class="meta">Sin comentarios todavía.</div>') +
-      `<div class="cmt-input"><input placeholder="Escribí un comentario..." data-cmt-input="${esc(postId)}" maxlength="500"><button data-cmt-send="${esc(postId)}">Enviar</button></div>`;
   }
 
-  /* ================= Publicar ================= */
-  function compress(file){
-    return new Promise(resolve => {
-      const img = new Image();
-      img.onload = () => {
-        const max = 1400;
-        const scale = Math.min(1, max / Math.max(img.width, img.height));
-        const c = document.createElement('canvas');
-        c.width = Math.round(img.width * scale);
-        c.height = Math.round(img.height * scale);
-        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        c.toBlob(b => resolve(b), 'image/jpeg', 0.82);
-      };
-      img.onerror = () => resolve(null);
-      img.src = URL.createObjectURL(file);
+  function openList(mode){
+    listMode = mode === 'sessions' ? 'sessions' : 'zone';
+    const list = document.getElementById('mapListSheet');
+    if(!list) return;
+    const sheet = document.getElementById('spotSheet');
+    if(sheet) sheet.classList.remove('open');
+    renderList();
+    list.classList.add('open');
+    list.setAttribute('aria-hidden', 'false');
+    list.scrollTop = 0;
+    syncSheets();
+  }
+
+  function focusEntry(idx){
+    const e = entries[idx];
+    if(!e) return;
+    closeList();
+    selectMarker(e.marker);
+    if(map){
+      map.panTo(e.marker.getPosition());
+      if(map.getZoom() < 16) map.setZoom(16);
+    }
+    updateDetail(e.place);
+    openDetail();
+  }
+
+  function selectMarker(marker){
+    if(selectedMarker && selectedMarker !== marker){
+      selectedMarker.setIcon(markerIcon(selectedMarker.__spotraType, false, selectedMarker.__riders || 0));
+      selectedMarker.setZIndex(selectedMarker.__riders > 0 ? 500 : 1);
+    }
+    selectedMarker = marker || null;
+    if(marker){
+      marker.setIcon(markerIcon(marker.__spotraType, true, marker.__riders || 0));
+      marker.setZIndex(999);
+    }
+  }
+
+
+  function distanceMeters(a, b){
+    const R = 6371000;
+    const rad = x => x * Math.PI / 180;
+    const dLat = rad(b.lat - a.lat);
+    const dLng = rad(b.lng - a.lng);
+    const s = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(s));
+  }
+
+  function formatDistance(m){
+    if(!Number.isFinite(m)) return '';
+    if(m < 1000) return 'a ' + Math.round(m / 10) * 10 + ' m';
+    return 'a ' + (m / 1000).toFixed(1).replace('.', ',') + ' km';
+  }
+
+  function setRow(rowId, spanId, value){
+    const row = document.getElementById(rowId);
+    const span = document.getElementById(spanId);
+    if(!row || !span) return row;
+    if(value){ span.textContent = value; row.style.display = ''; }
+    else { row.style.display = 'none'; }
+    return row;
+  }
+
+  function normalizeUrl(url){
+    if(!url) return '';
+    return /^https?:\/\//i.test(url) ? url : 'https://' + url;
+  }
+
+  function instagramInfo(value){
+    if(!value) return null;
+    const raw = String(value).trim();
+    const m = raw.match(/instagram\.com\/([A-Za-z0-9._]+)/i);
+    const user = m ? m[1] : raw.replace(/^@/, '');
+    if(!user) return null;
+    return { label: '@' + user, url: 'https://instagram.com/' + user };
+  }
+
+  function updateDetail(place){
+    currentDetail = place;
+    const type = document.getElementById('spotType');
+    const name = document.getElementById('spotName');
+    const meta = document.getElementById('spotMeta');
+    const cover = document.getElementById('spotCover');
+    const shareBtn = document.getElementById('spotShareBtn');
+    if(shareBtn) shareBtn.style.display = place && place.id && !place.isGoogleResult ? '' : 'none';
+    const directions = document.getElementById('spotDirectionsBtn');
+    if(type) type.textContent = place.label || window.SpotraBackend.labelForType(place.type);
+    if(name) name.textContent = place.name;
+    if(meta) meta.textContent = place.meta || place.address || '';
+    if(cover){
+      cover.style.background = `url('${place.imageUrl || 'assets/banners/banner-skatepark-4.webp'}') center/cover`;
+      cover.style.boxShadow = 'inset 0 -90px 70px rgba(0,0,0,.82)';
+    }
+    const desc = document.getElementById('spotDesc');
+    if(desc){
+      if(place.description){ desc.textContent = place.description; desc.style.display = ''; }
+      else desc.style.display = 'none';
+    }
+    setRow('spotAddressRow', 'spotAddress', place.address || '');
+    const dist = (userLocation && Number.isFinite(place.lat) && Number.isFinite(place.lng))
+      ? formatDistance(distanceMeters(userLocation, { lat: place.lat, lng: place.lng }))
+      : '';
+    setRow('spotDistRow', 'spotDist', dist);
+    setRow('spotRatingRow', 'spotRating', place.rating ? String(place.rating) + ' · Google' : '');
+    const phoneRow = setRow('spotPhoneRow', 'spotPhone', place.contactPhone || '');
+    if(phoneRow && place.contactPhone) phoneRow.href = 'tel:' + String(place.contactPhone).replace(/[^+\d]/g, '');
+    let webLabel = '';
+    if(place.website){
+      try { webLabel = new URL(normalizeUrl(place.website)).hostname.replace(/^www\./, ''); }
+      catch { webLabel = place.website; }
+    }
+    const webRow = setRow('spotWebRow', 'spotWeb', webLabel);
+    if(webRow && place.website) webRow.href = normalizeUrl(place.website);
+    const ig = instagramInfo(place.instagram);
+    const igRow = setRow('spotIgRow', 'spotIg', ig ? ig.label : '');
+    if(igRow && ig) igRow.href = ig.url;
+    if(directions){
+      directions.dataset.directions = place.directionsUrl || window.SpotraBackend.googleDirectionsUrl(place);
+      directions.removeAttribute('data-toast');
+    }
+    const addBtn = document.getElementById('spotAddBtn');
+    if(addBtn){
+      addBtn.style.display = place.isGoogleResult ? '' : 'none';
+      addBtn.disabled = false;
+      addBtn.textContent = 'Agregar a SPOTRA';
+    }
+    renderGallery(place);
+    if(window.SpotraConditions) window.SpotraConditions.renderForPlace(place);
+    if(window.SpotraSessions) window.SpotraSessions.renderForPlace(place);
+    if(window.SpotraEvents) window.SpotraEvents.renderSpotEvents(place);
+  }
+
+  function clearMarkers(){
+    if(clusterer) clusterer.clearMarkers();
+    markers.forEach(marker => marker.setMap(null));
+    markers = [];
+    selectedMarker = null;
+  }
+
+  let allPlaces = null;
+  let firstFit = true;
+  async function refresh(type = activeType, reload = false){
+    activeType = window.SpotraBackend.normalizeType(type);
+    if(!map || !window.SpotraBackend) return;
+    if(!allPlaces || reload) allPlaces = await window.SpotraBackend.listPlaces({ type: 'all' });
+    const places = activeType === 'all' ? allPlaces : allPlaces.filter(p => p.type === activeType);
+    clearMarkers();
+    entries = [];
+    const bounds = new google.maps.LatLngBounds();
+    places.forEach(place => {
+      if(!Number.isFinite(place.lat) || !Number.isFinite(place.lng)) return;
+      const riders = ridersAt(place.id);
+      const marker = new google.maps.Marker({
+        position: { lat: place.lat, lng: place.lng },
+        title: place.name,
+        icon: markerIcon(place.type, false, riders),
+        zIndex: riders > 0 ? 500 : 1
+      });
+      marker.__spotraType = place.type;
+      marker.__riders = riders;
+      marker.__placeId = place.id;
+      marker.addListener('click', () => { selectMarker(marker); map.panTo(marker.getPosition()); updateDetail(place); openDetail(); });
+      markers.push(marker);
+      entries.push({ place, marker });
+      bounds.extend(marker.getPosition());
+    });
+    const cl = await ensureClusterer();
+    if(cl){ cl.clearMarkers(); cl.addMarkers(markers); }
+    else markers.forEach(m => m.setMap(map));
+    selectedMarker = null;
+    // en compu la ficha lateral siempre se ve: arranca con el primer lugar. En el celular espera a que toques un pin.
+    if(entries[0] && !isMobile() && !currentDetail){
+      selectMarker(entries[0].marker);
+      updateDetail(entries[0].place);
+    }
+    const list = document.getElementById('mapListSheet');
+    if(list && list.classList.contains('open')) renderList();
+    if(!firstFit) return;
+    firstFit = false;
+    // enlace de un aviso: /?place=ID#map abre ese spot
+    let deep = null;
+    try { deep = new URLSearchParams(location.search).get('place'); } catch(e){}
+    if(deep){
+      try { history.replaceState(null, '', location.pathname + location.hash); } catch(e){}
+      const di = entries.findIndex(e => e.place.id === deep);
+      if(di >= 0){ focusEntry(di); return; }
+    }
+    const pad = isMobile() ? { top: 130, right: 40, bottom: 80, left: 40 } : 64;
+    if(markers.length > 1) map.fitBounds(bounds, pad);
+    else if(markers.length === 1){ map.setCenter(markers[0].getPosition()); map.setZoom(14); }
+    // si el rider ya dio permiso de ubicación, arrancamos en su zona
+    try {
+      if(navigator.permissions && navigator.geolocation){
+        const st = await navigator.permissions.query({ name: 'geolocation' });
+        if(st.state === 'granted') locateMe(null, true);
+      }
+    } catch(e){}
+  }
+
+  function openPlaceById(id){
+    const idx = entries.findIndex(e => e.place.id === id);
+    if(idx >= 0) focusEntry(idx);
+  }
+
+  /* ---------- buscador ----------
+     Busca primero en los lugares de SPOTRA (instantáneo y gratis). Para ciudades y direcciones
+     usa OpenStreetMap (Nominatim), solo cuando el rider lo pide (Enter o "Buscar en el mapa"). */
+  const fold = t => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  let searchTimer = null;
+  function tr(t){ return window.SpotraI18n ? window.SpotraI18n.t(t) : t; }
+
+  function localMatches(q){
+    const words = fold(q).split(/\s+/).filter(Boolean);
+    if(!words.length || !allPlaces) return [];
+    const out = [];
+    for(const p of allPlaces){
+      const name = fold(p.name), hay = name + ' ' + fold(p.city) + ' ' + fold(p.address);
+      if(!words.every(w => hay.includes(w))) continue;
+      const score = name.startsWith(words[0]) ? 0 : words.every(w => name.includes(w)) ? 1 : 2;
+      out.push({ p, score });
+      if(out.length > 400) break;
+    }
+    out.sort((x, y) => x.score - y.score || String(x.p.name).localeCompare(String(y.p.name)));
+    return out.slice(0, 8).map(o => o.p);
+  }
+
+  function resultsBox(){ return document.getElementById('mapSearchResults'); }
+  function closeSearch(){ const r = resultsBox(); if(r){ r.innerHTML = ''; r.hidden = true; } }
+
+  function renderSearch(q, geo){
+    const box = resultsBox();
+    if(!box) return;
+    const local = localMatches(q);
+    let html = '';
+    local.forEach(p => {
+      const { color, glyph } = pinGlyph(p.type);
+      const sub = [p.city, p.countryCode || p.country_code].filter(Boolean).join(' · ');
+      html += `<button type="button" class="msr-item" data-search-place="${esc(p.id)}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span><span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span></button>`;
+    });
+    if(geo === 'loading') html += `<div class="msr-note">${esc(tr('Buscando...'))}</div>`;
+    else if(Array.isArray(geo)){
+      if(!geo.length) html += `<div class="msr-note">${esc(tr('No encontramos ese lugar.'))}</div>`;
+      geo.forEach((g, i) => {
+        html += `<button type="button" class="msr-item msr-geo" data-search-geo="${i}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg></span><span class="tx"><b>${esc(g.name)}</b><small>${esc(g.sub)}</small></span></button>`;
+      });
+    } else {
+      html += `<button type="button" class="msr-item msr-more" data-search-geo-go><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></span><span class="tx"><b>${esc(tr('Buscar ciudad o dirección'))}</b><small>«${esc(q)}»</small></span></button>`;
+    }
+    box.innerHTML = html;
+    box.hidden = false;
+  }
+
+  let geoResults = [];
+  async function geoSearch(q){
+    renderSearch(q, 'loading');
+    try {
+      let lang = 'es';
+      try { lang = mapsLang(); } catch(e){}
+      const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&accept-language=' + encodeURIComponent(lang) + '&q=' + encodeURIComponent(q);
+      const res = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      const data = res.ok ? await res.json() : [];
+      geoResults = (data || []).map(d => {
+        const parts = String(d.display_name || '').split(', ');
+        return { name: parts[0] || d.name || q, sub: parts.slice(1, 4).join(', '), lat: parseFloat(d.lat), lng: parseFloat(d.lon), type: d.addresstype || d.type || '' };
+      }).filter(g => Number.isFinite(g.lat) && Number.isFinite(g.lng));
+    } catch(e){ geoResults = []; }
+    const input = document.getElementById('mapSearchInput');
+    if(input && input.value.trim() === q) renderSearch(q, geoResults);
+  }
+
+  function goToPlace(id){
+    closeSearch();
+    const input = document.getElementById('mapSearchInput');
+    if(input) input.blur();
+    let idx = entries.findIndex(e => e.place.id === id);
+    if(idx < 0 && activeType !== 'all'){
+      document.querySelectorAll('[data-map-filter]').forEach(b => b.classList.toggle('active', b.dataset.mapFilter === 'all'));
+      refresh('all').then(() => { const i = entries.findIndex(e => e.place.id === id); if(i >= 0) focusEntry(i); });
+      return;
+    }
+    if(idx >= 0) focusEntry(idx);
+  }
+
+  function goToGeo(i){
+    const g = geoResults[i];
+    if(!g || !map) return;
+    closeSearch();
+    const input = document.getElementById('mapSearchInput');
+    if(input) input.blur();
+    map.panTo({ lat: g.lat, lng: g.lng });
+    const city = /city|town|village|municipality|state|county|suburb|neighbourhood/.test(g.type);
+    map.setZoom(city ? 13 : 16);
+  }
+
+  function setupSearch(){
+    const input = document.getElementById('mapSearchInput');
+    if(!input || searchBox) return;
+    searchBox = true;
+    input.setAttribute('enterkeyhint', 'search');
+    input.addEventListener('input', () => {
+      clearTimeout(searchTimer);
+      const q = input.value.trim();
+      if(q.length < 2){ closeSearch(); return; }
+      searchTimer = setTimeout(() => renderSearch(q), 150);
+    });
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Escape'){ closeSearch(); input.blur(); return; }
+      if(e.key !== 'Enter') return;
+      e.preventDefault();
+      const q = input.value.trim();
+      if(q.length < 2) return;
+      const local = localMatches(q);
+      if(local.length) goToPlace(local[0].id);
+      else geoSearch(q);
+    });
+    document.addEventListener('click', e => {
+      const t = e.target;
+      let el;
+      if((el = t.closest('[data-search-place]'))){ e.preventDefault(); goToPlace(el.dataset.searchPlace); return; }
+      if((el = t.closest('[data-search-geo]'))){ e.preventDefault(); goToGeo(parseInt(el.dataset.searchGeo, 10)); return; }
+      if(t.closest('[data-search-geo-go]')){ e.preventDefault(); geoSearch(input.value.trim()); return; }
+      if(!t.closest('.map-tools')) closeSearch();
     });
   }
 
-  async function submitFromForm(){
-    const input = document.querySelector('#postForm input');
-    const content = (input && input.value || '').trim();
-    if(!content){ toast('Escribí algo para publicar.'); return; }
-    const fileInput = document.querySelector('#dzPost input[type="file"]');
-    const file = fileInput && fileInput.files && fileInput.files[0];
-    const btn = document.querySelector('[data-submit="post"]');
-    if(btn){ btn.disabled = true; btn.textContent = file ? 'Subiendo foto...' : 'Publicando...'; }
-    let imageUrl = '';
-    if(file && file.type.startsWith('image/')){
-      const blob = await compress(file);
-      if(blob){
-        const up = await B().uploadPostImage(blob, 'jpg');
-        if(up.ok) imageUrl = up.url;
-      }
-    }
-    const res = await B().createPost({ content, imageUrl });
-    if(btn){ btn.disabled = false; btn.textContent = 'Publicar en foro'; }
-    if(!res.ok){
-      toast(res.error === 'auth' ? 'Iniciá sesión para publicar.' : 'No se pudo publicar. Probá de nuevo.');
+
+  async function init(){
+    if(initialized && map){
+      google.maps.event.trigger(map, 'resize');
       return;
     }
-    if(typeof window.resetForm === 'function') window.resetForm('postForm', 'dzPost');
-    if(typeof window.closeModal === 'function') window.closeModal();
-    if(typeof window.setRoute === 'function') window.setRoute('community');
-    toast('Publicado en el foro.');
-    renderFeed();
+    const canvas = ensureCanvas();
+    if(!canvas) return;
+    const hasGoogle = await loadGoogleMaps();
+    if(!hasGoogle) return;
+    const options = {
+      center: cfg().DEFAULT_CENTER || { lat: -34.9011, lng: -56.1645 },
+      zoom: cfg().DEFAULT_ZOOM || 12,
+      disableDefaultUI: true,
+      zoomControl: !isMobile(),
+      gestureHandling: 'greedy',
+      clickableIcons: false,
+      fullscreenControl: false,
+      streetViewControl: false,
+      mapTypeControl: false,
+      styles: cfg().GOOGLE_MAP_ID ? undefined : mapStyle(),
+      mapId: cfg().GOOGLE_MAP_ID || undefined
+    };
+    map = new google.maps.Map(canvas, options);
+    canvas.closest('.map-stage')?.classList.add('google-live');
+    initialized = true;
+    map.addListener('click', () => { closeList(); if(isMobile()) closeDetail(); });
+    setupSearch();
+    addLocateControl();
+    await refresh(activeType);
+  }
+  function userDotIcon(){
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" viewBox="0 0 46 46"><circle cx="23" cy="23" r="14" fill="rgba(46,232,77,.22)"/><circle cx="23" cy="23" r="7" fill="#2ee84d" stroke="#061009" stroke-width="2.5"/></svg>`;
+    return {
+      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
+      scaledSize: new google.maps.Size(46, 46),
+      anchor: new google.maps.Point(23, 23)
+    };
   }
 
-  /* ================= Wiring ================= */
-  document.addEventListener('click', async e => {
-    const like = e.target.closest('[data-post-like]');
-    if(like){
-      if(!uid){ toast('Iniciá sesión para dar me gusta.'); return; }
-      const id = like.dataset.postLike;
-      const p = cache.find(x => x.id === id);
-      if(!p) return;
-      const was = p.likedByMe;
-      p.likedByMe = !was;
-      p.likes += was ? -1 : 1;
-      like.classList.toggle('liked', p.likedByMe);
-      const span = like.querySelector('span');
-      if(span) span.textContent = p.likes;
-      const res = await B().togglePostLike(id, was);
-      if(!res.ok){
-        p.likedByMe = was;
-        p.likes += was ? 1 : -1;
-        like.classList.toggle('liked', p.likedByMe);
-        if(span) span.textContent = p.likes;
-        toast('No se pudo. Probá de nuevo.');
-      }
+  function locateMe(btn, quiet){
+    if(!navigator.geolocation){
+      if(window.toast) window.toast('Tu dispositivo no permite ubicación.');
       return;
     }
-    const cmt = e.target.closest('[data-post-cmt]');
-    if(cmt){ toggleComments(cmt.dataset.postCmt); return; }
-    const send = e.target.closest('[data-cmt-send]');
-    if(send){
-      if(!uid){ toast('Iniciá sesión para comentar.'); return; }
-      const postId = send.dataset.cmtSend;
-      const input = document.querySelector(`[data-cmt-input="${postId}"]`);
-      const content = (input && input.value || '').trim();
-      if(!content){ toast('Escribí el comentario.'); return; }
-      send.disabled = true;
-      const res = await B().addPostComment(postId, content);
-      send.disabled = false;
-      if(!res.ok){ toast('No se pudo comentar.'); return; }
-      const p = cache.find(x => x.id === postId);
-      if(p){
-        p.comments += 1;
-        const btn = document.querySelector(`[data-post-cmt="${postId}"] span`);
-        if(btn) btn.textContent = p.comments;
+    if(btn) btn.classList.add('loading');
+    if(window.toast && !quiet) window.toast('Buscando tu ubicación...');
+    navigator.geolocation.getCurrentPosition(pos => {
+      if(btn) btn.classList.remove('loading');
+      const ll = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if(!map) return;
+      if(!userMarker){
+        userMarker = new google.maps.Marker({ map, position: ll, icon: userDotIcon(), clickable: false, zIndex: 998, title: 'Tu ubicación' });
+      } else {
+        userMarker.setPosition(ll);
+        userMarker.setMap(map);
       }
-      const box = document.querySelector(`[data-cmt-box="${postId}"]`);
-      const comments = await B().listPostComments(postId);
-      renderComments(box, postId, comments);
+      userLocation = ll;
+      map.panTo(ll);
+      map.setZoom(quiet ? 13 : 15);
+      if(currentDetail) updateDetail(currentDetail);
+      const list = document.getElementById('mapListSheet');
+      if(list && list.classList.contains('open')) renderList();
+    }, () => {
+      if(btn) btn.classList.remove('loading');
+      if(window.toast && !quiet) window.toast('No pudimos obtener tu ubicación. Revisá los permisos.');
+    }, { enableHighAccuracy: true, timeout: 9000 });
+  }
+
+  function addLocateControl(){
+    if(document.getElementById('mapLocateBtn')) return;
+    const btn = document.createElement('button');
+    btn.id = 'mapLocateBtn';
+    btn.type = 'button';
+    btn.className = 'map-locate-btn';
+    btn.setAttribute('aria-label', 'Localizarme');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+    btn.addEventListener('click', () => locateMe(btn));
+    map.controls[google.maps.ControlPosition.RIGHT_BOTTOM].push(btn);
+  }
+
+
+  function setFilter(type){
+    activeType = window.SpotraBackend ? window.SpotraBackend.normalizeType(type) : type;
+    if(map) refresh(activeType);
+  }
+
+  document.addEventListener('click', event => {
+    if(event.target.closest('#mapListBtn')){ event.preventDefault(); openList('zone'); return; }
+    if(event.target.closest('#mapSessionsPill')){ event.preventDefault(); openList('sessions'); return; }
+    if(event.target.closest('#mapListClose')){ event.preventDefault(); closeList(); return; }
+    if(event.target.closest('#spotSheetClose')){ event.preventDefault(); closeDetail(); return; }
+    const item = event.target.closest('[data-list-idx]');
+    if(item){ event.preventDefault(); focusEntry(parseInt(item.dataset.listIdx, 10)); return; }
+    if(event.target.closest('#spotShareBtn') && currentDetail && currentDetail.id){
+      event.preventDefault();
+      const L = window.SpotraI18n ? window.SpotraI18n.lang() : 'es';
+      const p = currentDetail;
+      const text = ({ es: `Mirá ${p.name} en SPOTRA`, pt: `Olha ${p.name} no SPOTRA`, en: `Check out ${p.name} on SPOTRA` })[L] || `Mirá ${p.name} en SPOTRA`;
+      if(window.spotraShare) window.spotraShare({ title: p.name, text, url: window.spotraPlaceUrl(p.id) });
       return;
     }
-    const cdel = e.target.closest('[data-cmt-del]');
-    if(cdel){
-      if(!window.confirm('¿Eliminar el comentario?')) return;
-      const res = await B().deletePostComment(cdel.dataset.cmtDel);
-      if(!res.ok){ toast('No se pudo eliminar.'); return; }
-      const postId = cdel.dataset.cmtPost;
-      const p = cache.find(x => x.id === postId);
-      if(p){
-        p.comments = Math.max(0, p.comments - 1);
-        const btn = document.querySelector(`[data-post-cmt="${postId}"] span`);
-        if(btn) btn.textContent = p.comments;
-      }
-      const box = document.querySelector(`[data-cmt-box="${postId}"]`);
-      const comments = await B().listPostComments(postId);
-      renderComments(box, postId, comments);
+    const directions = event.target.closest('#spotDirectionsBtn');
+    if(directions && directions.dataset.directions){
+      event.preventDefault();
+      window.open(directions.dataset.directions, '_blank', 'noopener');
       return;
     }
-    const pdel = e.target.closest('[data-post-del]');
-    if(pdel){
-      if(!window.confirm('¿Eliminar la publicación? No se puede deshacer.')) return;
-      const res = await B().deletePost(pdel.dataset.postDel);
-      if(!res.ok){ toast('No se pudo eliminar.'); return; }
-      toast('Publicación eliminada.');
-      renderFeed();
+    const addBtn = event.target.closest('#spotAddBtn');
+    if(addBtn){
+      event.preventDefault();
+      submitCurrentPlace(addBtn);
       return;
+    }
+    const photoBtn = event.target.closest('#spotPhotoBtn');
+    if(photoBtn){
+      event.preventDefault();
+      const input = document.getElementById('spotPhotoInput');
+      if(input) input.click();
     }
   });
 
-  function watchView(){
-    const v = document.querySelector('[data-view="community"]');
-    if(v){
-      if(v.classList.contains('active')) renderFeed();
-      new MutationObserver(() => { if(v.classList.contains('active')) renderFeed(); }).observe(v, { attributes: true, attributeFilter: ['class'] });
+  document.addEventListener('change', event => {
+    if(event.target && event.target.id === 'spotPhotoInput'){
+      const file = event.target.files && event.target.files[0];
+      if(file) handlePhotoFile(file);
+      event.target.value = '';
     }
-    renderFeed(); /* carga inicial: alimenta la preview de Inicio */
+  });
+
+  /* comprime la imagen a WebP (o JPEG si el navegador no soporta WebP), máx 1600px */
+  function compressImage(file){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let w = img.width, h = img.height;
+        const max = 1600;
+        if(w > max || h > max){ const s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(blob => {
+          if(blob && blob.type === 'image/webp') resolve({ blob, ext: 'webp' });
+          else canvas.toBlob(b2 => resolve({ blob: b2, ext: 'jpg' }), 'image/jpeg', 0.82);
+        }, 'image/webp', 0.8);
+      };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagen inválida')); };
+      img.src = url;
+    });
   }
 
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchView);
-  else watchView();
+  async function handlePhotoFile(file){
+    if(!currentDetail || !currentDetail.id || currentDetail.isGoogleResult) return;
+    if(!/^image\//.test(file.type)){ if(window.toast) window.toast('Solo se pueden subir imágenes.'); return; }
+    if(file.size > 20 * 1024 * 1024){ if(window.toast) window.toast('La imagen es muy pesada (máx. 20 MB).'); return; }
+    if(window.toast) window.toast('Procesando imagen...');
+    try {
+      const { blob, ext } = await compressImage(file);
+      const result = await window.SpotraBackend.uploadPlacePhoto(currentDetail.id, blob, ext);
+      if(result.ok){
+        if(window.toast) window.toast('Foto enviada. Queda pendiente de aprobación.');
+      } else {
+        if(window.toast) window.toast('No se pudo subir: ' + (result.error || 'probá de nuevo.'));
+      }
+    } catch(err){
+      console.warn('[SPOTRA] foto:', err);
+      if(window.toast) window.toast('No se pudo procesar la imagen.');
+    }
+  }
 
-  window.SpotraForum = { submitFromForm, renderFeed };
+  async function renderGallery(place){
+    const gallery = document.getElementById('spotGallery');
+    const photoBtn = document.getElementById('spotPhotoBtn');
+    const canUse = !!(place && place.id && !place.isGoogleResult);
+    if(photoBtn) photoBtn.style.display = canUse ? '' : 'none';
+    if(!gallery) return;
+    gallery.innerHTML = '';
+    gallery.style.display = 'none';
+    if(!canUse || !window.SpotraBackend) return;
+    const photos = await window.SpotraBackend.listPlacePhotos(place.id);
+    if(!photos.length) return;
+    gallery.style.display = 'flex';
+    const admin = window.SpotraAuth ? await window.SpotraAuth.isAdmin() : false;
+    photos.forEach(p => {
+      const thumb = document.createElement('div');
+      thumb.className = 'spot-gallery-thumb' + (p.is_cover ? ' is-cover' : '');
+      thumb.style.backgroundImage = "url('" + p.url + "')";
+      thumb.addEventListener('click', () => {
+        const cover = document.getElementById('spotCover');
+        if(cover) cover.style.backgroundImage = "url('" + p.url + "')";
+      });
+      if(admin && !p.is_cover){
+        const b = document.createElement('button');
+        b.className = 'set-cover';
+        b.textContent = 'Portada';
+        b.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const r = await window.SpotraBackend.setPlaceCover(p.id);
+          if(r.ok){ if(window.toast) window.toast('Portada actualizada.'); renderGallery(place); refresh(activeType, true); }
+          else if(window.toast) window.toast('No se pudo cambiar la portada.');
+        });
+        thumb.appendChild(b);
+      }
+      gallery.appendChild(thumb);
+    });
+  }
+
+  async function submitCurrentPlace(btn){
+    if(!currentDetail || !window.SpotraBackend) return;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+    try {
+      const result = await window.SpotraBackend.createPlaceSubmission({
+        type: currentDetail.type,
+        name: currentDetail.name,
+        address: currentDetail.address || currentDetail.meta || '',
+        lat: currentDetail.lat,
+        lng: currentDetail.lng,
+        googlePlaceId: currentDetail.googlePlaceId,
+        imageUrl: currentDetail.imageUrl
+      });
+      if(result && result.mode === 'supabase'){
+        btn.textContent = 'Enviado a aprobación';
+        if(window.toast) window.toast('Lugar enviado. Queda pendiente de aprobación.');
+      } else {
+        btn.disabled = false;
+        btn.textContent = 'Agregar a SPOTRA';
+        if(window.toast) window.toast('Iniciá sesión para sumar lugares a SPOTRA.');
+      }
+    } catch(error){
+      console.warn('[SPOTRA] No se pudo enviar el lugar:', error);
+      btn.disabled = false;
+      btn.textContent = 'Agregar a SPOTRA';
+      if(window.toast) window.toast('No se pudo enviar el lugar. Probá de nuevo.');
+    }
+  }
+
+  window.SpotraMaps = { init, refresh, setFilter, ensureApi: loadGoogleMaps, compressImage, current: () => currentDetail, center: () => { const c = map && map.getCenter ? map.getCenter() : null; return c ? { lat: c.lat(), lng: c.lng() } : null; }, openPlaceById, openDetail, closeDetail };
 })();
