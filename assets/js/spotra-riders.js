@@ -55,7 +55,7 @@
     const c = await db();
     if(!c) return [];
     const { data } = await c.from('posts')
-      .select('id, content, image_url, created_at, post_likes(count), post_comments(count)')
+      .select('id, author_id, username, avatar_url, content, image_url, created_at, post_likes(count), post_comments(count)')
       .eq('author_id', id).order('created_at', { ascending: false }).limit(60);
     return data || [];
   }
@@ -74,6 +74,11 @@
   function openPost(id){
     const p = gridCache.get(id);
     if(!p) return;
+    if(window.SpotraForum && window.SpotraForum.openViewer){
+      window.SpotraForum.openViewer({ id: p.id, authorId: p.author_id, username: p.username || 'rider', avatarUrl: p.avatar_url || '',
+        content: p.content || '', imageUrl: p.image_url || '', createdAt: p.created_at, likes: count(p.post_likes), comments: count(p.post_comments) });
+      return;
+    }
     const date = new Date(p.created_at).toLocaleDateString(window.SpotraI18n ? window.SpotraI18n.mapsLang() : 'es', { day: 'numeric', month: 'short', year: 'numeric' });
     const cap = `<p>${esc(p.content || '')}</p><small>♥ ${count(p.post_likes)} · 💬 ${count(p.post_comments)} · ${esc(date)}</small>`;
     if(p.image_url) lightbox(p.image_url, cap);
