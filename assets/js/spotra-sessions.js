@@ -99,7 +99,7 @@
     else action = `<button type="button" class="primary-btn ses-btn" data-ses-join="${esc(s.id)}">Me sumo</button>`;
     return `<div class="ses-card" data-author="${esc(s.created_by)}">`
       + `<div class="ses-top">${avatarHTML(s.username, s.avatar_url, 'ses-av')}<div class="ses-tx">`
-      + `<b><span class="ses-name">${esc(s.username)}</span> va a rodar</b>`
+      + `<b><span class="ses-name rider-link" data-rider="${esc(s.created_by)}">${esc(s.username)}</span> va a rodar</b>`
       + `<small>${esc(whenLabel(s))} · ${esc(DISC[s.discipline] || 'Todas')}</small></div>`
       + `<button type="button" class="follow-btn" data-follow="${esc(s.created_by)}" data-follow-name="${esc(s.username)}" hidden>Seguir</button></div>`
       + (s.note ? `<p class="ses-note">“${esc(s.note)}”</p>` : '')
