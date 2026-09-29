@@ -249,6 +249,8 @@
     'Listo. Te avisamos de sesiones cerca tuyo.':['Pronto. Vamos avisar de sessões perto de você.','Done. We will alert you about sessions near you.'],
     'Abrí el mapa y ubicalo en tu zona primero.':['Abra o mapa e posicione na sua região primeiro.','Open the map and move it to your area first.'],
     'Falta la ubicación.':['Falta a localização.','Location is missing.'],'Ubicación inválida.':['Localização inválida.','Invalid location.'],
+    'Cambiar portada':['Trocar capa','Change cover'],'Cambiar foto de perfil':['Trocar foto de perfil','Change profile photo'],'Foto de perfil actualizada.':['Foto de perfil atualizada.','Profile photo updated.'],
+    'Foto de perfil no válida.':['Foto de perfil inválida.','Invalid profile photo.'],'Portada no válida.':['Capa inválida.','Invalid cover.'],
     'Responsable':['Responsável','Guardian'],'Responsable / menores de 18':['Responsável / menores de 18','Guardian / under 18'],'Vinculá a tu responsable':['Vincule seu responsável','Link your guardian'],
     'Como sos menor de 18, necesitás que tu madre, padre o tutor vincule su cuenta para poder participar.':['Como você é menor de 18, sua mãe, pai ou responsável precisa vincular a conta dele para você participar.','Since you are under 18, your parent or guardian needs to link their account so you can take part.'],
     'Vincular responsable':['Vincular responsável','Link guardian'],'Tu responsable':['Seu responsável','Your guardian'],'Habilitado':['Liberado','Allowed'],'No habilitado':['Não liberado','Not allowed'],
