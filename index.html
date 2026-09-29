@@ -1502,6 +1502,32 @@ body.lb-open{overflow:hidden}
 .rp-follow{flex:1;height:40px;padding:0 18px;font-size:14px;margin-left:0;justify-content:center}
 .rp-actions .report-link{margin-top:0}
 [data-view="rider"] .profile-avatar{cursor:zoom-in}
+/* ===== Visor de publicación (estilo Facebook) ===== */
+.pv{position:fixed;inset:0;z-index:300;display:none;flex-direction:column;background:#050505;color:#eef2ee}
+.pv.open{display:flex}
+.pv-close{position:absolute;top:calc(12px + env(safe-area-inset-top));right:14px;z-index:3;width:44px;height:44px;border-radius:50%;font-size:28px;line-height:1;color:#fff;background:rgba(255,255,255,.14);border:0}
+.pv-media{flex:1;min-height:0;overflow:auto;display:flex;align-items:center;justify-content:center;-webkit-overflow-scrolling:touch}
+.pv-media img{max-width:100%;max-height:100%;object-fit:contain;touch-action:pinch-zoom}
+.pv-media img.zoom{max-width:none;max-height:none;width:200%}
+.pv.no-img .pv-media{flex:0 0 calc(64px + env(safe-area-inset-top))}
+.pv.no-img .pv-media img{display:none}
+.pv.no-img .pv-panel{flex:1;max-height:none}
+.pv-panel{max-height:46vh;overflow-y:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(5,5,5,.2),#050505 22%);-webkit-overflow-scrolling:touch}
+.pv-author{display:flex;align-items:center;gap:10px}
+.pv-author .avatar{width:40px;height:40px}
+.pv-author b{color:#fff}
+.pv-author .meta{color:#9aa6a0;font-size:12.5px}
+.pv-text{margin:10px 0 0;font-size:15px;line-height:1.45;white-space:pre-line;color:#eef2ee}
+.pv-actions{display:flex;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)}
+.pv-actions button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;height:42px;border-radius:12px;border:0;background:rgba(255,255,255,.07);color:#eef2ee;font-weight:700;font-size:14px}
+.pv-actions svg{width:20px;height:20px}
+.pv-actions button.liked{color:#ff4d6d}
+.pv-actions button.liked svg{fill:#ff4d6d;stroke:#ff4d6d}
+.pv-cmts{margin-top:12px}
+.pv-cmts .cmt-row{color:#eef2ee;border-color:rgba(255,255,255,.1)}
+.pv-cmts .meta{color:#9aa6a0}
+.pv-cmts .cmt-input input{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.15)}
+.feed-actions button.liked svg{fill:currentColor}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -2588,7 +2614,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=9"></script>
+<script src="assets/js/spotra-i18n.js?v=10"></script>
 <script src="assets/js/spotra-follow.js?v=1"></script>
 <script src="assets/js/spotra-location.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2597,12 +2623,12 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-safety.js?v=1"></script>
 <script src="assets/js/spotra-avatar.js?v=1"></script>
-<script src="assets/js/spotra-riders.js?v=1"></script>
+<script src="assets/js/spotra-riders.js?v=2"></script>
 <script src="assets/js/spotra-guardian.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
 <script src="assets/js/spotra-market.js?v=2"></script>
-<script src="assets/js/spotra-forum.js?v=4"></script>
+<script src="assets/js/spotra-forum.js?v=5"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=4"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
