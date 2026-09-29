@@ -2114,3 +2114,310 @@ create trigger profiles_sync_avatar
 update public.posts po set avatar_url = pr.avatar_url
   from public.profiles pr
   where pr.id = po.author_id and pr.avatar_url is not null and po.avatar_url is distinct from pr.avatar_url;
+
+
+-- ---------------------------------------------------------------------
+-- Agregado 29/09/2026 · funciones de aprobación y eventos (copiadas de Supabase)
+-- ---------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION public.approve_place_photo(photo_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare ph public.place_photos; has_cover boolean;
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  select * into ph from public.place_photos where id = photo_id;
+  if not found then raise exception 'foto no encontrada'; end if;
+  update public.place_photos set status='approved', reviewed_at=now() where id = photo_id;
+  select exists(select 1 from public.place_photos where place_id=ph.place_id and is_cover and status='approved') into has_cover;
+  if not has_cover then
+    update public.place_photos set is_cover=true where id = photo_id;
+    update public.places set image_url = ph.url where id = ph.place_id;
+  end if;
+end; $function$;
+
+CREATE OR REPLACE FUNCTION public.approve_submission(submission_id uuid)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare s public.place_submissions; new_id uuid;
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+    raise exception 'no autorizado';
+  end if;
+  select * into s from public.place_submissions where id = submission_id;
+  if not found then raise exception 'envio no encontrado'; end if;
+  if s.latitude is null or s.longitude is null then raise exception 'sin coordenadas'; end if;
+
+  insert into public.places (
+    google_place_id, type, status, source, name, description,
+    country_code, city, address, latitude, longitude, image_url,
+    created_by, approved_by, approved_at
+  ) values (
+    s.candidate_google_place_id, s.type, 'approved', 'community', s.name, s.description,
+    coalesce(s.country_code,'UY'), s.city, s.address, s.latitude, s.longitude, s.image_url,
+    s.submitted_by, auth.uid(), now()
+  )
+  on conflict (google_place_id) do nothing
+  returning id into new_id;
+
+  update public.place_submissions set status='approved', reviewed_at=now() where id = submission_id;
+  return new_id;
+end; $function$;
+
+CREATE OR REPLACE FUNCTION public.organizer_cancel_event(p_event_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+begin
+  update public.events set status = 'archived', updated_at = now()
+  where id = p_event_id
+    and organizer_id = auth.uid()
+    and status in ('pending', 'approved');
+  if not found then
+    raise exception 'no autorizado';
+  end if;
+end $function$;
+
+CREATE OR REPLACE FUNCTION public.organizer_update_event(p_event_id uuid, p_title text, p_starts_at timestamp with time zone, p_description text, p_discipline text, p_categories text[], p_registration_info text, p_prizes text, p_capacity integer, p_closes_at timestamp with time zone, p_contact_phone text, p_rain boolean, p_place_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+begin
+  update public.events set
+    title = p_title,
+    starts_at = p_starts_at,
+    description = p_description,
+    discipline = coalesce(p_discipline, 'todas'),
+    categories = coalesce(p_categories, '{}'),
+    registration_info = p_registration_info,
+    prizes = p_prizes,
+    capacity = p_capacity,
+    closes_at = p_closes_at,
+    contact_phone = p_contact_phone,
+    rain_reschedule = coalesce(p_rain, false),
+    place_id = coalesce(p_place_id, place_id),
+    updated_at = now()
+  where id = p_event_id
+    and organizer_id = auth.uid()
+    and status in ('pending', 'approved');
+  if not found then
+    raise exception 'no autorizado';
+  end if;
+end $function$;
+
+CREATE OR REPLACE FUNCTION public.reject_place_photo(photo_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  update public.place_photos set status='rejected', reviewed_at=now() where id = photo_id;
+end; $function$;
+
+CREATE OR REPLACE FUNCTION public.reject_submission(submission_id uuid, notes text DEFAULT NULL::text)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+    raise exception 'no autorizado';
+  end if;
+  update public.place_submissions
+    set status='rejected', reviewed_at=now(), reviewer_notes=coalesce(notes, reviewer_notes)
+    where id = submission_id;
+end; $function$;
+
+CREATE OR REPLACE FUNCTION public.save_event_results(p_event_id uuid, p_category text, p_first uuid, p_second uuid, p_third uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare
+  v_event record;
+  v_role text;
+  v_cat text;
+  v_ids uuid[];
+  v_pid uuid;
+  v_pos int;
+  v_user text;
+  v_disc text;
+  v_prof_disc text;
+begin
+  select * into v_event from events where id = p_event_id;
+  if v_event is null then raise exception 'evento inexistente'; end if;
+  v_role := coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '');
+  if v_event.organizer_id is distinct from auth.uid() and v_role <> 'admin' then
+    raise exception 'no autorizado';
+  end if;
+  if v_event.starts_at > now() then raise exception 'el evento todavia no paso'; end if;
+  if p_first is null then raise exception 'falta el primer puesto'; end if;
+  if p_first = p_second or p_first = p_third or (p_second is not null and p_second = p_third) then
+    raise exception 'riders repetidos en el podio';
+  end if;
+
+  v_cat := coalesce(nullif(trim(p_category), ''), 'General');
+  delete from event_results where event_id = p_event_id and category = v_cat;
+
+  v_ids := array[p_first, p_second, p_third];
+  for v_pos in 1..3 loop
+    v_pid := v_ids[v_pos];
+    if v_pid is null then continue; end if;
+
+    select username into v_user
+    from event_registrations
+    where event_id = p_event_id and profile_id = v_pid;
+    if v_user is null then
+      select username into v_user from event_registrations
+      where event_id = p_event_id and profile_id = v_pid;
+      if not found then raise exception 'rider no inscripto en el evento'; end if;
+    end if;
+
+    if v_event.discipline is not null and v_event.discipline <> 'todas' then
+      v_disc := v_event.discipline;
+    else
+      select lower(coalesce(discipline, '')) into v_prof_disc from profiles where id = v_pid;
+      v_disc := case
+        when v_prof_disc like '%bmx%' or v_prof_disc like '%bike%' then 'bmx'
+        when v_prof_disc like '%roll%' then 'rollers'
+        when v_prof_disc like '%skate%' then 'skate'
+        else null
+      end;
+    end if;
+
+    insert into event_results (event_id, category, profile_id, username, position, discipline, points)
+    values (
+      p_event_id, v_cat, v_pid, coalesce(v_user, 'rider'), v_pos, v_disc,
+      case v_pos when 1 then 100 when 2 then 60 else 30 end
+    );
+  end loop;
+end $function$;
+
+CREATE OR REPLACE FUNCTION public.set_place_cover(photo_id uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+declare ph public.place_photos;
+begin
+  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  select * into ph from public.place_photos where id = photo_id;
+  if not found then raise exception 'foto no encontrada'; end if;
+  if ph.status <> 'approved' then raise exception 'la foto no esta aprobada'; end if;
+  update public.place_photos set is_cover = (id = photo_id) where place_id = ph.place_id;
+  update public.places set image_url = ph.url where id = ph.place_id;
+end; $function$;
+
+CREATE OR REPLACE FUNCTION public.set_submission_location(submission_id uuid, lat double precision, lng double precision)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+begin
+  -- solo administradores (rol en app_metadata del JWT)
+  if coalesce((auth.jwt() -> 'app_metadata' ->> 'role'), '') <> 'admin' then
+    raise exception 'Solo un administrador puede fijar la ubicación.';
+  end if;
+
+  update public.place_submissions
+     set latitude = lat,
+         longitude = lng
+   where id = submission_id;
+end;
+$function$;
+
+
+-- =====================================================================
+-- SPOTRA · Arreglos del Asesor de seguridad de Supabase (29/09/2026)
+-- Ejecutar en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- 1) is_adult, is_minor y guardian_allows: antes cualquier usuario logueado podía preguntar
+--    por la edad de OTRO rider (por ejemplo, si alguien es menor). Ahora solo responden sobre uno mismo.
+--    Las reglas de la app siguen funcionando igual porque siempre preguntan por el propio usuario.
+create or replace function public.is_adult(uid uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  -- solo sobre uno mismo (o desde el servidor): nadie puede consultar la edad de otro rider
+  if uid is distinct from auth.uid() and coalesce(auth.role(), '') <> 'service_role' and session_user <> 'postgres' then return false; end if;
+  return coalesce((select p.birth_date <= (current_date - interval '18 years')::date
+                   from public.profiles p where p.id = uid), false);
+end;
+$$;
+
+create or replace function public.is_minor(uid uuid)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+begin
+  -- solo sobre uno mismo (o desde el servidor): nadie puede consultar la edad de otro rider
+  if uid is distinct from auth.uid() and coalesce(auth.role(), '') <> 'service_role' and session_user <> 'postgres' then return false; end if;
+  return coalesce((select p.birth_date > (current_date - interval '18 years')::date
+                   from public.profiles p where p.id = uid), false);
+end;
+$$;
+
+create or replace function public.guardian_allows(uid uuid, what text)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_birth date; l public.guardian_links%rowtype;
+begin
+  if uid is null then return false; end if;
+  -- solo sobre uno mismo (o desde el servidor): nadie puede consultar la edad de otro rider
+  if uid is distinct from auth.uid() and coalesce(auth.role(), '') <> 'service_role' and session_user <> 'postgres' then return false; end if;
+  select p.birth_date into v_birth from public.profiles p where p.id = uid;
+  if v_birth is null then return false; end if;                               -- primero la fecha de nacimiento
+  if v_birth <= (current_date - interval '18 years')::date then return true; end if;   -- adulto
+  if what = 'adult' then return false; end if;
+  select * into l from public.guardian_links g where g.minor_id = uid and g.status = 'active';
+  if not found then return false; end if;                                      -- menor sin responsable: solo mirar
+  return case what
+    when 'basic' then true
+    when 'sessions' then l.allow_sessions
+    when 'market' then l.allow_market
+    when 'zone' then l.allow_zone
+    else false end;
+end;
+$$;
+
+-- 2) Funciones internas de PostGIS que no usa la app: que nadie las llame desde afuera.
+do $$
+declare f record;
+begin
+  for f in select p.oid::regprocedure as sig from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+           where n.nspname = 'public' and p.proname = 'st_estimatedextent'
+  loop
+    begin
+      execute format('revoke execute on function %s from public, anon, authenticated', f.sig);
+    exception when others then raise notice 'No se pudo cambiar %: %', f.sig, sqlerrm;
+    end;
+  end loop;
+end $$;
