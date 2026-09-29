@@ -251,6 +251,7 @@
     'Falta la ubicación.':['Falta a localização.','Location is missing.'],'Ubicación inválida.':['Localização inválida.','Invalid location.'],
     'Cambiar portada':['Trocar capa','Change cover'],'Cambiar foto de perfil':['Trocar foto de perfil','Change profile photo'],'Foto de perfil actualizada.':['Foto de perfil atualizada.','Profile photo updated.'],
     'Foto de perfil no válida.':['Foto de perfil inválida.','Invalid profile photo.'],'Portada no válida.':['Capa inválida.','Invalid cover.'],
+    'Escribí un comentario...':['Escreva um comentário...','Write a comment...'],
     'Publicaciones':['Publicações','Posts'],'Ver publicación':['Ver post','View post'],'Volver':['Voltar','Back'],'Este perfil no está disponible.':['Este perfil não está disponível.','This profile is not available.'],
     'Todavía no publicaste nada. Compartí tu primera sesión en el Foro.':['Você ainda não publicou nada. Compartilhe sua primeira sessão no Fórum.','You have not posted yet. Share your first session in the Forum.'],'Todavía no publicó nada.':['Ainda não publicou nada.','No posts yet.'],
     'Responsable':['Responsável','Guardian'],'Responsable / menores de 18':['Responsável / menores de 18','Guardian / under 18'],'Vinculá a tu responsable':['Vincule seu responsável','Link your guardian'],
