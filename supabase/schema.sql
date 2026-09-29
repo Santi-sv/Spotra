@@ -2039,3 +2039,77 @@ create policy "profiles folder delete" on storage.objects
   for delete to authenticated
   using (bucket_id = 'place-images' and name like 'profiles/%'
          and (storage.foldername(name))[2] = (select auth.uid())::text);
+
+
+-- =====================================================================
+-- SPOTRA · Perfil de rider (estilo Instagram) + foto actualizada en todas sus publicaciones
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- Datos públicos de un rider (solo para usuarios logueados; nunca email, teléfono ni fecha de nacimiento).
+create or replace function public.rider_profile(p_id uuid)
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare r public.profiles%rowtype;
+begin
+  if auth.uid() is null then return null; end if;
+  if exists (select 1 from public.blocks b
+             where (b.blocker_id = auth.uid() and b.blocked_id = p_id)
+                or (b.blocker_id = p_id and b.blocked_id = auth.uid())) then
+    return null;
+  end if;
+  select * into r from public.profiles p where p.id = p_id;
+  if not found then return null; end if;
+  return json_build_object(
+    'id', r.id,
+    'username', r.username,
+    'name', r.full_name,
+    'avatar_url', r.avatar_url,
+    'cover_url', r.cover_url,
+    'bio', r.bio,
+    'discipline', r.discipline,
+    'country_code', r.country_code,
+    'city', r.city,
+    'instagram', r.instagram,
+    'tiktok', r.tiktok,
+    'facebook', r.facebook,
+    'followers', (select count(*) from public.follows f where f.followed_id = r.id),
+    'following', (select count(*) from public.follows f where f.follower_id = r.id),
+    'posts', (select count(*) from public.posts po where po.author_id = r.id),
+    'is_me', r.id = auth.uid());
+end;
+$$;
+revoke all on function public.rider_profile(uuid) from public, anon;
+grant execute on function public.rider_profile(uuid) to authenticated;
+
+-- Cuando un rider cambia su foto, se actualiza en sus publicaciones y sesiones.
+create or replace function public.profiles_sync_avatar()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.avatar_url is distinct from old.avatar_url then
+    update public.posts set avatar_url = new.avatar_url where author_id = new.id;
+    update public.sessions set avatar_url = new.avatar_url where created_by = new.id and ends_at > now();
+    update public.session_participants set avatar_url = new.avatar_url where profile_id = new.id;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.profiles_sync_avatar() from public, anon, authenticated;
+
+drop trigger if exists profiles_sync_avatar on public.profiles;
+create trigger profiles_sync_avatar
+  after update of avatar_url on public.profiles
+  for each row execute function public.profiles_sync_avatar();
+
+-- Una vez: poner la foto actual en las publicaciones viejas.
+update public.posts po set avatar_url = pr.avatar_url
+  from public.profiles pr
+  where pr.id = po.author_id and pr.avatar_url is not null and po.avatar_url is distinct from pr.avatar_url;
