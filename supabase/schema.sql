@@ -1992,3 +1992,50 @@ drop policy if exists "minors_zone_update" on public.rider_locations;
 create policy "minors_zone_update" on public.rider_locations as restrictive for update to authenticated
   using (true)
   with check (mode = 'off' or public.guardian_allows((select auth.uid()), 'zone'));
+
+
+-- =====================================================================
+-- SPOTRA · Foto de perfil y portada
+-- Las imágenes se guardan en el bucket place-images, carpeta profiles/<id del rider>/.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+alter table public.profiles add column if not exists cover_url text;
+
+-- Solo se aceptan imágenes subidas a SPOTRA, dentro de la carpeta del propio rider.
+create or replace function public.profiles_check_images()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare base text := 'https://threviqdxzbjsdxbjubm.supabase.co/storage/v1/object/public/place-images/profiles/' || new.id::text || '/';
+begin
+  if new.avatar_url is distinct from old.avatar_url and new.avatar_url is not null
+     and (left(new.avatar_url, length(base)) <> base or char_length(new.avatar_url) > 300) then
+    raise exception 'Foto de perfil no válida.';
+  end if;
+  if new.cover_url is distinct from old.cover_url and new.cover_url is not null
+     and (left(new.cover_url, length(base)) <> base or char_length(new.cover_url) > 300) then
+    raise exception 'Portada no válida.';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_check_images on public.profiles;
+create trigger profiles_check_images
+  before update of avatar_url, cover_url on public.profiles
+  for each row execute function public.profiles_check_images();
+
+-- Cada rider solo puede subir y borrar dentro de su propia carpeta profiles/<su id>/
+drop policy if exists "profiles folder upload" on storage.objects;
+create policy "profiles folder upload" on storage.objects as restrictive
+  for insert to authenticated
+  with check (bucket_id <> 'place-images' or name not like 'profiles/%'
+              or (storage.foldername(name))[2] = (select auth.uid())::text);
+
+drop policy if exists "profiles folder delete" on storage.objects;
+create policy "profiles folder delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'place-images' and name like 'profiles/%'
+         and (storage.foldername(name))[2] = (select auth.uid())::text);
