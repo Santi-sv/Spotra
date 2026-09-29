@@ -1458,6 +1458,18 @@ html.theme-light body:not(.auth-mode) .cond-weather,html.theme-light body:not(.a
 .grd-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .grd-actions button{min-height:44px}
 html.theme-light body:not(.auth-mode) .grd-perm,html.theme-light body:not(.auth-mode) .grd-ward{background:#f5f7f5;border-color:rgba(0,0,0,.08)}
+/* ===== Foto de perfil y portada reales (sin imágenes de ejemplo) ===== */
+.profile-cover{position:relative;background:radial-gradient(circle at 20% 20%,rgba(46,232,77,.35),transparent 55%),linear-gradient(135deg,#0f3319,#071007 70%);background-size:cover;background-position:center}
+.profile-cover.has-img{background-size:cover;background-position:center}
+.profile-avatar{position:relative;display:grid;place-items:center;background:#0b0f0c;background-size:cover;background-position:center}
+.profile-avatar.has-img .pa-initial{display:none}
+.pa-initial{font-family:var(--display);font-size:56px;color:#2ee84d;line-height:1}
+.pa-edit{position:absolute;right:-6px;bottom:-6px;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#2ee84d;color:#06130a;border:3px solid #071007}
+.pa-edit svg,.pc-edit svg{width:19px;height:19px}
+.pc-edit{position:absolute;right:12px;top:12px;display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:999px;font-size:12.5px;font-weight:800;color:#fff;background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.25);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.nav-avatar.has-img{background-size:cover;background-position:center;color:transparent}
+@media(max-width:760px){.pa-initial{font-size:42px}.pa-edit{width:36px;height:36px}.pc-edit span{display:none}.pc-edit{width:36px;padding:0;justify-content:center}}
+html.theme-light body:not(.auth-mode) .pa-edit{border-color:#ffffff}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1665,9 +1677,9 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     <section class="view" data-view="profile">
       <section class="profile-screen">
         <div class="profile-hero">
-          <div class="profile-cover"></div>
+          <div class="profile-cover"><button type="button" class="pc-edit" data-pick-photo="cover" aria-label="Cambiar portada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Cambiar portada</span></button></div>
           <div class="profile-identity">
-            <div class="profile-avatar"></div>
+            <div class="profile-avatar"><span class="pa-initial">R</span><button type="button" class="pa-edit" data-pick-photo="avatar" aria-label="Cambiar foto de perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button></div>
             <div>
               <h1><span data-profile-name>Rider</span></h1>
               <p data-profile-handle></p>
@@ -2539,7 +2551,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=7"></script>
+<script src="assets/js/spotra-i18n.js?v=8"></script>
 <script src="assets/js/spotra-follow.js?v=1"></script>
 <script src="assets/js/spotra-location.js?v=1"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2547,6 +2559,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=4"></script>
 <script src="assets/js/spotra-safety.js?v=1"></script>
+<script src="assets/js/spotra-avatar.js?v=1"></script>
 <script src="assets/js/spotra-guardian.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=6"></script>
