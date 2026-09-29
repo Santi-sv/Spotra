@@ -35,17 +35,18 @@
   /* ================= Feed ================= */
   function postHTML(p){
     const avatar = p.avatarUrl ? `style="background-image:url('${esc(p.avatarUrl)}')"` : '';
+    const initial = esc(String(p.username || 'R').charAt(0).toUpperCase());
     const canDelete = uid && (p.authorId === uid || isAdmin);
     return `<article class="feed-card" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
-      <div class="feed-head"><div class="avatar" ${avatar}></div>
-        <div><b>@${esc(p.username)}</b> <button type="button" class="follow-btn" data-follow="${esc(p.authorId)}" data-follow-name="${esc(p.username)}" hidden>Seguir</button><div class="meta">${timeAgo(p.createdAt)}</div></div>
+      <div class="feed-head"><button type="button" class="avatar feed-av${p.avatarUrl ? ' has-img' : ''}" ${avatar} data-rider="${esc(p.authorId)}" aria-label="@${esc(p.username)}">${p.avatarUrl ? '' : initial}</button>
+        <div><b class="rider-link" data-rider="${esc(p.authorId)}">@${esc(p.username)}</b> <button type="button" class="follow-btn" data-follow="${esc(p.authorId)}" data-follow-name="${esc(p.username)}" hidden>Seguir</button><div class="meta">${timeAgo(p.createdAt)}</div></div>
         ${canDelete ? `<span class="feed-del" data-post-del="${esc(p.id)}" title="Eliminar">×</span>` : ''}
         <span class="feed-flag" data-report="post" data-report-id="${esc(p.id)}" data-report-user="${esc(p.authorId)}" data-report-name="${esc(p.username)}" title="Reportar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 21V4M5 4h12l-2 4 2 4H5"/></svg></span>
       </div>
       <p class="lead" style="font-size:15px;white-space:pre-line">${esc(p.content)}</p>
-      ${p.imageUrl ? `<div class="feed-media" style="background-image:url('${esc(p.imageUrl)}')"></div>` : ''}
+      ${p.imageUrl ? `<img class="feed-img" src="${esc(p.imageUrl)}" alt="" loading="lazy" data-lightbox="${esc(p.imageUrl)}">` : ''}
       <div class="feed-actions">
-        <button data-post-like="${esc(p.id)}" class="${p.likedByMe ? 'liked' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-4.5-9.5-9C.5 8 2.5 4 6 4c2 0 3.2 1.2 4 2.3C10.8 5.2 12 4 14 4c3.5 0 5.5 4 3.5 8C19 16.5 12 21 12 21Z"/></svg><span>${p.likes}</span></button>
+        <button data-post-like="${esc(p.id)}" class="${p.likedByMe ? 'liked' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg><span>${p.likes}</span></button>
         <button data-post-cmt="${esc(p.id)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><span>${p.comments}</span></button>
       </div>
       <div class="cmt-box" data-cmt-box="${esc(p.id)}" style="display:none"></div>
