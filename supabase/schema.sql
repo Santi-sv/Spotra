@@ -1831,6 +1831,7 @@ begin
     where minor_id = l.minor_id;
   perform set_config('spotra.guardian_ok', '1', true);   -- el responsable confirma la fecha de nacimiento
   update public.profiles set birth_date = p_birth where id = l.minor_id;
+  perform set_config('spotra.guardian_ok', '', true);    -- se apaga enseguida: solo vale para este cambio
   return json_build_object('ok', true, 'minor', l.minor_name);
 end;
 $$;
