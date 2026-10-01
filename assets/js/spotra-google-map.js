@@ -102,16 +102,20 @@
   }
 
   const ridersAt = id => (window.SpotraSessions && id ? window.SpotraSessions.ridersAt(id) : 0);
+  const nowAt = id => (window.SpotraPresence && id ? window.SpotraPresence.countAt(id) : 0);
 
-  function markerIcon(type, selected, riders){
+  // riders = anotados en sesiones (globito verde arriba) · now = andando ahora (globito naranja abajo)
+  function markerIcon(type, selected, riders, now){
     const { color, glyph } = pinGlyph(type);
     const live = riders > 0;
-    const border = (selected || live) ? '#2ee84d' : '#ffffff';
-    const bw = (selected || live) ? 4 : 3;
-    const halo = live ? '<circle cx="30" cy="30" r="28" fill="rgba(46,232,77,.30)"/>' : '';
+    const here = now > 0;
+    const border = here ? '#ff8a3d' : ((selected || live) ? '#2ee84d' : '#ffffff');
+    const bw = (selected || live || here) ? 4 : 3;
+    const halo = here ? '<circle cx="30" cy="30" r="28" fill="rgba(255,138,61,.32)"/>' : (live ? '<circle cx="30" cy="30" r="28" fill="rgba(46,232,77,.30)"/>' : '');
+    const nowBadge = here ? `<circle cx="13" cy="48" r="11" fill="#ff8a3d" stroke="#0b0f0c" stroke-width="2"/><text x="13" y="52.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#1a0b02">${now > 9 ? '9+' : now}</text>` : '';
     const badge = live ? `<circle cx="47" cy="12" r="11" fill="#2ee84d" stroke="#0b0f0c" stroke-width="2"/><text x="47" y="16.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#06130a">${riders > 9 ? '9+' : riders}</text>` : '';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${halo}<circle cx="30" cy="32" r="21" fill="rgba(0,0,0,.28)"/><circle cx="30" cy="30" r="21" fill="#0b0f0c" stroke="${border}" stroke-width="${bw}"/><g transform="translate(18,18)" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</g>${badge}</svg>`;
-    const size = selected ? 64 : (live ? 58 : 48);
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${halo}<circle cx="30" cy="32" r="21" fill="rgba(0,0,0,.28)"/><circle cx="30" cy="30" r="21" fill="#0b0f0c" stroke="${border}" stroke-width="${bw}"/><g transform="translate(18,18)" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</g>${badge}${nowBadge}</svg>`;
+    const size = selected ? 64 : ((live || here) ? 58 : 48);
     return {
       url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
       scaledSize: new google.maps.Size(size, size),
@@ -135,9 +139,9 @@
     return window.__spotraClusterLoading;
   }
 
-  function clusterIcon(count, live){
+  function clusterIcon(count, live, here){
     const txt = count > 999 ? '999+' : String(count);
-    const ring = live ? '#2ee84d' : '#ffffff';
+    const ring = here ? '#ff8a3d' : (live ? '#2ee84d' : '#ffffff');
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="rgba(46,232,77,.22)"/><circle cx="32" cy="33.5" r="23" fill="rgba(0,0,0,.25)"/><circle cx="32" cy="32" r="23" fill="#0b0f0c" stroke="${ring}" stroke-width="3.5"/><text x="32" y="37" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${txt.length > 3 ? 13 : 16}" font-weight="700" fill="#2ee84d">${txt}</text></svg>`;
     const size = count > 99 ? 60 : 52;
     return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, scaledSize: new google.maps.Size(size, size), anchor: new google.maps.Point(size / 2, size / 2) };
@@ -153,7 +157,7 @@
       renderer: {
         render: ({ count, position, markers: ms }) => new google.maps.Marker({
           position,
-          icon: clusterIcon(count, (ms || []).some(m => m.__riders > 0)),
+          icon: clusterIcon(count, (ms || []).some(m => m.__riders > 0), (ms || []).some(m => m.__now > 0)),
           zIndex: 400 + count
         })
       }
@@ -164,12 +168,15 @@
   function applySessionIcons(){
     entries.forEach(e => {
       const r = ridersAt(e.place.id);
+      const nw = nowAt(e.place.id);
       e.marker.__riders = r;
-      e.marker.setIcon(markerIcon(e.place.type, e.marker === selectedMarker, r));
-      e.marker.setZIndex(e.marker === selectedMarker ? 999 : (r > 0 ? 500 : 1));
+      e.marker.__now = nw;
+      e.marker.setIcon(markerIcon(e.place.type, e.marker === selectedMarker, r, nw));
+      e.marker.setZIndex(e.marker === selectedMarker ? 999 : (nw > 0 ? 600 : (r > 0 ? 500 : 1)));
     });
     if(clusterer && clusterer.render) clusterer.render();
   }
+  window.addEventListener('spotra-presence', applySessionIcons);
   window.addEventListener('spotra-sessions', () => {
     applySessionIcons();
     const list = document.getElementById('mapListSheet');
@@ -274,12 +281,12 @@
 
   function selectMarker(marker){
     if(selectedMarker && selectedMarker !== marker){
-      selectedMarker.setIcon(markerIcon(selectedMarker.__spotraType, false, selectedMarker.__riders || 0));
+      selectedMarker.setIcon(markerIcon(selectedMarker.__spotraType, false, selectedMarker.__riders || 0, selectedMarker.__now || 0));
       selectedMarker.setZIndex(selectedMarker.__riders > 0 ? 500 : 1);
     }
     selectedMarker = marker || null;
     if(marker){
-      marker.setIcon(markerIcon(marker.__spotraType, true, marker.__riders || 0));
+      marker.setIcon(markerIcon(marker.__spotraType, true, marker.__riders || 0, marker.__now || 0));
       marker.setZIndex(999);
     }
   }
@@ -373,6 +380,7 @@
       addBtn.textContent = 'Agregar a SPOTRA';
     }
     renderGallery(place);
+    if(window.SpotraPresence) window.SpotraPresence.renderForPlace(place);
     if(window.SpotraConditions) window.SpotraConditions.renderForPlace(place);
     if(window.SpotraSessions) window.SpotraSessions.renderForPlace(place);
     if(window.SpotraEvents) window.SpotraEvents.renderSpotEvents(place);
@@ -401,11 +409,12 @@
       const marker = new google.maps.Marker({
         position: { lat: place.lat, lng: place.lng },
         title: place.name,
-        icon: markerIcon(place.type, false, riders),
+        icon: markerIcon(place.type, false, riders, nowAt(place.id)),
         zIndex: riders > 0 ? 500 : 1
       });
       marker.__spotraType = place.type;
       marker.__riders = riders;
+      marker.__now = nowAt(place.id);
       marker.__placeId = place.id;
       marker.addListener('click', () => { selectMarker(marker); map.panTo(marker.getPosition()); updateDetail(place); openDetail(); });
       markers.push(marker);
