@@ -251,6 +251,8 @@
     'Falta la ubicación.':['Falta a localização.','Location is missing.'],'Ubicación inválida.':['Localização inválida.','Invalid location.'],
     'Cambiar portada':['Trocar capa','Change cover'],'Cambiar foto de perfil':['Trocar foto de perfil','Change profile photo'],'Foto de perfil actualizada.':['Foto de perfil atualizada.','Profile photo updated.'],
     'Foto de perfil no válida.':['Foto de perfil inválida.','Invalid profile photo.'],'Portada no válida.':['Capa inválida.','Invalid cover.'],
+    "Editar perfil y redes sociales":["Editar perfil e redes sociais","Edit profile and social media"],"Editar perfil":["Editar perfil","Edit profile"],
+    "Tu nombre, usuario, disciplina, redes sociales y bio. Se ven en tu perfil.":["Seu nome, usuário, modalidade, redes sociais e bio. Aparecem no seu perfil.","Your name, username, discipline, social media and bio. Shown on your profile."],
     "Solo":["Só","Only"],
     "Ubicación en spots":["Localização nos spots", "Location at spots"],
     "Mostrar cuando estoy andando en un spot":["Mostrar quando estou andando em um spot", "Show when I am riding at a spot"],
