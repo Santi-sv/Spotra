@@ -30,12 +30,23 @@
     const btn = document.querySelector('[data-social="' + platform + '"]');
     if(!btn) return;
     const url = platform === 'email' ? (value ? ('mailto:' + value) : '') : socialUrl(platform, value);
-    btn.onclick = (e) => {
-      e.preventDefault();
-      if(url) window.open(url, '_blank', 'noopener');
-      else notify('Agregá tu ' + platform + ' en Configuración → Editar perfil.');
-    };
+    btn.dataset.url = url || '';
+    btn.classList.toggle('is-empty', !url);
   }
+
+  // Redes del perfil: si está cargada abre el link; si no, abre "Editar perfil" en ese campo.
+  const FIELD = { instagram: 'pfInstagram', tiktok: 'pfTiktok', facebook: 'pfFacebook', email: 'pfEmail' };
+  document.addEventListener('click', function(e){
+    const btn = e.target.closest('[data-social]');
+    if(!btn || btn.closest('[data-view="rider"]')) return;
+    e.preventDefault();
+    const url = btn.dataset.url || '';
+    if(url){ window.open(url, '_blank', 'noopener'); return; }
+    const platform = btn.dataset.social;
+    if(platform === 'email'){ if(window.openModal) window.openModal('editContact'); }
+    else if(window.openModal) window.openModal('editProfile');
+    setTimeout(function(){ const f = document.getElementById(FIELD[platform]); if(f) f.focus(); }, 250);
+  });
 
   async function loadProfile(){
     const c = await db(); if(!c) return;
@@ -182,5 +193,6 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
   else watch();
 
+  window.addEventListener('spotra-user', function(){ const v = document.querySelector('[data-view="profile"]'); if(v && v.classList.contains('active')) loadProfile(); });
   window.SpotraProfile = { loadProfile };
 })();
