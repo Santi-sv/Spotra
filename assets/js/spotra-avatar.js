@@ -111,6 +111,31 @@
     pick(b.dataset.pickPhoto);
   });
 
+  // Avisa a todos los módulos cuando cambia la sesión (entrar, salir, sesión recuperada),
+  // así cargan los datos del usuario aunque al abrir la app todavía no estuviera lista.
+  (async function watchAuth(){
+    const c = await db();
+    if(!c || !c.auth || !c.auth.onAuthStateChange) return;
+    c.auth.onAuthStateChange(ev => {
+      if(['INITIAL_SESSION','SIGNED_IN','SIGNED_OUT','USER_UPDATED'].includes(ev)){
+        setTimeout(() => window.dispatchEvent(new Event('spotra-user')), 0);
+      }
+    });
+  })();
+  window.addEventListener('spotra-user', load);
+
+  // al entrar al Perfil, volver a cargar la foto y la portada
+  function hook(){
+    if(!window.setRoute || window.setRoute.__av) return;
+    const orig = window.setRoute;
+    const wrapped = function(route){ const r = orig.apply(this, arguments); if(route === 'profile') load(); return r; };
+    Object.keys(orig).forEach(k => { wrapped[k] = orig[k]; });
+    wrapped.__av = true;
+    window.setRoute = wrapped;
+  }
+  hook();
+  document.addEventListener('DOMContentLoaded', hook);
+
   setTimeout(load, 1500);
   window.addEventListener('spotra-lang', paint);
   window.SpotraAvatar = { load };
