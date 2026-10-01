@@ -218,6 +218,7 @@
   }, true);
 
   setTimeout(load, 1800);
+  window.addEventListener('spotra-user', load);
   document.addEventListener('visibilitychange', () => { if(!document.hidden && !uid) load(); });
 
   window.SpotraSafety = { load, isBlocked, block, reload: load };
