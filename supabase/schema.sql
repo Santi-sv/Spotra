@@ -2421,3 +2421,165 @@ begin
     end;
   end loop;
 end $$;
+
+
+-- =====================================================================
+-- SPOTRA · Riders andando ahora en cada spot (presencia automática con consentimiento)
+-- Mientras SPOTRA está abierta y el rider lo aceptó, la app avisa su ubicación al servidor;
+-- si está a menos de 150 m de un spot, cuenta como "andando ahora". La ubicación exacta NO se guarda.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- Preferencias del rider: null = todavía no respondió el cartel.
+alter table public.profiles add column if not exists presence_enabled boolean;
+alter table public.profiles add column if not exists presence_visible boolean not null default true;
+
+-- En qué spot está cada rider ahora (una fila por rider, vence sola a los 20 minutos).
+create table if not exists public.rider_presence (
+  profile_id uuid primary key references public.profiles(id) on delete cascade,
+  place_id uuid not null references public.places(id) on delete cascade,
+  updated_at timestamptz not null default now(),
+  expires_at timestamptz not null
+);
+create index if not exists rider_presence_place_idx on public.rider_presence (place_id, expires_at);
+alter table public.rider_presence enable row level security;
+revoke all on table public.rider_presence from anon, authenticated;   -- solo por las funciones de abajo
+
+-- La app avisa dónde está el rider. Devuelve el spot detectado (o nada).
+create or replace function public.presence_ping(p_lat double precision, p_lng double precision)
+returns json
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_uid uuid := auth.uid();
+  v_on boolean;
+  v_minor boolean;
+  v_place record;
+begin
+  if v_uid is null then return null; end if;
+  if p_lat is null or p_lng is null or abs(p_lat) > 90 or abs(p_lng) > 180 then return null; end if;
+  select p.presence_enabled into v_on from public.profiles p where p.id = v_uid;
+  if not coalesce(v_on, false) then
+    delete from public.rider_presence where profile_id = v_uid;
+    return null;
+  end if;
+  -- menores: solo si su responsable habilitó las sesiones, y solo en skateparks
+  v_minor := public.is_minor(v_uid);
+  if v_minor and not public.guardian_allows(v_uid, 'sessions') then
+    delete from public.rider_presence where profile_id = v_uid;
+    return null;
+  end if;
+  select pl.id, pl.name into v_place
+    from public.places pl
+    where pl.status = 'approved' and pl.type in ('skatepark', 'street_spot')
+      and (not v_minor or pl.type = 'skatepark')
+      and public.st_dwithin(pl.location, public.st_setsrid(public.st_makepoint(p_lng, p_lat), 4326)::public.geography, 150)
+    order by public.st_distance(pl.location, public.st_setsrid(public.st_makepoint(p_lng, p_lat), 4326)::public.geography)
+    limit 1;
+  if not found then
+    delete from public.rider_presence where profile_id = v_uid;
+    return null;
+  end if;
+  insert into public.rider_presence (profile_id, place_id, updated_at, expires_at)
+    values (v_uid, v_place.id, now(), now() + interval '20 minutes')
+  on conflict (profile_id) do update
+    set place_id = excluded.place_id, updated_at = now(), expires_at = excluded.expires_at;
+  return json_build_object('place_id', v_place.id, 'name', v_place.name);
+end;
+$$;
+
+-- El rider sale (o apaga la opción): deja de contar enseguida.
+create or replace function public.presence_leave()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from public.rider_presence where profile_id = auth.uid();
+$$;
+
+-- Cantidad de riders andando ahora por spot (para los pines). Anónimo: solo números.
+-- Cuenta presencia automática + riders de sesiones que están pasando ahora.
+create or replace function public.presence_counts()
+returns table (place_id uuid, riders int)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  with live as (
+    select rp.place_id, rp.profile_id from public.rider_presence rp where rp.expires_at > now()
+    union
+    select s.place_id, s.created_by from public.sessions s where s.starts_at <= now() and s.ends_at > now()
+    union
+    select s.place_id, sp.profile_id from public.session_participants sp
+      join public.sessions s on s.id = sp.session_id where s.starts_at <= now() and s.ends_at > now()
+  )
+  select l.place_id, count(distinct l.profile_id)::int from live l
+  where auth.uid() is not null
+  group by l.place_id;
+$$;
+
+-- Detalle de un spot: cuántos hay y cuáles de ellos sigue quien pregunta (nombre y foto solo de esos).
+create or replace function public.spot_presence(p_place uuid)
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_uid uuid := auth.uid(); v_count int; v_friends json;
+begin
+  if v_uid is null then return null; end if;
+  with live as (
+    select rp.profile_id, true as auto from public.rider_presence rp where rp.place_id = p_place and rp.expires_at > now()
+    union
+    select s.created_by, false from public.sessions s where s.place_id = p_place and s.starts_at <= now() and s.ends_at > now()
+    union
+    select sp.profile_id, false from public.session_participants sp join public.sessions s on s.id = sp.session_id
+      where s.place_id = p_place and s.starts_at <= now() and s.ends_at > now()
+  ), ids as (select distinct profile_id from live)
+  select count(*)::int,
+         coalesce(json_agg(json_build_object('id', p.id, 'username', p.username, 'avatar_url', p.avatar_url))
+                  filter (where f.follower_id is not null and p.presence_visible and p.id <> v_uid
+                          and not exists (select 1 from public.blocks b
+                                          where (b.blocker_id = v_uid and b.blocked_id = p.id)
+                                             or (b.blocker_id = p.id and b.blocked_id = v_uid))), '[]'::json)
+    into v_count, v_friends
+  from ids
+  join public.profiles p on p.id = ids.profile_id
+  left join public.follows f on f.follower_id = v_uid and f.followed_id = p.id;
+  return json_build_object('count', v_count, 'friends', v_friends);
+end;
+$$;
+
+revoke all on function public.presence_ping(double precision, double precision) from public, anon;
+revoke all on function public.presence_leave() from public, anon;
+revoke all on function public.presence_counts() from public, anon;
+revoke all on function public.spot_presence(uuid) from public, anon;
+grant execute on function public.presence_ping(double precision, double precision) to authenticated;
+grant execute on function public.presence_leave() to authenticated;
+grant execute on function public.presence_counts() to authenticated;
+grant execute on function public.spot_presence(uuid) to authenticated;
+
+-- Si el rider apaga la opción, se borra su presencia al instante.
+create or replace function public.profiles_presence_off()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not coalesce(new.presence_enabled, false) then
+    delete from public.rider_presence where profile_id = new.id;
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.profiles_presence_off() from public, anon, authenticated;
+drop trigger if exists profiles_presence_off on public.profiles;
+create trigger profiles_presence_off
+  after update of presence_enabled on public.profiles
+  for each row execute function public.profiles_presence_off();
