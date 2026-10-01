@@ -1528,6 +1528,19 @@ body.lb-open{overflow:hidden}
 .pv-cmts .meta{color:#9aa6a0}
 .pv-cmts .cmt-input input{background:rgba(255,255,255,.08);color:#fff;border-color:rgba(255,255,255,.15)}
 .feed-actions button.liked svg{fill:currentColor}
+/* ===== Riders andando ahora ===== */
+.pr-box{display:flex;align-items:center;gap:10px;margin:14px 0 4px;padding:12px;border-radius:16px;border:1px solid rgba(255,138,61,.55);background:rgba(255,138,61,.08)}
+.pr-dot{width:12px;height:12px;border-radius:50%;background:#ff8a3d;flex-shrink:0;box-shadow:0 0 0 0 rgba(255,138,61,.6);animation:prPulse 1.8s infinite}
+@keyframes prPulse{0%{box-shadow:0 0 0 0 rgba(255,138,61,.6)}80%,100%{box-shadow:0 0 0 10px rgba(255,138,61,0)}}
+.pr-tx{flex:1;min-width:0}
+.pr-tx b{display:block;font-size:15px}
+.pr-tx small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.pr-faces{display:flex;flex-shrink:0}
+.pr-face{width:32px;height:32px;border-radius:50%;margin-left:-8px;border:2px solid #ff8a3d;background:#0b0f0c center/cover no-repeat;color:#ff8a3d;font-weight:800;font-size:13px;display:grid;place-items:center;padding:0;cursor:pointer}
+.pr-hero{display:flex;justify-content:center;margin:4px 0 10px}
+.pr-hero .pr-dot{width:22px;height:22px}
+.pr-list{margin:10px 0 14px 18px;color:var(--text);font-size:14px;line-height:1.5}
+.pr-list li{margin:4px 0}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1680,6 +1693,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
             <a class="spot-info-row" id="spotWebRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3Z"/></svg><span id="spotWeb"></span></a>
             <a class="spot-info-row" id="spotIgRow" style="display:none" href="#" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg><span id="spotIg"></span></a>
           </div>
+          <div id="spotPresence"></div>
           <div id="spotConditions"></div>
           <div id="spotSessions"></div>
           <div class="section-head" id="spotEventsHead" style="display:none"><h3>Próximos eventos</h3></div>
@@ -2024,6 +2038,18 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 
 
     <!-- PERFIL / CONFIG -->
+    <div class="modal-form" data-form="presence">
+      <div class="pr-hero"><span class="pr-dot"></span></div>
+      <p class="hint">SPOTRA puede usar tu ubicación <b style="color:var(--green-hot)">mientras la app está abierta</b> para mostrar cuándo estás andando en un spot o skatepark.</p>
+      <ul class="pr-list">
+        <li>Los demás riders ven <b>cuántos</b> están andando en cada spot.</li>
+        <li>Solo <b>quienes te siguen</b> ven tu nombre y tu foto.</li>
+        <li>Nunca se guarda ni se muestra tu ubicación exacta: solo el spot.</li>
+        <li>Lo podés apagar cuando quieras en Configuración.</li>
+      </ul>
+      <button type="button" class="primary-btn grd-full" data-presence-yes>Aceptar</button>
+      <button type="button" class="ghost-btn grd-full" data-presence-no>Ahora no</button>
+    </div>
     <div class="modal-form" data-form="guardian">
       <div id="guardianBody"></div>
     </div>
@@ -2106,6 +2132,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <div class="ses-label" style="margin-top:4px">Apariencia</div>
       <div class="seg" id="themeSeg"><button type="button" data-theme-set="auto">Automático</button><button type="button" data-theme-set="light">Día</button><button type="button" data-theme-set="dark">Noche</button></div>
       <p class="theme-hint">Automático: modo día de 06:00 a 21:00 y modo noche de 21:00 a 06:00.</p>
+      <div class="ses-label">Ubicación en spots</div>
+      <label class="grd-toggle"><input type="checkbox" id="presenceOn"> <span>Mostrar cuando estoy andando en un spot</span></label>
+      <label class="grd-toggle"><input type="checkbox" id="presenceVisible"> <span>Que mis seguidores vean mi nombre</span></label>
+      <p class="theme-hint">Solo mientras SPOTRA está abierta. Nunca se guarda tu ubicación exacta.</p>
       <div class="ses-label">Idioma</div>
       <div class="seg" id="langSeg" translate="no"><button type="button" data-lang-set="es">Español</button><button type="button" data-lang-set="pt">Português</button><button type="button" data-lang-set="en">English</button></div>
       <div style="height:12px"></div>
@@ -2179,7 +2209,7 @@ if('serviceWorker' in navigator){
 }
 </script>
 <script src="assets/js/spotra-backend.js?v=18"></script>
-<script src="assets/js/spotra-google-map.js?v=19"></script>
+<script src="assets/js/spotra-google-map.js?v=20"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'map', brand:'brand-home', admin:'admin-approvals' };
@@ -2440,7 +2470,7 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { presence:'¿Mostrar dónde estás andando?', guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
 function openModal(type){
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
@@ -2614,7 +2644,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=10"></script>
+<script src="assets/js/spotra-i18n.js?v=11"></script>
 <script src="assets/js/spotra-follow.js?v=2"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2625,6 +2655,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-avatar.js?v=2"></script>
 <script src="assets/js/spotra-riders.js?v=3"></script>
 <script src="assets/js/spotra-guardian.js?v=2"></script>
+<script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
 <script src="assets/js/spotra-market.js?v=2"></script>
