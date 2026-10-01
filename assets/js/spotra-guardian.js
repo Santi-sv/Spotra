@@ -198,6 +198,7 @@
   document.addEventListener('DOMContentLoaded', wrapToast);
 
   setTimeout(load, 2000);
+  window.addEventListener('spotra-user', load);
   document.addEventListener('visibilitychange', () => { if(!document.hidden) load(); });
   window.SpotraGuardian = { load, allows, open: openModal };
 })();
