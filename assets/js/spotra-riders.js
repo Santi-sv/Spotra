@@ -161,6 +161,7 @@
       if(route === 'profile') renderMine();
       return r;
     };
+    Object.keys(orig).forEach(k => { if(!(k in window.setRoute)) window.setRoute[k] = orig[k]; });
     window.setRoute.__rp = true;
   }
   hook();
