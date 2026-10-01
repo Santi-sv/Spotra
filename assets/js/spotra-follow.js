@@ -123,6 +123,7 @@
   obs.observe(document.body, { childList: true, subtree: true });
 
   setTimeout(load, 1600);
+  window.addEventListener('spotra-user', load);
   document.addEventListener('visibilitychange', () => { if(!document.hidden) load(); });
 
   window.SpotraFollow = { load, isFollowing, ids: () => [...following.keys()] };
