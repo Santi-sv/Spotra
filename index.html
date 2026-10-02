@@ -1545,6 +1545,115 @@ body.lb-open{overflow:hidden}
 .social-grid button{position:relative}
 .social-grid button.is-empty .social-logo{opacity:.4;filter:grayscale(.6)}
 .social-grid button.is-empty::after{content:"+";position:absolute;top:2px;left:50%;margin-left:12px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:800;line-height:1;color:#06130a;background:#2ee84d}
+/* ===== Market v3 (estilo Facebook Marketplace) ===== */
+.mk{display:block}
+.mk-side{display:flex;flex-direction:column;gap:10px}
+.mk-side>*{flex-shrink:0}
+body:has([data-view="market"].active) .fab{display:none!important}
+.mk-title{display:flex;align-items:center;justify-content:space-between}
+.mk-title h1{font-family:var(--display);font-size:30px;line-height:1}
+.mk-pub-mini{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#2ee84d;color:#06130a;border:0}
+.mk-pub-mini svg,.mk-pub svg{width:20px;height:20px}
+.mk-search{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line)}
+.mk-search svg{width:18px;height:18px;color:var(--muted);flex-shrink:0}
+.mk-search input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text);font-size:15px}
+.mk-search input::-webkit-search-cancel-button{-webkit-appearance:none}
+.mk-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.mk-tabs button{display:flex;align-items:center;justify-content:center;gap:6px;height:38px;border-radius:10px;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:12.5px;white-space:nowrap}
+.mk-tabs button svg{width:17px;height:17px;flex-shrink:0}
+.mk-tabs button.active{background:rgba(46,232,77,.16);color:var(--green-hot)}
+.mk-pub{display:none;align-items:center;justify-content:center;gap:8px;height:44px;border-radius:12px;background:#2ee84d;color:#06130a;font-weight:800;border:0}
+.mk-label{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:6px}
+.mk-loc,.mk-loc-mini{display:inline-flex;align-items:center;gap:6px;background:transparent;border:0;color:var(--green-hot);font-weight:700;font-size:14px;padding:4px 0;text-align:left}
+.mk-loc svg,.mk-loc-mini svg{width:16px;height:16px;flex-shrink:0}
+.mk-cats{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px 2px}
+.mk-cats::-webkit-scrollbar{display:none}
+.mk-cats button{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 13px;border-radius:999px;white-space:nowrap;font-size:13px;font-weight:700;color:var(--text);background:rgba(255,255,255,.05);border:1px solid var(--line);flex-shrink:0}
+.mk-cats .ic{display:grid;place-items:center}
+.mk-cats svg{width:17px;height:17px}
+.mk-cats button.active{background:#2ee84d;border-color:#2ee84d;color:#06130a}
+.mk-main{margin-top:14px;min-width:0}
+.mk-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mk-head h2{font-family:var(--display);font-size:22px}
+.mk-bar{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:10px 0 12px}
+.mk-bar::-webkit-scrollbar{display:none}
+.mk-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border-radius:999px;white-space:nowrap;font-size:13px;font-weight:700;color:var(--text);background:transparent;border:1px solid var(--line);flex-shrink:0}
+.mk-chip svg{width:15px;height:15px}
+.mk-chip.active{border-color:rgba(46,232,77,.7);color:var(--green-hot);background:rgba(46,232,77,.1)}
+.mk-filters-box{padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.04);margin-bottom:12px;display:flex;flex-direction:column;gap:10px}
+.mk-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mk-row label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.mk-row input{height:42px;border-radius:12px;padding:0 12px;background:rgba(255,255,255,.06);border:1px solid var(--line);color:var(--text);font-size:15px}
+.mk-seg{grid-template-columns:repeat(3,1fr)}
+.mk-seg button{height:38px;border-radius:10px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:700;font-size:13px}
+.mk-seg button.active{border-color:#2ee84d;color:var(--green-hot);background:rgba(46,232,77,.12)}
+.mk-row .ghost-btn,.mk-row .primary-btn{min-height:42px}
+.mk-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}
+.mk-card{cursor:pointer;min-width:0}
+.mk-img{position:relative;aspect-ratio:1/1;border-radius:14px;background:#15251b center/cover no-repeat;overflow:hidden}
+.mk-new{position:absolute;left:8px;top:8px;padding:4px 8px;border-radius:8px;font-size:11px;font-weight:800;color:#06130a;background:#ffffff}
+.mk-soldtag{left:auto;right:auto;top:auto;bottom:8px;background:#ff5a5a;color:#fff}
+.mk-heart{position:absolute;right:8px;top:8px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:0;background:rgba(0,0,0,.45);color:#fff;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.mk-heart svg{width:18px;height:18px}
+.mk-heart.on,.mk-act.on{color:#ff4d6d}
+.mk-heart.on svg,.mk-act.on svg{fill:#ff4d6d;stroke:#ff4d6d}
+.mk-price{margin-top:7px;font-size:18px;font-weight:800;color:var(--text)}
+.mk-name{font-size:14px;line-height:1.25;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mk-meta{font-size:12.5px;color:var(--muted);margin-top:2px}
+.mk-mine .ml-row{margin-bottom:10px}
+.mk-mine .ev-chip{cursor:pointer;border:1px solid var(--line);background:transparent;color:var(--text)}
+.mk-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 12px;background:none;border:0;color:var(--green-hot);font-weight:800;font-size:15px}
+.mk-back svg{width:18px;height:18px}
+.mk-detail{display:grid;gap:16px}
+.mk-gallery-wrap{position:relative}
+.mk-gallery{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:18px;scrollbar-width:none;background:#0b0f0c}
+.mk-gallery::-webkit-scrollbar{display:none}
+.mk-slide{flex:0 0 100%;aspect-ratio:1/1;scroll-snap-align:center;background:#15251b center/contain no-repeat;cursor:zoom-in}
+.mk-dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:6px}
+.mk-dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.45)}
+.mk-dots span.on{background:#fff}
+.mk-dprice{font-family:var(--display);font-size:32px;color:var(--text)}
+.mk-dtitle{font-size:20px;margin-top:2px}
+.mk-wa{display:flex!important;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin-top:16px;text-decoration:none}
+.mk-wa svg{width:22px;height:22px}
+.mk-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.mk-act{display:flex;align-items:center;justify-content:center;gap:8px;height:46px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);font-weight:700}
+.mk-act svg{width:19px;height:19px}
+.mk-desc{margin-top:6px;font-size:15px;line-height:1.5;white-space:pre-line;color:var(--text)}
+.mk-seller{display:flex;align-items:center;gap:10px;width:100%;padding:10px;margin-top:6px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--text);text-align:left}
+.mk-sav{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#0b0f0c;color:#2ee84d;font-weight:800;border:2px solid rgba(46,232,77,.5)}
+.mk-seller small{display:block;color:var(--green-hot);font-size:12.5px}
+@media(max-width:899px){
+  .mk-hide-m{display:none}
+  .mk-detail-open .mk-side{display:none}
+  .mk-detail-open .mk-main{margin-top:0}
+}
+@media(min-width:900px){
+  .mk{display:grid;grid-template-columns:270px minmax(0,1fr);gap:24px;align-items:start}
+  .mk-side{position:sticky;top:96px;max-height:calc(100vh - 120px);overflow-y:auto;padding-right:16px;border-right:1px solid var(--line)}
+  .mk-pub-mini{display:none}
+  .mk-pub{display:flex}
+  .mk-tabs{display:flex;flex-direction:column;background:transparent;border:0;padding:0;gap:2px}
+  .mk-tabs button{justify-content:flex-start;height:44px;padding:0 12px;font-size:15px;color:var(--text)}
+  .mk-tabs button svg{width:20px;height:20px}
+  .mk-cats{flex-direction:column;overflow:visible;margin:0;padding:0;gap:2px}
+  .mk-cats button{height:42px;border:0;background:transparent;border-radius:10px;font-size:14.5px}
+  .mk-cats .ic{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.07)}
+  .mk-cats button.active{background:rgba(46,232,77,.14);color:var(--green-hot)}
+  .mk-cats button.active .ic{background:#2ee84d;color:#06130a}
+  .mk-main{margin-top:0}
+  .mk-grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px 14px}
+  .mk-detail{grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);align-items:start}
+}
+html.theme-light body:not(.auth-mode) .mk-search,html.theme-light body:not(.auth-mode) .mk-tabs,html.theme-light body:not(.auth-mode) .mk-cats button,html.theme-light body:not(.auth-mode) .mk-filters-box,html.theme-light body:not(.auth-mode) .mk-act,html.theme-light body:not(.auth-mode) .mk-row input{background:#ffffff;border-color:rgba(0,0,0,.09)}
+html.theme-light body:not(.auth-mode) .mk-cats button.active{background:#2ee84d;color:#06130a;border-color:#2ee84d}
+html.theme-light body:not(.auth-mode) .mk-img{background-color:#e7ebe7}
+html.theme-light body:not(.auth-mode) .mk-sav{background:#0b0f0c}
+@media(min-width:900px){
+  html.theme-light body:not(.auth-mode) .mk-tabs,html.theme-light body:not(.auth-mode) .mk-cats button{background:transparent}
+  html.theme-light body:not(.auth-mode) .mk-cats .ic{background:#eef1ee}
+  html.theme-light body:not(.auth-mode) .mk-cats button.active{background:rgba(46,232,77,.16);color:#0e8a28}
+}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1735,23 +1844,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     </section>
 
     <section class="view" data-view="market">
-      <div class="market-head mkt-compact">
-        <div>
-          <div class="kicker">Usados entre riders</div>
-          <h1 class="h1">Market</h1>
-        </div>
-        <div class="mkt-seg tabs" id="mktTabs"><button class="active" data-mkt-tab="explore">Explorar</button><button data-mkt-tab="mine">Mis publicaciones</button></div>
-        <button class="ghost-btn publish-btn" data-open-modal="product" aria-label="Publicar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg><span>Publicar</span></button>
-      </div>
-      <div class="mkt-filters">
-      <div class="filter-row" id="mktDist">
-        <button id="mktNearBtn" data-mkt-near><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Cerca de mí</button>
-        <span id="mktDistChips" style="display:none"><button data-mkt-dist="5">5 km</button><button data-mkt-dist="20">20 km</button><button data-mkt-dist="50">50 km</button><button class="active" data-mkt-dist="0">Todos</button></span>
-      </div>
-      <div class="filter-row" id="mktCats"><button class="active" data-mkt-cat="all">Todo</button><button data-mkt-cat="tablas">Tablas</button><button data-mkt-cat="ruedas">Ruedas</button><button data-mkt-cat="bicis">Bicis</button><button data-mkt-cat="protecciones">Protecc.</button><button data-mkt-cat="ropa">Ropa</button><button data-mkt-cat="otros">Otros</button></div>
-      </div>
-      <div class="product-grid" id="mktGrid"><div class="meta" style="grid-column:1/-1;margin-top:10px">Cargando publicaciones...</div></div>
-      <div id="mktDetail" style="display:none"></div>
+      <div class="mk"><aside class="mk-side" id="mkSide"></aside><div class="mk-main" id="mkMain"><div class="meta">Cargando publicaciones...</div></div></div>
     </section>
 
     <section class="view" data-view="profile">
@@ -2012,7 +2105,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     <div class="modal-form" data-form="product">
       <p class="hint">Tu publicación pasa por <b style="color:#ffd24a">aprobación del admin</b>. La venta se coordina por WhatsApp, sin pagos en la app.</p>
       <div id="productForm">
-        <span class="f-label">Fotos (hasta 3)</span>
+        <span class="f-label">Fotos (hasta 6)</span>
         <div id="mlPhotoRow" style="display:flex;gap:8px;flex-wrap:wrap">
           <label style="width:72px;height:62px;border-radius:13px;border:1.5px dashed rgba(46,232,77,.5);display:grid;place-items:center;color:var(--green-hot);cursor:pointer"><input type="file" id="mlPhotos" accept="image/*" multiple hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg></label>
           <span id="mlPhotoPreview" style="display:flex;gap:8px;flex-wrap:wrap"></span>
@@ -2025,7 +2118,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
           <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M16.5 6.5C15.6 5.3 14 4.5 12 4.5c-2.6 0-4.3 1.3-4.3 3.2 0 4.6 9 2.3 9 7.2 0 2-1.8 3.6-4.7 3.6-2.3 0-4-.9-5-2.3"/></svg><input required id="mlPrice" type="number" min="1" inputmode="numeric" placeholder="3500"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div><span class="f-label">Categoría</span><div class="field full"><select required id="mlCategory"><option value="tablas">Tablas</option><option value="ruedas">Ruedas</option><option value="bicis">Bicis</option><option value="protecciones">Protecciones</option><option value="ropa">Ropa</option><option value="otros" selected>Otros</option></select></div></div>
+          <div><span class="f-label">Categoría</span><div class="field full"><select required id="mlCategory"><option value="tablas">Tablas</option><option value="trucks">Trucks</option><option value="ruedas">Ruedas y rulemanes</option><option value="zapatillas">Zapatillas</option><option value="ropa">Ropa</option><option value="protecciones">Protecciones</option><option value="bicis">BMX</option><option value="rollers">Rollers</option><option value="scooters">Scooters</option><option value="otros" selected>Otros</option></select></div></div>
           <div><span class="f-label">Estado</span><div class="field full"><select required id="mlCondition"><option value="nuevo">Nuevo</option><option value="como-nuevo">Usado — como nuevo</option><option value="bueno" selected>Usado — bueno</option><option value="con-detalles">Usado — con detalles</option></select></div></div>
         </div>
         <span class="f-label">Descripción</span>
@@ -2648,7 +2741,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=12"></script>
+<script src="assets/js/spotra-i18n.js?v=13"></script>
 <script src="assets/js/spotra-follow.js?v=2"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2662,7 +2755,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
-<script src="assets/js/spotra-market.js?v=2"></script>
+<script src="assets/js/spotra-market.js?v=3"></script>
 <script src="assets/js/spotra-forum.js?v=5"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=5"></script>
