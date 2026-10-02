@@ -1654,6 +1654,60 @@ html.theme-light body:not(.auth-mode) .mk-sav{background:#0b0f0c}
   html.theme-light body:not(.auth-mode) .mk-cats .ic{background:#eef1ee}
   html.theme-light body:not(.auth-mode) .mk-cats button.active{background:rgba(46,232,77,.16);color:#0e8a28}
 }
+/* ===== Eventos v5 (estilo Facebook Events) ===== */
+.evx-when{margin-top:10px}
+[data-view="events"] .filter-row{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin-left:-14px;margin-right:-14px;padding:0 14px 2px}
+[data-view="events"] .filter-row::-webkit-scrollbar{display:none}
+[data-view="events"] .filter-row button{flex-shrink:0;height:36px;min-height:36px;padding:0 14px;font-size:13.5px}
+.evx-date{width:50px;flex-shrink:0;border-radius:12px;background:#ffffff;color:#0b0f0c;text-align:center;padding:5px 0;line-height:1.05;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+.evx-date small{display:block;font-size:10px;font-weight:800;color:#e5484d;letter-spacing:.04em}
+.evx-date b{display:block;font-size:21px;font-family:var(--display)}
+.evx-date span{display:block;font-size:10px;font-weight:700;letter-spacing:.04em}
+.evx-date.big{width:60px;padding:6px 0}
+.evx-date.big b{font-size:26px}
+.evx-feat{margin-top:14px;border-radius:22px;overflow:hidden;border:1px solid rgba(46,232,77,.35);background:var(--surface);cursor:pointer}
+.evx-cover{position:relative;height:170px;background:#16241a center/cover no-repeat}
+.evx-cover .evx-date{position:absolute;left:12px;top:12px}
+.evx-tag{position:absolute;right:12px;top:12px;padding:4px 9px;border-radius:8px;font-size:11px;font-weight:800;background:#2ee84d;color:#06130a}
+.evx-fbody{padding:12px 14px 14px}
+.evx-fbody h3{font-size:19px;font-weight:800}
+.evx-meta{font-size:13px;color:var(--muted);margin-top:3px}
+.evx-going{font-size:12.5px;color:var(--green-hot);font-weight:700;margin-top:5px}
+.evx-fbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.evx-fbtns .primary-btn,.evx-fbtns .ghost-btn{min-height:44px;display:flex;align-items:center;justify-content:center;gap:6px}
+.evx-fbtns svg{width:17px;height:17px}
+.evx-int.on,.evx-dbtn.on,.evx-heart.on{color:#ff4d6d!important;border-color:rgba(255,77,109,.5)!important}
+.evx-int.on svg,.evx-dbtn.on svg,.evx-heart.on svg{fill:#ff4d6d;stroke:#ff4d6d}
+.evx-sub{font-family:var(--display);font-size:18px;margin:18px 2px 8px}
+.evx-list{display:grid;gap:10px}
+.evx-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;border:1px solid var(--line);background:var(--surface);cursor:pointer}
+.evx-thumb{position:relative;width:86px;height:86px;flex-shrink:0;border-radius:12px;background:#16241a center/cover no-repeat}
+.evx-thumb .evx-date{position:absolute;left:4px;top:4px;transform:scale(.8);transform-origin:top left}
+.evx-rbody{flex:1;min-width:0}
+.evx-rbody b{display:block;font-size:15px;line-height:1.25}
+.evx-rbody .ev-chips{margin-top:6px}
+.evx-heart{width:38px;height:38px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:transparent;color:var(--muted)}
+.evx-heart svg{width:18px;height:18px}
+.evx-dcover{position:relative;height:200px;border-radius:18px;background:#16241a center/cover no-repeat;border:1px solid rgba(255,255,255,.1)}
+.evx-dcover .evx-date{position:absolute;left:12px;bottom:12px}
+.evx-cap{height:7px;border-radius:7px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden}
+.evx-cap span{display:block;height:100%;background:#2ee84d;border-radius:7px}
+.evx-dbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 4px}
+.evx-dbtn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:58px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--text);font-size:12.5px;font-weight:700}
+.evx-dbtn svg{width:20px;height:20px}
+.evx-coverpick{display:flex;align-items:center;gap:10px;min-height:52px;padding:0 14px;margin-bottom:10px;border-radius:14px;border:1.5px dashed rgba(46,232,77,.5);color:var(--green-hot);font-weight:700;font-size:14px;cursor:pointer}
+.evx-coverpick svg{width:22px;height:22px;flex-shrink:0}
+@media(min-width:900px){
+  .evx-feat{display:grid;grid-template-columns:1.2fr 1fr}
+  .evx-cover{height:100%;min-height:240px}
+  .evx-fbody{padding:20px;display:flex;flex-direction:column;justify-content:center}
+  .evx-fbody h3{font-size:24px}
+  .evx-list{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .evx-dcover{height:300px}
+}
+html.theme-light body:not(.auth-mode) .evx-feat,html.theme-light body:not(.auth-mode) .evx-row{background:#ffffff;border-color:rgba(0,0,0,.08)}
+html.theme-light body:not(.auth-mode) .evx-dbtn{background:#ffffff;border-color:rgba(0,0,0,.08)}
+html.theme-light body:not(.auth-mode) .evx-cap{background:rgba(0,0,0,.08)}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1826,6 +1880,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <div class="kicker">Competencias y juntadas</div>
       <div class="section-head" style="margin-top:2px"><h2 style="font-family:var(--display);font-size:30px;text-transform:none;letter-spacing:.02em">Eventos</h2></div>
       <div class="tabs" id="eventsTabs" style="margin-top:10px"><button class="active" data-ev-tab="upcoming">Próximos</button><button data-ev-tab="mine">Mis eventos</button><button data-ev-tab="ranking">Ranking</button></div>
+      <div class="filter-row evx-when" id="eventsWhen"><button class="active" data-ev-when="all">Todos</button><button data-ev-when="today">Hoy</button><button data-ev-when="week">Esta semana</button><button data-ev-when="month">Este mes</button><button data-ev-when="near">Cerca tuyo</button></div>
       <div class="filter-row" id="eventsDisc" style="margin-top:2px"><button class="active" data-ev-disc="all">Todas</button><button data-ev-disc="skate">Skate</button><button data-ev-disc="bmx">BMX</button><button data-ev-disc="rollers">Rollers</button></div>
       <div id="eventsList"><div class="meta" style="margin-top:14px">Cargando eventos...</div></div>
       <div id="eventDetail" style="display:none"></div>
@@ -2069,6 +2124,8 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     <div class="modal-form" data-form="event">
       <p class="hint">El evento queda <b style="color:#ffd24a">pendiente de aprobación</b> y se publica en el spot elegido.</p>
       <div id="eventForm">
+        <span class="f-label">Imagen de portada (opcional)</span>
+        <label class="evx-coverpick"><input type="file" id="eventCover" accept="image/*" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span id="eventCoverName">Elegir imagen de portada</span></label>
         <span class="f-label">Nombre del evento</span>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input required id="eventTitle" placeholder="Best Trick Sábado"></div>
         <span class="f-label">Spot donde se hace</span>
@@ -2305,7 +2362,7 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="assets/js/spotra-backend.js?v=18"></script>
+<script src="assets/js/spotra-backend.js?v=19"></script>
 <script src="assets/js/spotra-google-map.js?v=20"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2741,13 +2798,13 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=13"></script>
+<script src="assets/js/spotra-i18n.js?v=14"></script>
 <script src="assets/js/spotra-follow.js?v=2"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
 <script src="assets/js/spotra-admin.js?v=15"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
-<script src="assets/js/spotra-events.js?v=4"></script>
+<script src="assets/js/spotra-events.js?v=5"></script>
 <script src="assets/js/spotra-safety.js?v=2"></script>
 <script src="assets/js/spotra-avatar.js?v=2"></script>
 <script src="assets/js/spotra-riders.js?v=3"></script>
