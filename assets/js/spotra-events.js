@@ -73,6 +73,175 @@
     </div>`;
   }
 
+  /* ================= v5: estilo Eventos de Facebook ================= */
+  const EI = d => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+  const EV_ICON = {
+    heart: EI('<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>'),
+    share: EI('<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/>'),
+    cal: EI('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>'),
+    map: EI('<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Z"/><path d="M9 4v13.5M15 6.5V20"/>'),
+    sun: EI('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/>'),
+    rain: EI('<path d="M7 16a4 4 0 1 1 .6-7.95A5 5 0 0 1 17 9a3.5 3.5 0 0 1 0 7"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/>')
+  };
+  let activeWhen = 'all';
+  let interests = new Set();
+  let interestCount = {};
+  let evLoc = null;
+  let deepEvent = null;
+  try { deepEvent = new URLSearchParams(location.search).get('event'); } catch(e){}
+  const T = s => (window.SpotraI18n ? window.SpotraI18n.t(s) : s);
+  const LOCALE = () => (window.SpotraI18n ? window.SpotraI18n.mapsLang() : 'es');
+
+  function dateBadge(d, big){
+    if(!(d instanceof Date) || isNaN(d)) return '';
+    const wd = d.toLocaleDateString(LOCALE(), { weekday: 'short' }).replace('.', '').toUpperCase();
+    const mo = d.toLocaleDateString(LOCALE(), { month: 'short' }).replace('.', '').toUpperCase();
+    return `<div class="evx-date${big ? ' big' : ''}"><small>${esc(wd)}</small><b>${d.getDate()}</b><span>${esc(mo)}</span></div>`;
+  }
+  function hhmm(d){ return d ? String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') : ''; }
+  function evDist(ev){
+    if(!evLoc || !Number.isFinite(ev.placeLat) || !Number.isFinite(ev.placeLng)) return null;
+    const R = 6371, rad = x => x * Math.PI / 180;
+    const dLat = rad(ev.placeLat - evLoc.lat), dLng = rad(ev.placeLng - evLoc.lng);
+    const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(evLoc.lat)) * Math.cos(rad(ev.placeLat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+  function goingText(ev){
+    const n = ev.regCount || 0, i = interestCount[ev.id] || 0, L = window.SpotraI18n ? window.SpotraI18n.lang() : 'es';
+    const parts = [];
+    if(n) parts.push(({ es: `${n} ${n === 1 ? 'va' : 'van'}`, pt: `${n} ${n === 1 ? 'vai' : 'vão'}`, en: `${n} going` })[L]);
+    if(i) parts.push(({ es: `${i} interesados`, pt: `${i} interessados`, en: `${i} interested` })[L]);
+    if(ev.capacity) parts.push(`${T('Cupo')} ${n}/${ev.capacity}`);
+    return parts.join(' · ');
+  }
+  function metaLine(ev){
+    const d = evDist(ev);
+    return [hhmm(ev.startsAt), ev.placeName, ev.placeCity, d != null ? (d < 1 ? '< 1 km' : Math.round(d) + ' km') : ''].filter(Boolean).join(' · ');
+  }
+  function whenFilter(ev){
+    if(activeWhen === 'all' || !ev.startsAt) return true;
+    const now = new Date(), s = ev.startsAt;
+    const startToday = new Date(now); startToday.setHours(0, 0, 0, 0);
+    const days = (s - startToday) / 86400000;
+    if(activeWhen === 'today') return days >= 0 && days < 1;
+    if(activeWhen === 'week') return days >= 0 && days < 7;
+    if(activeWhen === 'month') return days >= 0 && days < 31;
+    if(activeWhen === 'near'){ const d = evDist(ev); return d != null && d <= 50; }
+    return true;
+  }
+  function heartBtn(ev){
+    return `<button type="button" class="evx-heart${interests.has(ev.id) ? ' on' : ''}" data-ev-interest="${esc(ev.id)}" aria-label="${esc(T('Me interesa'))}">${EV_ICON.heart}</button>`;
+  }
+  function featuredHTML(ev){
+    const cover = ev.imageUrl || 'assets/banners/banner-skatepark-4.webp';
+    const reg = myRegs[ev.id];
+    return `<article class="evx-feat" data-ev-open="${esc(ev.id)}">
+      <div class="evx-cover" style="background-image:url('${esc(cover)}')">${dateBadge(ev.startsAt, true)}<span class="evx-tag">${esc(T('Destacado'))}</span></div>
+      <div class="evx-fbody">
+        <h3>${esc(ev.title)}</h3>
+        <div class="evx-meta">${esc(metaLine(ev))}</div>
+        ${goingText(ev) ? `<div class="evx-going">${esc(goingText(ev))}</div>` : ''}
+        <div class="evx-fbtns">
+          <button type="button" class="primary-btn" data-ev-open="${esc(ev.id)}">${esc(T(reg ? 'Inscripto' : 'Inscribirme'))}</button>
+          <button type="button" class="ghost-btn evx-int${interests.has(ev.id) ? ' on' : ''}" data-ev-interest="${esc(ev.id)}">${EV_ICON.heart}<span>${esc(T('Me interesa'))}</span></button>
+        </div>
+      </div></article>`;
+  }
+  function rowHTML(ev, opts){
+    const o = opts || {};
+    const chips = [];
+    if(DISC_LABEL[ev.discipline]) chips.push(`<span class="ev-chip on">${esc(DISC_LABEL[ev.discipline])}</span>`);
+    if((o.myCategories && o.myCategories.length) || myRegs[ev.id]) chips.push(`<span class="ev-chip on">${esc(T('Inscripto'))}</span>`);
+    if(o.showStatus){
+      const cls = ev.status === 'approved' ? 'on' : ev.status === 'pending' ? 'warn' : 'off';
+      chips.push(`<span class="ev-chip ${cls}">${esc(T(STATUS_LABEL[ev.status] || ev.status))}</span>`);
+    }
+    const going = goingText(ev);
+    return `<article class="evx-row" data-ev-open="${esc(ev.id)}">
+      ${ev.imageUrl ? `<div class="evx-thumb" style="background-image:url('${esc(ev.imageUrl)}')">${dateBadge(ev.startsAt)}</div>` : dateBadge(ev.startsAt)}
+      <div class="evx-rbody"><b>${esc(ev.title)}</b><div class="evx-meta">${esc(metaLine(ev))}</div>
+        ${going ? `<div class="evx-going">${esc(going)}</div>` : ''}
+        ${chips.length ? `<div class="ev-chips">${chips.join('')}</div>` : ''}</div>
+      ${o.showStatus ? '' : heartBtn(ev)}
+    </article>`;
+  }
+
+  async function loadInterests(){
+    interests = new Set(); interestCount = {};
+    if(!B() || !uid) return;
+    try {
+      const c = await B().getClient();
+      const [mine, counts] = await Promise.all([c.from('event_interests').select('event_id'), c.rpc('event_interest_counts')]);
+      (mine.data || []).forEach(r => interests.add(r.event_id));
+      (counts.data || []).forEach(r => { interestCount[r.event_id] = r.interested; });
+    } catch(e){}
+  }
+
+  async function toggleInterest(id){
+    if(!uid){ toast(T('Iniciá sesión para guardar eventos.')); return; }
+    const c = await B().getClient();
+    const on = !interests.has(id);
+    on ? interests.add(id) : interests.delete(id);
+    interestCount[id] = Math.max(0, (interestCount[id] || 0) + (on ? 1 : -1));
+    document.querySelectorAll(`[data-ev-interest="${id}"]`).forEach(b => b.classList.toggle('on', on));
+    const res = on ? await c.from('event_interests').insert({ event_id: id }) : await c.from('event_interests').delete().eq('event_id', id).eq('profile_id', uid);
+    if(res.error && !(on && res.error.code === '23505')){
+      on ? interests.delete(id) : interests.add(id);
+      document.querySelectorAll(`[data-ev-interest="${id}"]`).forEach(b => b.classList.toggle('on', !on));
+      toast(T('No se pudo. Probá de nuevo.'));
+      return;
+    }
+    toast(T(on ? 'Guardado en Mis eventos.' : 'Quitado de Mis eventos.'));
+  }
+
+  function locateEvents(){
+    if(!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(pos => {
+      evLoc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if(activeTab === 'upcoming' && !currentEvent) renderUpcoming(true);
+    }, () => { toast(T('No pudimos obtener tu ubicación. Revisá los permisos.')); }, { timeout: 9000, maximumAge: 600000 });
+  }
+
+  // Clima previsto para el día y hora del evento (si es dentro de 7 días)
+  async function eventWeather(ev){
+    const box = document.getElementById('evWeather');
+    if(!box || !ev.startsAt || !Number.isFinite(ev.placeLat)) return;
+    const days = (ev.startsAt - Date.now()) / 86400000;
+    if(days < -0.2 || days > 7){ box.remove(); return; }
+    try {
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${ev.placeLat.toFixed(3)}&longitude=${ev.placeLng.toFixed(3)}&hourly=temperature_2m,precipitation_probability&forecast_days=8&timezone=auto`);
+      const j = await r.json();
+      const key = ev.startsAt.toLocaleString('sv-SE', { timeZone: j.timezone }).slice(0, 13).replace(' ', 'T');
+      const i = (j.hourly.time || []).findIndex(x => x.slice(0, 13) === key);
+      if(i < 0){ box.remove(); return; }
+      const temp = Math.round(j.hourly.temperature_2m[i]), p = j.hourly.precipitation_probability[i] || 0;
+      const L = window.SpotraI18n ? window.SpotraI18n.lang() : 'es';
+      const txt = p >= 40 ? ({ es: `${p}% de probabilidad de lluvia`, pt: `${p}% de chance de chuva`, en: `${p}% chance of rain` })[L] : ({ es: 'Sin lluvia prevista', pt: 'Sem chuva prevista', en: 'No rain expected' })[L];
+      box.className = 'ev-info-row' + (p >= 40 ? ' rain' : '');
+      box.innerHTML = `${p >= 40 ? EV_ICON.rain : EV_ICON.sun}<span>${esc(T('Pronóstico'))}: ${temp}° · ${esc(txt)}</span>`;
+    } catch(e){ box.remove(); }
+  }
+
+  function icsFor(ev){
+    const pad = n => String(n).padStart(2, '0');
+    const f = d => d.getUTCFullYear() + pad(d.getUTCMonth() + 1) + pad(d.getUTCDate()) + 'T' + pad(d.getUTCHours()) + pad(d.getUTCMinutes()) + '00Z';
+    const end = new Date(ev.startsAt.getTime() + 3 * 3600000);
+    const clean = s => String(s || '').replace(/[,;\\]/g, ' ').replace(/\n/g, ' ');
+    return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//SPOTRA//ES', 'BEGIN:VEVENT', 'UID:' + ev.id + '@spotra', 'DTSTAMP:' + f(new Date()),
+      'DTSTART:' + f(ev.startsAt), 'DTEND:' + f(end), 'SUMMARY:' + clean(ev.title), 'LOCATION:' + clean([ev.placeName, ev.placeCity].filter(Boolean).join(' - ')),
+      'DESCRIPTION:' + clean(location.origin + '/?event=' + ev.id + '#events'),
+      'BEGIN:VALARM', 'TRIGGER:-P1D', 'ACTION:DISPLAY', 'DESCRIPTION:' + clean(ev.title), 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  }
+  function addToCalendar(ev){
+    if(!ev || !ev.startsAt) return;
+    const blob = new Blob([icsFor(ev)], { type: 'text/calendar' });
+    const file = new File([blob], 'spotra-evento.ics', { type: 'text/calendar' });
+    if(navigator.canShare && navigator.canShare({ files: [file] })){ navigator.share({ files: [file], title: ev.title }).catch(() => {}); return; }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'spotra-evento.ics';
+    document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  }
+
   /* ================= Sección Eventos ================= */
   function listEl(){ return document.getElementById('eventsList'); }
   function detailEl(){ return document.getElementById('eventDetail'); }
@@ -85,6 +254,7 @@
       const regs = await B().listMyRegistrations();
       regs.forEach(r => { myRegs[r.event.id] = r.myCategories; });
     }
+    await loadInterests();
   }
 
   async function renderSection(){
@@ -96,17 +266,25 @@
     else await renderMine();
   }
 
-  async function renderUpcoming(){
+  async function renderUpcoming(cached){
     const wrap = listEl();
     if(!wrap || !B()) return;
-    wrap.innerHTML = '<div class="meta" style="margin-top:14px">Cargando eventos...</div>';
-    upcomingCache = await B().listEvents({ limit: 50 });
-    const list = upcomingCache.filter(ev => activeDisc === 'all' || ev.discipline === activeDisc || ev.discipline === 'todas');
+    if(!cached || !upcomingCache.length){
+      wrap.innerHTML = `<div class="meta" style="margin-top:14px">${esc(T('Cargando eventos...'))}</div>`;
+      upcomingCache = await B().listEvents({ limit: 50 });
+    }
+    const list = upcomingCache
+      .filter(ev => activeDisc === 'all' || ev.discipline === activeDisc || ev.discipline === 'todas')
+      .filter(whenFilter)
+      .sort((x, y) => (x.startsAt || 0) - (y.startsAt || 0));
     if(!list.length){
-      wrap.innerHTML = '<div class="meta" style="margin-top:14px">No hay eventos próximos' + (activeDisc !== 'all' ? ' de esa disciplina' : '') + '. Creá el primero desde el botón +.</div>';
+      const any = activeDisc !== 'all' || activeWhen !== 'all';
+      wrap.innerHTML = `<div class="empty-state">${EV_ICON.cal}<b>${esc(T(any ? 'No hay eventos con esos filtros' : 'No hay eventos próximos'))}</b>${esc(T(any ? 'Probá con otra fecha o disciplina.' : 'Creá el primero desde el botón +.'))}</div>`;
       return;
     }
-    wrap.innerHTML = list.map(ev => cardHTML(ev)).join('');
+    const [feat, ...rest] = list;
+    wrap.innerHTML = featuredHTML(feat) + (rest.length ? `<div class="evx-sub">${esc(T('Próximos'))}</div><div class="evx-list">${rest.map(ev => rowHTML(ev)).join('')}</div>` : '');
+    if(deepEvent){ const id = deepEvent; deepEvent = null; try { history.replaceState(null, '', location.pathname + location.hash); } catch(e){} openDetail(id); }
   }
 
   async function renderMine(){
@@ -119,12 +297,19 @@
     const organizedIds = {};
     if(mine.length){
       parts.push('<div class="kicker" style="font-size:10px;margin-top:14px">Organizás vos</div>');
-      mine.forEach(ev => { organizedIds[ev.id] = true; parts.push(cardHTML(ev, { showStatus: true })); });
+      mine.forEach(ev => { organizedIds[ev.id] = true; parts.push(rowHTML(ev, { showStatus: true })); });
     }
     const regOnly = regs.filter(r => !organizedIds[r.event.id]);
     if(regOnly.length){
       parts.push('<div class="kicker" style="font-size:10px;margin-top:16px">Inscripto</div>');
-      regOnly.forEach(r => parts.push(cardHTML(r.event, { myCategories: r.myCategories })));
+      regOnly.forEach(r => parts.push(rowHTML(r.event, { myCategories: r.myCategories })));
+    }
+    if(!upcomingCache.length) upcomingCache = await B().listEvents({ limit: 50 });
+    const regIds = new Set(regs.map(r => r.event.id));
+    const intOnly = upcomingCache.filter(ev => interests.has(ev.id) && !organizedIds[ev.id] && !regIds.has(ev.id));
+    if(intOnly.length){
+      parts.push(`<div class="kicker" style="font-size:10px;margin-top:16px">${esc(T('Me interesa'))}</div>`);
+      intOnly.forEach(ev => parts.push(rowHTML(ev)));
     }
     wrap.innerHTML = parts.length ? parts.join('') : '<div class="meta" style="margin-top:14px">Todavía no tenés eventos: inscribite a uno o creá el tuyo desde el +.</div>';
   }
@@ -134,6 +319,7 @@
     const l = listEl(); if(l) l.style.display = '';
     const tabs = document.getElementById('eventsTabs'); if(tabs) tabs.style.display = '';
     const disc = document.getElementById('eventsDisc'); if(disc) disc.style.display = activeTab === 'upcoming' ? '' : 'none';
+    const when = document.getElementById('eventsWhen'); if(when) when.style.display = activeTab === 'upcoming' ? '' : 'none';
     /* el ranking dibuja su propio selector de disciplina */
     currentEvent = null;
   }
@@ -182,10 +368,13 @@
     l.style.display = 'none';
     const tabs = document.getElementById('eventsTabs'); if(tabs) tabs.style.display = 'none';
     const disc = document.getElementById('eventsDisc'); if(disc) disc.style.display = 'none';
+    const when = document.getElementById('eventsWhen'); if(when) when.style.display = 'none';
     d.style.display = '';
     d.innerHTML = detailHTML(ev);
     renderAttendees(ev);
     renderResults(ev);
+    eventWeather(ev);
+    window.scrollTo(0, 0);
   }
 
   function detailHTML(ev){
@@ -246,16 +435,25 @@
       ? `https://www.google.com/maps/search/?api=1&query=${ev.placeLat},${ev.placeLng}` : '';
     const wa = whatsappUrl(ev.contactPhone);
     const btns = [];
+    if(ev.placeId) btns.push(`<button type="button" class="ghost-btn" data-ev-map="${esc(ev.placeId)}">${esc(T('Ver en el mapa'))}</button>`);
     if(dirUrl) btns.push(`<a class="ghost-btn" href="${esc(dirUrl)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Cómo llegar</a>`);
     if(wa) btns.push(`<a class="ghost-btn" href="${esc(wa)}" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;text-decoration:none">Contactar</a>`);
 
     return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer" data-ev-back>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;color:var(--muted)"><path d="M15 6l-6 6 6 6"/></svg>
         <span class="meta">Volver a eventos</span></div>
-      <div class="cover" style="height:150px;border-radius:18px;background:url('${esc(ev.imageUrl || 'assets/banners/banner-skatepark-4.webp')}') center/cover;border:1px solid rgba(255,255,255,.1)"></div>
+      <div class="evx-dcover" style="background-image:url('${esc(ev.imageUrl || 'assets/banners/banner-skatepark-4.webp')}')" ${ev.imageUrl ? `data-lightbox="${esc(ev.imageUrl)}"` : ''}>${dateBadge(ev.startsAt, true)}</div>
       <div class="ev-chips" style="margin-top:12px">${chips.join('')}</div>
       <h2 style="font-family:var(--display);font-size:27px;margin-top:8px">${esc(ev.title)}</h2>
+      ${goingText(ev) ? `<div class="evx-going" style="margin-top:4px">${esc(goingText(ev))}</div>` : ''}
+      ${ev.capacity ? `<div class="evx-cap"><span style="width:${Math.min(100, Math.round(100 * (ev.regCount || 0) / ev.capacity))}%"></span></div>` : ''}
+      <div class="evx-dbtns">
+        <button type="button" class="evx-dbtn${interests.has(ev.id) ? ' on' : ''}" data-ev-interest="${esc(ev.id)}">${EV_ICON.heart}<span>${esc(T('Me interesa'))}</span></button>
+        <button type="button" class="evx-dbtn" data-ev-share>${EV_ICON.share}<span>${esc(T('Compartir'))}</span></button>
+        <button type="button" class="evx-dbtn" data-ev-cal>${EV_ICON.cal}<span>${esc(T('Calendario'))}</span></button>
+      </div>
       ${rows.join('')}
+      <div id="evWeather" class="ev-info-row"><span class="meta">${esc(T('Cargando clima...'))}</span></div>
       ${cats}
       <div id="evResultsBlock"></div>
       <div class="f-label" style="margin-top:14px" id="evAttendHead" hidden>Van</div>
@@ -622,6 +820,29 @@
   }
 
   /* ================= Crear evento ================= */
+  // portada del evento: lado mayor 1600 px, JPG
+  function coverBlob(file){
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas');
+        c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(b => resolve(b), 'image/jpeg', 0.84);
+      };
+      img.onerror = () => resolve(null);
+      img.src = URL.createObjectURL(file);
+    });
+  }
+  document.addEventListener('change', e => {
+    if(e.target && e.target.id === 'eventCover'){
+      const f = e.target.files && e.target.files[0];
+      const lbl = document.getElementById('eventCoverName');
+      if(lbl) lbl.textContent = f ? f.name : T('Elegir imagen de portada');
+    }
+  });
+
   async function submitFromForm(){
     const g = id => (document.getElementById(id) || {}).value || '';
     const title = g('eventTitle');
@@ -660,13 +881,28 @@
     const isEdit = !!editingId;
     if(isEdit) payload.id = editingId;
     const btn = document.querySelector('[data-submit="event"]');
-    if(btn){ btn.disabled = true; btn.textContent = 'Enviando...'; }
+    if(btn){ btn.disabled = true; btn.textContent = T('Enviando...'); }
+    const coverInput = document.getElementById('eventCover');
+    const coverFile = coverInput && coverInput.files && coverInput.files[0];
+    if(coverFile){
+      if(btn) btn.textContent = T('Subiendo foto...');
+      const blob = await coverBlob(coverFile);
+      const up = blob ? await B().uploadListingImage(blob, 'jpg') : { ok: false };
+      if(up.ok) payload.imageUrl = up.url;
+      else toast(T('No se pudo subir la portada. El evento se guarda sin ella.'));
+      if(btn) btn.textContent = T('Enviando...');
+    }
     const result = B() ? (isEdit ? await B().organizerUpdateEvent(payload) : await B().createEvent(payload)) : { ok: false };
     if(btn){ btn.disabled = false; btn.textContent = 'Enviar a aprobación'; }
     if(!result.ok){
       toast(result.error === 'auth' ? 'Iniciá sesión para crear un evento.' : 'No se pudo guardar el evento. Probá de nuevo.');
       return;
     }
+    if(isEdit && payload.imageUrl){
+      try { const c = await B().getClient(); await c.rpc('organizer_set_event_image', { p_event_id: payload.id, p_url: payload.imageUrl }); } catch(e){}
+    }
+    if(coverInput) coverInput.value = '';
+    const cp = document.getElementById('eventCoverName'); if(cp) cp.textContent = T('Elegir imagen de portada');
     if(typeof window.resetForm === 'function') window.resetForm('eventForm');
     const idInput = document.getElementById('eventPlaceId'); if(idInput) idInput.value = '';
     const label = document.getElementById('eventPlaceLabel'); if(label){ label.textContent = 'Elegir spot en el mapa'; label.style.color = 'var(--muted)'; }
@@ -723,7 +959,34 @@
       openDetail(id);
       return;
     }
+    const intr = e.target.closest('[data-ev-interest]');
+    if(intr){ e.preventDefault(); e.stopPropagation(); toggleInterest(intr.dataset.evInterest); return; }
     if(e.target.closest('[data-ev-back]')){ renderSection(); return; }
+    const wh = e.target.closest('[data-ev-when]');
+    if(wh){
+      activeWhen = wh.dataset.evWhen;
+      document.querySelectorAll('#eventsWhen button').forEach(b => b.classList.toggle('active', b === wh));
+      if(activeWhen === 'near' && !evLoc){ locateEvents(); }
+      renderUpcoming(true);
+      return;
+    }
+    if(e.target.closest('[data-ev-share]') && currentEvent){
+      const ev = currentEvent, L = window.SpotraI18n ? window.SpotraI18n.lang() : 'es';
+      const when = ev.startsAt ? ev.startsAt.toLocaleDateString(LOCALE(), { weekday: 'long', day: 'numeric', month: 'long' }) + ' ' + hhmm(ev.startsAt) : '';
+      const text = ({ es: `${ev.title} · ${when} en ${ev.placeName}. Sumate en SPOTRA`, pt: `${ev.title} · ${when} em ${ev.placeName}. Participe pelo SPOTRA`, en: `${ev.title} · ${when} at ${ev.placeName}. Join on SPOTRA` })[L];
+      if(window.spotraShare) window.spotraShare({ title: ev.title, text, url: location.origin + '/?event=' + encodeURIComponent(ev.id) + '#events' });
+      return;
+    }
+    if(e.target.closest('[data-ev-cal]') && currentEvent){ addToCalendar(currentEvent); return; }
+    const mp = e.target.closest('[data-ev-map]');
+    if(mp){
+      const pid = mp.dataset.evMap;
+      if(window.setRoute) window.setRoute('map');
+      let tries = 0;
+      const go = () => { if(document.querySelector('#spotSheet.open')) return; if(window.SpotraMaps && window.SpotraMaps.openPlaceById) window.SpotraMaps.openPlaceById(pid); if(++tries < 8) setTimeout(go, 800); };
+      setTimeout(go, 600);
+      return;
+    }
     const tab = e.target.closest('[data-ev-tab]');
     if(tab){
       activeTab = tab.dataset.evTab;
@@ -767,6 +1030,7 @@
   function init(){
     renderHomeEvents();
     watchView();
+    if(deepEvent) setTimeout(() => { if(window.setRoute && document.body.classList.contains('is-authed')) window.setRoute('events'); }, 1800);
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
