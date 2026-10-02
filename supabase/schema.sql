@@ -2583,3 +2583,41 @@ drop trigger if exists profiles_presence_off on public.profiles;
 create trigger profiles_presence_off
   after update of presence_enabled on public.profiles
   for each row execute function public.profiles_presence_off();
+
+
+-- =====================================================================
+-- SPOTRA · Market renovado: categorías de riders, hasta 6 fotos y Guardados
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- Categorías nuevas (las viejas siguen valiendo: 'bicis' se muestra como BMX)
+alter table public.listings drop constraint if exists listings_category_check;
+alter table public.listings add constraint listings_category_check
+  check (category = any (array['tablas','trucks','ruedas','zapatillas','ropa','protecciones','bicis','rollers','scooters','otros']));
+
+-- Hasta 6 fotos por producto
+alter table public.listings drop constraint if exists listings_photos_check;
+alter table public.listings add constraint listings_photos_check check (cardinality(photos) <= 6);
+
+-- Guardados: cada rider ve y maneja solo los suyos
+create table if not exists public.saved_listings (
+  profile_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  listing_id uuid not null references public.listings(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (profile_id, listing_id)
+);
+create index if not exists saved_listings_listing_idx on public.saved_listings (listing_id);
+
+alter table public.saved_listings enable row level security;
+revoke all on table public.saved_listings from anon;
+revoke update on table public.saved_listings from authenticated;
+
+drop policy if exists "saved_listings_select_own" on public.saved_listings;
+create policy "saved_listings_select_own" on public.saved_listings
+  for select using (profile_id = (select auth.uid()));
+drop policy if exists "saved_listings_insert_own" on public.saved_listings;
+create policy "saved_listings_insert_own" on public.saved_listings
+  for insert with check ((select auth.role()) = 'authenticated' and profile_id = (select auth.uid()));
+drop policy if exists "saved_listings_delete_own" on public.saved_listings;
+create policy "saved_listings_delete_own" on public.saved_listings
+  for delete using (profile_id = (select auth.uid()));
