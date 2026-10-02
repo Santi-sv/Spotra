@@ -2621,3 +2621,68 @@ create policy "saved_listings_insert_own" on public.saved_listings
 drop policy if exists "saved_listings_delete_own" on public.saved_listings;
 create policy "saved_listings_delete_own" on public.saved_listings
   for delete using (profile_id = (select auth.uid()));
+
+
+-- =====================================================================
+-- SPOTRA · Eventos renovados: "Me interesa" + portada del evento al editar
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- "Me interesa": cada rider ve y maneja solo los suyos
+create table if not exists public.event_interests (
+  profile_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  event_id uuid not null references public.events(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (profile_id, event_id)
+);
+create index if not exists event_interests_event_idx on public.event_interests (event_id);
+alter table public.event_interests enable row level security;
+revoke all on table public.event_interests from anon;
+revoke update on table public.event_interests from authenticated;
+
+drop policy if exists "event_interests_select_own" on public.event_interests;
+create policy "event_interests_select_own" on public.event_interests
+  for select using (profile_id = (select auth.uid()));
+drop policy if exists "event_interests_insert_own" on public.event_interests;
+create policy "event_interests_insert_own" on public.event_interests
+  for insert with check ((select auth.role()) = 'authenticated' and profile_id = (select auth.uid()));
+drop policy if exists "event_interests_delete_own" on public.event_interests;
+create policy "event_interests_delete_own" on public.event_interests
+  for delete using (profile_id = (select auth.uid()));
+
+-- Cantidad de interesados por evento (solo números, para las tarjetas)
+create or replace function public.event_interest_counts()
+returns table (event_id uuid, interested int)
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select i.event_id, count(*)::int from public.event_interests i
+  where auth.uid() is not null
+  group by i.event_id;
+$$;
+revoke all on function public.event_interest_counts() from public, anon;
+grant execute on function public.event_interest_counts() to authenticated;
+
+-- El organizador (o el admin) cambia la portada de su evento. Solo imágenes subidas a SPOTRA.
+create or replace function public.organizer_set_event_image(p_event_id uuid, p_url text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if not exists (select 1 from public.events e where e.id = p_event_id
+                 and (e.organizer_id = auth.uid()
+                      or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')) then
+    raise exception 'No sos el organizador de este evento.';
+  end if;
+  if p_url is not null and left(p_url, 79) <> 'https://threviqdxzbjsdxbjubm.supabase.co/storage/v1/object/public/place-images/' then
+    raise exception 'Imagen no válida.';
+  end if;
+  update public.events set image_url = p_url, updated_at = now() where id = p_event_id;
+end;
+$$;
+revoke all on function public.organizer_set_event_image(uuid, text) from public, anon;
+grant execute on function public.organizer_set_event_image(uuid, text) to authenticated;
