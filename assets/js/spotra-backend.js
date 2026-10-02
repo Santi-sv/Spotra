@@ -436,6 +436,7 @@
     if(!authData?.user?.id) return { ok: false, error: 'auth' };
     const { error } = await db.from('events').insert({
       place_id: payload.placeId,
+      image_url: payload.imageUrl || null,
       title: payload.title,
       description: payload.description || null,
       starts_at: payload.startsAt,
