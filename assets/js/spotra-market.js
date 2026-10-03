@@ -33,6 +33,10 @@
     back: I('<path d="M15 6l-6 6 6 6"/>'),
     share: I('<circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/>'),
     flag: I('<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>'),
+    user: I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
+    clock: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    folder: I('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>'),
+    down: I('<path d="M12 5v14M6 13l6 6 6-6"/>'),
     wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>',
     filter: I('<path d="M4 6h16M7 12h10M10 18h4"/>')
   };
@@ -48,6 +52,12 @@
   let cache = [];
   let byId = new Map();
   let saved = new Set();
+  let savedCol = new Map();      // listing_id -> collection_id
+  let cols = [];                 // [{ id, name }]
+  let viewCol = null;            // colección abierta (id) o 'recent'
+  const RECENT_KEY = 'spotra_mk_recent';
+  const recentIds = () => { try { return JSON.parse(localStorage.getItem(RECENT_KEY) || '[]'); } catch(e){ return []; } };
+  function pushRecent(id){ try { const r = recentIds().filter(x => x !== id); r.unshift(id); localStorage.setItem(RECENT_KEY, JSON.stringify(r.slice(0, 30))); } catch(e){} }
   let current = null;
   let photoFiles = [];
   let deepListing = null;
@@ -112,7 +122,7 @@
       <nav class="mk-tabs">
         <button type="button" data-mk-tab="explore" class="${tab === 'explore' ? 'active' : ''}">${ICON.store}<span>${esc(t('Explorar'))}</span></button>
         <button type="button" data-mk-tab="saved" class="${tab === 'saved' ? 'active' : ''}">${ICON.heart}<span>${esc(t('Guardados'))}</span></button>
-        <button type="button" data-mk-tab="mine" class="${tab === 'mine' ? 'active' : ''}">${ICON.tag}<span>${esc(t('Mis publicaciones'))}</span></button>
+        <button type="button" data-mk-tab="you" class="${tab === 'you' || tab === 'mine' ? 'active' : ''}">${ICON.user}<span>${esc(t('Tú'))}</span></button>
       </nav>
       <button type="button" class="mk-pub" data-open-modal="product">${ICON.plus}<span>${esc(t('Publicar'))}</span></button>
       <div class="mk-label mk-hide-m">${esc(t('Ubicación'))}</div>
@@ -130,18 +140,20 @@
   }
 
   /* ================= Tarjetas ================= */
+  const dropped = l => l.previousPrice != null && l.previousPrice > l.price && l.priceDroppedAt && (Date.now() - l.priceDroppedAt.getTime()) < 14 * 86400000;
+  function oldPrice(l){ return dropped(l) ? `<s class="mk-old">${esc(fmtPrice({ price: l.previousPrice, currency: l.currency }))}</s>` : ''; }
   function cardHTML(l){
     const d = dist(l);
     const meta = [l.city, d != null ? fmtKm(d) : ''].filter(Boolean).join(' · ');
     const img = l.photos[0] ? `style="background-image:url('${esc(l.photos[0])}')"` : '';
+    const badge = d != null && d < 5000 ? 'Cerca' : dropped(l) ? 'Rebajado' : isNew(l) ? 'Recién publicado' : '';
     return `<article class="mk-card" data-ml-open="${esc(l.id)}" data-author="${esc(l.sellerId)}">
       <div class="mk-img" ${img}>
-        ${isNew(l) ? `<span class="mk-new">${esc(t('Recién publicado'))}</span>` : ''}
+        ${badge ? `<span class="mk-new${badge === 'Rebajado' ? ' mk-drop' : ''}">${esc(t(badge))}</span>` : ''}
         ${l.sold ? `<span class="mk-new mk-soldtag">${esc(t('Vendido'))}</span>` : ''}
         <button type="button" class="mk-heart${saved.has(l.id) ? ' on' : ''}" data-mk-save="${esc(l.id)}" aria-label="${esc(t('Guardar'))}">${ICON.heart}</button>
       </div>
-      <div class="mk-price">${esc(fmtPrice(l))}</div>
-      <div class="mk-name">${esc(l.title)}</div>
+      <div class="mk-line"><b>${esc(fmtPrice(l))}</b>${oldPrice(l)}<span> · ${esc(l.title)}</span></div>
       <div class="mk-meta">${esc(meta)}</div>
     </article>`;
   }
@@ -207,8 +219,10 @@
   async function loadSaved(){
     const c = await db(); const me = await uid();
     if(!c || !me){ saved = new Set(); return; }
-    const { data } = await c.from('saved_listings').select('listing_id');
+    const [{ data }, { data: cs }] = await Promise.all([c.from('saved_listings').select('listing_id, collection_id'), c.from('listing_collections').select('id, name').order('created_at')]);
     saved = new Set((data || []).map(r => r.listing_id));
+    savedCol = new Map((data || []).map(r => [r.listing_id, r.collection_id]));
+    cols = cs || [];
   }
 
   async function renderSaved(){
@@ -247,6 +261,82 @@
     if(tab === 'saved' && !on && !current) renderSaved();
   }
 
+  /* ================= Panel "Tú" ================= */
+  async function ensureListings(ids){
+    const missing = ids.filter(id => !byId.has(id));
+    if(!missing.length) return;
+    const c = await db();
+    const { data } = await c.from('listings').select('id, seller_id, username, whatsapp, title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at, previous_price, price_dropped_at').in('id', missing.slice(0, 60));
+    (data || []).forEach(r => byId.set(r.id, { id: r.id, sellerId: r.seller_id, username: r.username || 'rider', whatsapp: r.whatsapp || '', title: r.title, description: r.description || '', category: r.category, condition: r.condition, price: Number(r.price), currency: r.currency, city: r.city || '', lat: r.latitude, lng: r.longitude, photos: r.photos || [], status: r.status, sold: !!r.sold, createdAt: r.created_at ? new Date(r.created_at) : null, previousPrice: r.previous_price != null ? Number(r.previous_price) : null, priceDroppedAt: r.price_dropped_at ? new Date(r.price_dropped_at) : null }));
+  }
+
+  async function renderYou(){
+    const main = $('mkMain');
+    if(!main) return;
+    const me = await uid();
+    if(!me){ main.innerHTML = `<div class="meta">${esc(t('Iniciá sesión para ver tu panel.'))}</div>`; return; }
+    main.innerHTML = `<div class="meta">${esc(t('Cargando...'))}</div>`;
+    await loadSaved();
+    const mine = await B().listMyListings();
+    mine.forEach(l => byId.set(l.id, l));
+    const recent = recentIds();
+    await ensureListings([...saved].concat(recent));
+    const colCover = id => { const it = [...savedCol.entries()].find(([lid, cid]) => cid === id && byId.get(lid)); const l = it && byId.get(it[0]); return l && l.photos[0] ? `style="background-image:url('${esc(l.photos[0])}')"` : ''; };
+    const colCount = id => [...savedCol.values()].filter(v => v === id).length;
+    main.innerHTML = `<div class="mk-head"><h2>${esc(t('Tú'))}</h2></div>
+      <div class="mk-you">
+        <button type="button" class="mk-ycard" data-mk-tab="saved">${ICON.heart}<b>${saved.size} ${esc(t(saved.size === 1 ? 'guardado' : 'guardados'))}</b></button>
+        <button type="button" class="mk-ycard" data-mk-list="recent">${ICON.clock}<b>${esc(t('Vistos recientemente'))}</b></button>
+        <button type="button" class="mk-ycard" data-mk-tab="mine">${ICON.tag}<b>${esc(t('Tus publicaciones'))} (${mine.length})</b></button>
+        <button type="button" class="mk-ycard accent" data-open-modal="product">${ICON.plus}<b>${esc(t('Publicar algo'))}</b></button>
+      </div>
+      <div class="mk-yhead"><h3>${esc(t('Venta'))}</h3></div>
+      <div class="mk-ylist">
+        <button type="button" data-mk-tab="mine">${ICON.tag}<span>${esc(t('Tus publicaciones'))} (${mine.length})</span></button>
+        <button type="button" data-mk-tab="mine">${ICON.down}<span>${esc(t('Bajar precio o marcar vendido'))}</span></button>
+      </div>
+      <div class="mk-yhead"><h3>${esc(t('Colecciones'))}</h3><button type="button" class="mk-link" data-mk-newcol>+ ${esc(t('Nueva'))}</button></div>
+      ${cols.length ? `<div class="mk-cols">${cols.map(c => `<button type="button" class="mk-colcard" data-mk-list="${esc(c.id)}"><span class="mk-colimg" ${colCover(c.id)}>${colCover(c.id) ? '' : ICON.folder}</span><b>${esc(c.name)}</b><small>${colCount(c.id)} ${esc(t('guardados'))}</small></button>`).join('')}</div>`
+        : `<p class="meta">${esc(t('Organizá tus guardados en colecciones, por ejemplo "Para mi tabla".'))}</p>`}`;
+  }
+
+  async function renderList(which){
+    const main = $('mkMain');
+    if(!main) return;
+    let ids, title;
+    if(which === 'recent'){ ids = recentIds(); title = t('Vistos recientemente'); }
+    else { ids = [...savedCol.entries()].filter(([, c]) => c === which).map(([id]) => id); const c = cols.find(x => x.id === which); title = c ? c.name : t('Colección'); }
+    await ensureListings(ids);
+    const list = ids.map(id => byId.get(id)).filter(Boolean);
+    main.innerHTML = `<button type="button" class="mk-back" data-mk-tab="you">${ICON.back}<span>${esc(t('Tú'))}</span></button>
+      <div class="mk-head"><h2>${esc(title)}</h2>${which !== 'recent' ? `<button type="button" class="mk-link" data-mk-delcol="${esc(which)}">${esc(t('Eliminar colección'))}</button>` : `<button type="button" class="mk-link" data-mk-clearrecent>${esc(t('Borrar historial'))}</button>`}</div>
+      ${list.length ? `<div class="mk-grid">${list.map(cardHTML).join('')}</div>` : `<div class="empty-state">${ICON.folder}<b>${esc(t('Todavía no hay nada acá'))}</b></div>`}`;
+  }
+
+  async function setCollection(listingId, value){
+    const c = await db(); const me = await uid();
+    if(!c || !me){ toast(t('Iniciá sesión para guardar productos.')); return; }
+    let colId = value || null;
+    if(value === '__new'){
+      const name = (window.prompt(t('Nombre de la colección')) || '').trim().slice(0, 40);
+      if(!name){ openDetail(listingId); return; }
+      const { data, error } = await c.from('listing_collections').insert({ name }).select('id, name').single();
+      if(error){ toast(t('No se pudo crear la colección.')); return; }
+      cols.push(data); colId = data.id;
+    }
+    if(!saved.has(listingId)){
+      const r = await c.from('saved_listings').insert({ listing_id: listingId, collection_id: colId });
+      if(r.error && r.error.code !== '23505'){ toast(t('No se pudo. Probá de nuevo.')); return; }
+      saved.add(listingId);
+    } else {
+      const r = await c.from('saved_listings').update({ collection_id: colId }).eq('listing_id', listingId).eq('profile_id', me);
+      if(r.error){ toast(t('No se pudo. Probá de nuevo.')); return; }
+    }
+    savedCol.set(listingId, colId);
+    toast(t(colId ? 'Guardado en la colección.' : 'Guardado.'));
+    if(current && current.id === listingId) openDetail(listingId);
+  }
+
   /* ================= Mis publicaciones ================= */
   async function renderMine(){
     const main = $('mkMain');
@@ -263,13 +353,13 @@
       const st = l.sold ? 'Vendido' : STATUS_LABEL[l.status] || l.status;
       const cls = l.sold ? '' : l.status === 'approved' ? 'on' : l.status === 'pending' ? 'warn' : 'off';
       const actions = [];
-      if(!l.sold && l.status === 'approved') actions.push(`<button type="button" class="ev-chip" data-ml-sold="${esc(l.id)}">${esc(t('Marcar vendido'))}</button>`);
+      if(!l.sold && l.status === 'approved') actions.push(`<button type="button" class="ev-chip" data-ml-drop="${esc(l.id)}">${esc(t('Bajar precio'))}</button>`, `<button type="button" class="ev-chip" data-ml-sold="${esc(l.id)}">${esc(t('Marcar vendido'))}</button>`);
       actions.push(`<button type="button" class="ev-chip" data-ml-del="${esc(l.id)}">${esc(t('Eliminar'))}</button>`);
       return `<div class="ml-row${l.sold ? ' sold' : ''}">
         <div class="thumb" style="${l.photos[0] ? `background-image:url('${esc(l.photos[0])}')` : ''}" ${l.status === 'approved' ? `data-ml-open="${esc(l.id)}"` : ''}></div>
         <div style="flex:1;min-width:0">
           <b style="font-size:14px">${esc(l.title)}</b>
-          <div class="mk-price" style="font-size:16px;margin:2px 0">${esc(fmtPrice(l))}</div>
+          <div class="mk-price" style="font-size:16px;margin:2px 0">${esc(fmtPrice(l))} ${oldPrice(l)}</div>
           <div class="ev-chips" style="margin-top:5px"><span class="ev-chip ${cls}">${esc(t(st))}</span>${actions.join('')}</div>
         </div></div>`;
     }).join('') + '</div>';
@@ -280,6 +370,7 @@
     const l = byId.get(id);
     if(!l){ toast(t('No se pudo abrir la publicación.')); return; }
     current = l;
+    pushRecent(l.id);
     const main = $('mkMain');
     if(!main) return;
     view().classList.add('mk-detail-open');
@@ -296,7 +387,7 @@
           ${photos.length > 1 ? `<div class="mk-dots">${photos.map((_, i) => `<span class="${i === 0 ? 'on' : ''}"></span>`).join('')}</div>` : ''}
         </div>
         <div class="mk-info">
-          <div class="mk-dprice">${esc(fmtPrice(l))}</div>
+          <div class="mk-dprice">${esc(fmtPrice(l))} ${oldPrice(l)}</div>
           <h2 class="mk-dtitle">${esc(l.title)}</h2>
           <div class="mk-meta">${[l.city, d != null ? fmtKm(d) : '', ago(l.createdAt)].filter(Boolean).map(esc).join(' · ')}</div>
           <div class="ev-chips" style="margin-top:10px"><span class="ev-chip on">${esc(t(CAT_LABEL[l.category] || l.category))}</span><span class="ev-chip">${esc(t(COND_LABEL[l.condition] || l.condition))}</span>${l.sold ? `<span class="ev-chip off">${esc(t('Vendido'))}</span>` : ''}</div>
@@ -305,6 +396,7 @@
             <button type="button" class="mk-act${saved.has(l.id) ? ' on' : ''}" data-mk-save="${esc(l.id)}">${ICON.heart}<span>${esc(t('Guardar'))}</span></button>
             <button type="button" class="mk-act" data-mk-share>${ICON.share}<span>${esc(t('Compartir'))}</span></button>
           </div>
+          <label class="mk-colsel">${ICON.folder}<select data-mk-col="${esc(l.id)}"><option value="">${esc(t(saved.has(l.id) ? 'Guardado sin colección' : 'Guardar en una colección...'))}</option>${cols.map(c => `<option value="${esc(c.id)}" ${savedCol.get(l.id) === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}<option value="__new">+ ${esc(t('Nueva colección'))}</option></select></label>
           ${l.description ? `<div class="mk-label">${esc(t('Descripción'))}</div><p class="mk-desc">${esc(l.description)}</p>` : ''}
           <div class="mk-label">${esc(t('Vendedor'))}</div>
           <button type="button" class="mk-seller" data-rider="${esc(l.sellerId)}"><span class="mk-sav">${initial}</span><span><b>@${esc(l.username)}</b><small>${esc(t('Ver perfil'))}</small></span></button>
@@ -358,6 +450,7 @@
     if(current) return;
     if(tab === 'explore') renderExplore();
     else if(tab === 'saved') renderSaved();
+    else if(tab === 'you') renderYou();
     else renderMine();
   }
 
@@ -473,6 +566,36 @@
       renderSide(); renderExplore();
       return;
     }
+    if((b = el.closest('[data-mk-list]'))){ current = null; tab = 'you'; renderSide(); renderList(b.dataset.mkList); return; }
+    if(el.closest('[data-mk-newcol]')){
+      const name = (window.prompt(t('Nombre de la colección')) || '').trim().slice(0, 40);
+      if(!name) return;
+      const c = await db();
+      const { error } = await c.from('listing_collections').insert({ name });
+      toast(t(error ? 'No se pudo crear la colección.' : 'Colección creada.'));
+      if(!error) renderYou();
+      return;
+    }
+    if((b = el.closest('[data-mk-delcol]'))){
+      if(!window.confirm(t('¿Eliminar la colección? Los productos siguen en Guardados.'))) return;
+      const c = await db();
+      await c.from('listing_collections').delete().eq('id', b.dataset.mkDelcol);
+      await loadSaved(); renderYou();
+      return;
+    }
+    if(el.closest('[data-mk-clearrecent]')){ try { localStorage.removeItem(RECENT_KEY); } catch(e){} renderList('recent'); return; }
+    if((b = el.closest('[data-ml-drop]'))){
+      const l = byId.get(b.dataset.mlDrop);
+      const val = window.prompt(t('Nuevo precio (menor al actual)'), l ? String(l.price) : '');
+      if(val == null) return;
+      const n = parseFloat(String(val).replace(',', '.'));
+      if(!Number.isFinite(n)){ toast(t('Escribí un número.')); return; }
+      const c = await db();
+      const { error } = await c.rpc('lower_listing_price', { p_listing: b.dataset.mlDrop, p_price: n });
+      toast(error ? (error.message || t('No se pudo.')) : t('Precio actualizado. Se muestra como rebajado.'));
+      if(!error){ cache = []; renderMine(); }
+      return;
+    }
     if(el.closest('[data-mk-near]')){ locate(false); return; }
     if(el.closest('[data-mk-radius]')){ cycleRadius(); return; }
     if(el.closest('[data-mk-filters]')){ showFilters = !showFilters; renderExplore(); return; }
@@ -518,6 +641,7 @@
   });
 
   document.addEventListener('change', e => {
+    if(e.target && e.target.dataset && e.target.dataset.mkCol){ setCollection(e.target.dataset.mkCol, e.target.value); return; }
     if(e.target && e.target.id === 'mlPhotos'){
       const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
       for(const f of files){
