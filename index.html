@@ -1838,6 +1838,73 @@ body.signup-mode .signup-panel{overflow:visible;max-height:none;height:auto}
 .signup-feat svg{width:22px;height:22px;color:#2ee84d;flex-shrink:0}
 .signup-feat b{display:block;font-size:14px}
 .signup-feat span{display:block;font-size:12.5px;color:var(--muted)}
+/* ===== Fecha de nacimiento en el registro ===== */
+.signup-birth{position:relative}
+.signup-birth .sb-label{flex-shrink:0;font-size:14px;color:var(--muted);margin-right:6px;white-space:nowrap}
+.signup-birth input[type=date]{flex:1;min-width:0;text-align:right;color:var(--text);background:transparent;border:0;font-size:16px;-webkit-appearance:none;appearance:none}
+.signup-birth input[type=date]::-webkit-date-and-time-value{text-align:right}
+.signup-birth-hint{margin:-2px 4px 4px;font-size:12px;color:var(--muted);line-height:1.4}
+#signupForm .full{grid-column:1/-1}
+body.birth-required #modalBg.open .modal-close{visibility:hidden}
+/* ===== 03/10: menos verde, más contraste ===== */
+html:not(.theme-light) .topbar{background:rgba(11,13,12,.9)!important;border-bottom:1px solid rgba(255,255,255,.07)!important;box-shadow:0 6px 20px rgba(0,0,0,.35)!important}
+html:not(.theme-light) body{background:radial-gradient(circle at 12% 0,rgba(46,232,77,.05),transparent 30%),radial-gradient(circle at 95% 8%,rgba(255,138,61,.05),transparent 28%),#09090a}
+html:not(.theme-light) body::after{background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:42px 42px}
+.fx-tabs button.on{background:#f3f5f2;border-color:#f3f5f2;color:#0b0f0c}
+.fx-tp{color:#f3f5f2;border-color:rgba(243,245,242,.85);background:radial-gradient(circle at 30% 25%,#2b2f33,#121416 70%);box-shadow:0 4px 0 #050606}
+.fx-k-spot,.fx-k-event{border-color:rgba(90,169,255,.6)}
+.fx-k-spot .fx-pulse,.fx-k-event .fx-pulse{background:#5aa9ff;box-shadow:0 0 0 5px rgba(90,169,255,.18)}
+html.theme-light body:not(.auth-mode) .fx-tabs button.on{background:#0b0f0c;border-color:#0b0f0c;color:#ffffff}
+html.theme-light body:not(.auth-mode) .fx-tp{color:#0b0f0c;border-color:#0b0f0c;background:#ffffff;box-shadow:0 4px 0 rgba(0,0,0,.18)}
+/* toasts siempre legibles */
+.toast{background:rgba(14,17,15,.97)!important;color:#f3f6f3!important;border-color:rgba(255,255,255,.14)!important}
+.toast *{color:inherit}
+/* publicaciones: autor arriba de la foto y acciones abajo (la imagen queda limpia) */
+.fx-phead{padding:0 4px 10px}
+.fx-phead .fx-who b{color:var(--text)}
+.fx-phead .fx-who small{color:var(--muted);opacity:1}
+.fx-phead .fx-mini{background:rgba(255,255,255,.06);color:var(--muted)}
+html.theme-light body:not(.auth-mode) .fx-phead .fx-mini{background:rgba(0,0,0,.05)}
+.fx-stks{bottom:12px}
+.fx-media .fx-bar.static{margin-top:10px;height:50px}
+.fx-cap{margin:10px 8px 0;padding:0}
+.fx-more{margin:4px 8px 0}
+/* notificaciones */
+#notifBtn{position:relative}
+.nt-dot{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:10px;display:grid;place-items:center;font-size:11px;font-weight:800;background:#ff4d4d;color:#fff;border:2px solid #0b0d0c}
+#notifList{display:flex;flex-direction:column;gap:4px;max-height:60vh;overflow-y:auto}
+.nt-empty{color:var(--muted);font-size:13px;padding:8px 2px}
+.nt-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px;border-radius:14px;border:0;background:transparent;color:var(--text);text-align:left}
+.nt-item.unread{background:rgba(90,169,255,.1)}
+.nt-av{position:relative;width:44px;height:44px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#0b0f0c;background:#f3f5f2 center/cover no-repeat}
+.nt-av.has-img{color:transparent}
+.nt-k{position:absolute;right:-4px;bottom:-4px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;border:2px solid #0b0d0c;color:#fff}
+.nt-k svg{width:12px;height:12px}
+.nt-follow{background:#5aa9ff}.nt-like{background:#ff4d6d}.nt-comment{background:#8a6bff}.nt-session_join{background:#ff8a3d}
+.nt-tx{flex:1;min-width:0;font-size:14px;line-height:1.35}
+.nt-tx small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.nt-q{color:var(--muted)}
+/* seguidores */
+.fl-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:rgba(255,255,255,.05);margin-bottom:10px}
+.fl-tabs button{height:40px;border-radius:10px;border:0;background:transparent;color:var(--muted);font-weight:700;font-size:14px}
+.fl-tabs button.on{background:#f3f5f2;color:#0b0f0c}
+.fl-tabs b{margin-left:4px}
+.fl-list{display:flex;flex-direction:column;max-height:60vh;overflow-y:auto}
+.fl-row{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line)}
+.fl-who{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;color:var(--text);text-align:left;cursor:pointer}
+.fl-av{width:46px;height:46px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;font-weight:800;color:#0b0f0c;background:#f3f5f2 center/cover no-repeat}
+.fl-av.has-img{color:transparent}
+.fl-tx{min-width:0}
+.fl-tx b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl-tx small{display:block;color:var(--muted);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fl-ver{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:5px;background:#2ee84d;color:#06130a;font-size:10px;font-style:normal;vertical-align:1px}
+.fl-act{display:flex;gap:6px;flex-shrink:0}
+.fl-btn{height:34px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:800;border:1px solid var(--line);background:transparent;color:var(--text)}
+.fl-btn.main{background:#2ee84d;border-color:#2ee84d;color:#06130a}
+.fl-empty{color:var(--muted);padding:16px 2px}
+html.theme-light body:not(.auth-mode) .fl-tabs{background:rgba(0,0,0,.05)}
+html.theme-light body:not(.auth-mode) .fl-tabs button.on{background:#0b0f0c;color:#fff}
+html.theme-light body:not(.auth-mode) .fl-av,html.theme-light body:not(.auth-mode) .nt-av{background-color:#0b0f0c;color:#fff}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -2100,6 +2167,8 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña (mín. 8)" minlength="8" autocomplete="new-password"></div>
             <div class="field country-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg><select required id="signupCountry"><option>Uruguay</option><option>Argentina</option><option>Brasil</option></select></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Ciudad"></div>
+            <div class="field full signup-birth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><span class="sb-label">Fecha de nacimiento</span><input required type="date" id="signupBirth" min="1915-01-01" aria-label="Fecha de nacimiento"></div>
+            <p class="signup-birth-hint full">Mínimo 13 años. Si tenés entre 13 y 17, tu cuenta se vincula a tu madre, padre o tutor. No se muestra en tu perfil.</p>
             <div class="country-picker" aria-label="País de inicio">
               <button type="button" class="country-chip active" data-country="Uruguay"><span class="flag-img uy-real" aria-hidden="true"></span><span class="card-label">Uruguay</span></button>
               <button type="button" class="country-chip" data-country="Argentina"><span class="flag-img ar-real" aria-hidden="true"></span><span class="card-label">Argentina</span></button>
@@ -2924,22 +2993,23 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=15"></script>
-<script src="assets/js/spotra-follow.js?v=2"></script>
+<script src="assets/js/spotra-i18n.js?v=16"></script>
+<script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
-<script src="assets/js/spotra-auth.js?v=6"></script>
+<script src="assets/js/spotra-auth.js?v=7"></script>
 <script src="assets/js/spotra-admin.js?v=15"></script>
 <script src="assets/js/spotra-admin-security.js?v=1"></script>
 <script src="assets/js/spotra-events.js?v=5"></script>
-<script src="assets/js/spotra-safety.js?v=2"></script>
+<script src="assets/js/spotra-safety.js?v=3"></script>
 <script src="assets/js/spotra-avatar.js?v=2"></script>
 <script src="assets/js/spotra-riders.js?v=3"></script>
+<script src="assets/js/spotra-notifs.js?v=1"></script>
 <script src="assets/js/spotra-guardian.js?v=2"></script>
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
 <script src="assets/js/spotra-market.js?v=4"></script>
-<script src="assets/js/spotra-forum.js?v=6"></script>
+<script src="assets/js/spotra-forum.js?v=7"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=5"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
