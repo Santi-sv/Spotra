@@ -1708,6 +1708,125 @@ html.theme-light body:not(.auth-mode) .mk-sav{background:#0b0f0c}
 html.theme-light body:not(.auth-mode) .evx-feat,html.theme-light body:not(.auth-mode) .evx-row{background:#ffffff;border-color:rgba(0,0,0,.08)}
 html.theme-light body:not(.auth-mode) .evx-dbtn{background:#ffffff;border-color:rgba(0,0,0,.08)}
 html.theme-light body:not(.auth-mode) .evx-cap{background:rgba(0,0,0,.08)}
+/* ===== Foro v6 · estilo street ===== */
+.fx-head{display:flex;align-items:center;justify-content:space-between;margin:2px 0 4px}
+.fx-head h1{font-family:var(--display);font-size:34px;font-style:italic;letter-spacing:-.01em;line-height:1}
+.fx-head h1 span{color:#2ee84d}
+.fx-new{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;border:0;background:#2ee84d;color:#06130a;transform:rotate(-3deg);box-shadow:0 4px 0 #0d6b21}
+.fx-new svg{width:22px;height:22px}
+.fx-tiles{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin:10px -14px 4px;padding:8px 14px 10px}
+.fx-tiles::-webkit-scrollbar{display:none}
+.fx-tile{flex-shrink:0;width:70px;display:flex;flex-direction:column;align-items:center;gap:7px;background:none;border:0;padding:0;color:var(--text);transform:rotate(-2deg)}
+.fx-tile:nth-child(2n){transform:rotate(2deg)}
+.fx-tp{position:relative;width:66px;height:66px;border-radius:18px;display:grid;place-items:center;color:#2ee84d;background:radial-gradient(circle at 30% 25%,#24502d,#0c1a10 70%);border:2.5px solid #2ee84d;box-shadow:0 4px 0 #0d2a14}
+.fx-tp svg{width:26px;height:26px}
+.fx-tp.live{color:#ff8a3d;border-color:#ff8a3d;background:radial-gradient(circle at 30% 25%,#5a3a1f,#1a0f07 70%);box-shadow:0 4px 0 #3a1d08}
+.fx-cnt{position:absolute;right:-7px;top:-8px;min-width:22px;height:22px;padding:0 5px;border-radius:9px;display:grid;place-items:center;font-size:12px;font-weight:800;background:#ff8a3d;color:#1a0b02;border:2.5px solid var(--bg,#060807)}
+.fx-tn{font-size:10.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;max-width:76px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-tabs{display:flex;gap:8px;margin:8px 0 14px}
+.fx-tabs button{height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.fx-tabs button.on{background:#2ee84d;border-color:#2ee84d;color:#06130a;transform:rotate(-1.5deg)}
+#feed{display:flex;flex-direction:column;gap:18px}
+#feed .fx-post,html.theme-light body:not(.auth-mode) #feed .fx-post{margin:0;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+#feed .fx-post::before,#feed .fx-post::after{display:none!important}
+.fx-who .follow-btn{height:24px;min-height:24px;padding:0 9px;font-size:11px;vertical-align:1px}
+body:has([data-view="community"].active) .fab{display:none!important}
+.fx-img{position:relative;border-radius:24px;overflow:hidden;background:#0b1a0f;cursor:pointer;-webkit-user-select:none;user-select:none}
+.fx-img img{display:block;width:100%;height:auto;max-height:78vh;object-fit:cover;min-height:260px}
+.fx-grain{position:absolute;inset:0;pointer-events:none;opacity:.12;mix-blend-mode:overlay;background-image:repeating-radial-gradient(circle at 0 0,#fff 0 1px,transparent 1px 3px)}
+.fx-ov{position:absolute;left:0;right:0;top:0;padding:12px 12px 26px;background:linear-gradient(180deg,rgba(0,0,0,.62),transparent);color:#fff}
+.fx-au{display:flex;align-items:center;gap:10px}
+.fx-av{width:40px;height:40px;flex-shrink:0;border-radius:13px;border:0;padding:0;display:grid;place-items:center;font-weight:800;font-size:16px;color:#06130a;background:#2ee84d center/cover no-repeat;transform:rotate(-4deg);box-shadow:0 3px 0 rgba(0,0,0,.35);cursor:pointer}
+.fx-av.has-img{color:transparent}
+.fx-who{flex:1;min-width:0;line-height:1.2}
+.fx-who b{font-size:14.5px;cursor:pointer}
+.fx-who small{display:block;font-size:11.5px;opacity:.78;margin-top:1px}
+.fx-who .follow-btn{margin-left:6px}
+.fx-ver{display:inline-grid;place-items:center;width:16px;height:16px;margin-left:4px;vertical-align:-2px;border-radius:5px;background:#2ee84d;color:#06130a;transform:rotate(8deg)}
+.fx-ver svg{width:11px;height:11px}
+.fx-pinned{color:#2ee84d;display:grid}
+.fx-pinned svg{width:18px;height:18px}
+.fx-mini{width:30px;height:30px;flex-shrink:0;border-radius:10px;display:grid;place-items:center;border:0;background:rgba(0,0,0,.28);color:inherit;opacity:.8;font-size:18px;line-height:1}
+.fx-mini svg{width:16px;height:16px}
+.fx-stks{position:absolute;left:12px;bottom:72px;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.fx-stks.static{position:static;margin-top:12px}
+.fx-stk{display:inline-flex;align-items:center;gap:5px;max-width:230px;padding:5px 10px;border-radius:9px;border:0;background:#fff;color:#0b0f0c;font-size:12px;font-weight:800;transform:rotate(-3deg);box-shadow:0 3px 0 rgba(0,0,0,.25);cursor:pointer}
+.fx-stk svg{width:14px;height:14px;color:#ff8a3d;flex-shrink:0}
+.fx-stk span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fx-stk.static{transform:rotate(-2deg)}
+.fx-bar{position:absolute;left:10px;right:10px;bottom:10px;height:52px;border-radius:18px;display:flex;align-items:center;padding:0 8px;background:rgba(8,12,9,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.14);color:#fff}
+.fx-bar.static{position:static;margin-top:14px;background:rgba(255,255,255,.05);border-color:var(--line);color:var(--text);backdrop-filter:none;-webkit-backdrop-filter:none}
+.fx-acts{display:flex;gap:4px;width:100%}
+.fx-acts button{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 10px;border-radius:12px;border:0;background:transparent;color:inherit;font-weight:800;font-size:14px}
+.fx-acts button:last-child{margin-left:auto}
+.fx-acts svg{width:22px;height:22px}
+.fx-acts button.liked{color:#ff4d6d}
+.fx-acts button.liked svg{fill:#ff4d6d;stroke:#ff4d6d}
+.fx-burst{position:absolute;left:50%;top:50%;width:110px;height:110px;margin:-55px 0 0 -55px;color:#fff;opacity:0;pointer-events:none;filter:drop-shadow(0 6px 18px rgba(0,0,0,.45))}
+.fx-burst svg{width:100%;height:100%;fill:#fff}
+.fx-burst.go{animation:fxBurst .8s ease-out}
+@keyframes fxBurst{0%{opacity:0;transform:scale(.3) rotate(-12deg)}15%{opacity:1;transform:scale(1.15) rotate(-6deg)}35%{transform:scale(.95) rotate(-6deg)}80%{opacity:1}100%{opacity:0;transform:scale(1.05) rotate(-6deg)}}
+.fx-cap{margin:10px 4px 0;font-size:14.5px;line-height:1.45;white-space:pre-line}
+.fx-more{margin:4px 4px 0;padding:0;background:none;border:0;color:var(--muted);font-size:13.5px;text-align:left;cursor:pointer}
+.fx-text .fx-tbox{padding:16px;border-radius:24px;background:radial-gradient(circle at 0 0,rgba(46,232,77,.12),transparent 55%),var(--surface);border:1px solid var(--line)}
+.fx-text .fx-mini{background:rgba(255,255,255,.06)}
+.fx-big{margin-top:14px;font-size:19px;line-height:1.35;font-weight:700;white-space:pre-line}
+.is-pinned .fx-tbox,.is-pinned .fx-img{box-shadow:0 0 0 2px rgba(46,232,77,.55)}
+.fx-ticket{position:relative;display:flex;align-items:center;gap:12px;padding:13px 14px;border-radius:18px;background:var(--surface);border:1.5px dashed rgba(255,138,61,.6);cursor:pointer}
+.fx-ticket:before,.fx-ticket:after{content:"";position:absolute;top:50%;width:16px;height:16px;margin-top:-8px;border-radius:50%;background:var(--bg,#060807)}
+.fx-ticket:before{left:-9px}.fx-ticket:after{right:-9px}
+.fx-k-spot,.fx-k-event{border-color:rgba(46,232,77,.55)}
+.fx-pulse{width:11px;height:11px;flex-shrink:0;border-radius:50%;background:#ff8a3d;animation:prPulse 1.8s infinite}
+.fx-k-spot .fx-pulse,.fx-k-event .fx-pulse{background:#2ee84d;animation:none;box-shadow:0 0 0 5px rgba(46,232,77,.18)}
+.fx-tt{flex:1;min-width:0;font-size:13.5px;line-height:1.35}
+.fx-tt small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.fx-go{padding:7px 12px;border-radius:10px;background:#2ee84d;color:#06130a;font-size:12px;font-weight:800;letter-spacing:.06em;transform:rotate(-2deg)}
+.fx-spotpick{margin:10px 0}
+.fx-chosen{display:flex;align-items:center;gap:8px}
+.fx-chosen:empty{display:none}
+.fx-spotres{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.fx-spotres button{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);text-align:left}
+.fx-spotres svg{width:18px;height:18px;color:#ff8a3d;flex-shrink:0}
+.fx-spotres small{display:block;color:var(--muted);font-size:12px}
+@media(min-width:900px){#feed{max-width:620px;margin:0 auto}.fx-head,.fx-tiles,.fx-tabs{max-width:620px;margin-left:auto;margin-right:auto}}
+html.theme-light body:not(.auth-mode) .fx-text .fx-tbox,html.theme-light body:not(.auth-mode) .fx-ticket{background:#ffffff;border-color:rgba(0,0,0,.1)}
+html.theme-light body:not(.auth-mode) .fx-ticket{border:1.5px dashed rgba(255,138,61,.7)}
+html.theme-light body:not(.auth-mode) .fx-k-spot,html.theme-light body:not(.auth-mode) .fx-k-event{border-color:rgba(46,180,77,.6)}
+html.theme-light body:not(.auth-mode) .fx-ticket:before,html.theme-light body:not(.auth-mode) .fx-ticket:after{background:#eef1ee}
+html.theme-light body:not(.auth-mode) .fx-cnt{border-color:#eef1ee}
+html.theme-light body:not(.auth-mode) .fx-bar.static{background:#f4f6f4}
+/* ===== Market v4 ===== */
+.mk-line{margin-top:7px;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.mk-line b{font-size:16px;font-weight:800}
+.mk-line span{color:var(--text)}
+.mk-old{margin-left:5px;color:var(--muted);font-size:13px;font-weight:600}
+.mk-dprice .mk-old{font-family:var(--font, inherit);font-size:18px}
+.mk-new.mk-drop{background:#ff5a5a;color:#fff}
+.mk-colsel{display:flex;align-items:center;gap:8px;margin-top:8px;padding:0 12px;height:46px;border-radius:12px;border:1px solid var(--line);color:var(--muted)}
+.mk-colsel svg{width:19px;height:19px;flex-shrink:0}
+.mk-colsel select{flex:1;min-width:0;height:100%;background:transparent;border:0;color:var(--text);font-size:14px;font-weight:700;-webkit-appearance:none;appearance:none}
+.mk-you{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.mk-ycard{display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:16px;min-height:104px;padding:14px;border-radius:18px;border:1px solid var(--line);background:var(--surface);color:var(--text);text-align:left}
+.mk-ycard svg{width:24px;height:24px}
+.mk-ycard b{font-size:15px;line-height:1.25}
+.mk-ycard.accent{border-color:rgba(46,232,77,.5);background:rgba(46,232,77,.1);color:var(--green-hot)}
+.mk-yhead{display:flex;align-items:center;justify-content:space-between;margin:22px 2px 8px}
+.mk-yhead h3{font-family:var(--display);font-size:20px}
+.mk-link{background:none;border:0;color:var(--green-hot);font-weight:800;font-size:14px}
+.mk-ylist{display:flex;flex-direction:column}
+.mk-ylist button{display:flex;align-items:center;gap:14px;padding:13px 4px;border:0;border-bottom:1px solid var(--line);background:transparent;color:var(--text);font-size:15px;font-weight:700;text-align:left}
+.mk-ylist svg{width:22px;height:22px}
+.mk-cols{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.mk-cols::-webkit-scrollbar{display:none}
+.mk-colcard{flex:0 0 150px;display:flex;flex-direction:column;align-items:flex-start;padding:0 0 10px;border-radius:16px;overflow:hidden;border:1px solid var(--line);background:var(--surface);color:var(--text);text-align:left}
+.mk-colimg{width:100%;aspect-ratio:4/3;display:grid;place-items:center;background:#15251b center/cover no-repeat;color:var(--muted)}
+.mk-colimg svg{width:28px;height:28px}
+.mk-colcard b{padding:8px 10px 0;font-size:14px}
+.mk-colcard small{padding:0 10px;color:var(--muted);font-size:12px}
+@media(min-width:900px){.mk-you{grid-template-columns:repeat(4,1fr)}}
+html.theme-light body:not(.auth-mode) .mk-ycard,html.theme-light body:not(.auth-mode) .mk-colcard{background:#ffffff;border-color:rgba(0,0,0,.08)}
+html.theme-light body:not(.auth-mode) .mk-ycard.accent{background:rgba(46,232,77,.12)}
+html.theme-light body:not(.auth-mode) .mk-colimg{background-color:#e7ebe7}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1887,15 +2006,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     </section>
 
     <section class="view" data-view="community">
-      <div class="kicker">Comunidad</div>
-      <div class="section-head" style="margin-top:2px"><h2 style="font-family:var(--display);font-size:30px;text-transform:none;letter-spacing:.02em">Foro</h2></div>
-      <div class="forum-composer">
-        <div class="composer-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg>¿Qué estás haciendo?</div>
-        <button class="primary-btn" data-open-modal="post"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M12 5v14M5 12h14"/></svg>Crear publicación</button>
-      </div>
-      <div class="feed-grid">
-        <div id="feed"><div class="meta" style="margin-top:12px">Cargando el foro...</div></div>
-      </div>
+      <div class="fx-head"><h1>Foro<span>.</span></h1><button type="button" class="fx-new" data-open-modal="post" aria-label="Crear publicación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+      <div class="fx-tiles" id="fxTiles" style="display:none"></div>
+      <div class="fx-tabs" id="fxTabs"></div>
+      <div id="feed"><div class="meta" style="margin-top:12px">Cargando el foro...</div></div>
     </section>
 
     <section class="view" data-view="market">
@@ -2111,6 +2225,11 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <p class="hint">Se publica <b style="color:var(--green-hot)">al instante</b>. Compartí una sesión, una pregunta o un hallazgo. Respetá a la comunidad: el admin puede eliminar publicaciones.</p>
       <div class="form-grid" id="postForm" style="grid-template-columns:1fr">
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input required placeholder="¿Qué querés compartir?"></div>
+      </div>
+      <div class="fx-spotpick">
+        <div id="postSpotChosen" class="fx-chosen"></div>
+        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><input id="postSpotSearch" placeholder="Etiquetar un spot (opcional)" autocomplete="off"></div>
+        <div id="postSpotResults" class="fx-spotres"></div>
       </div>
       <label class="dropzone" id="dzPost">
         <input type="file" accept="image/*">
@@ -2362,7 +2481,7 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="assets/js/spotra-backend.js?v=19"></script>
+<script src="assets/js/spotra-backend.js?v=20"></script>
 <script src="assets/js/spotra-google-map.js?v=20"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -2798,7 +2917,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=14"></script>
+<script src="assets/js/spotra-i18n.js?v=15"></script>
 <script src="assets/js/spotra-follow.js?v=2"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=6"></script>
@@ -2812,8 +2931,8 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
-<script src="assets/js/spotra-market.js?v=3"></script>
-<script src="assets/js/spotra-forum.js?v=5"></script>
+<script src="assets/js/spotra-market.js?v=4"></script>
+<script src="assets/js/spotra-forum.js?v=6"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=5"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
