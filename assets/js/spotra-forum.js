@@ -108,9 +108,10 @@
     const more = p.comments ? `<button type="button" class="fx-more" data-pv-open="${esc(p.id)}">${esc(LG() === 'en' ? `View ${p.comments} comments` : LG() === 'pt' ? `Ver os ${p.comments} comentários` : `Ver los ${p.comments} comentarios`)}</button>` : '';
     if(p.imageUrl){
       return `<article class="feed-card fx-post fx-media${p.pinned ? ' is-pinned' : ''}" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
+        <div class="fx-phead">${head}</div>
         <div class="fx-img" data-fx-img="${esc(p.id)}"><img src="${esc(p.imageUrl)}" alt="" loading="lazy"><span class="fx-grain"></span>
-          <div class="fx-ov">${head}</div>${spot ? `<div class="fx-stks">${spot}</div>` : ''}
-          <div class="fx-bar">${actions}</div><span class="fx-burst">${F_ICON.heart}</span></div>
+          ${spot ? `<div class="fx-stks">${spot}</div>` : ''}<span class="fx-burst">${F_ICON.heart}</span></div>
+        <div class="fx-bar static">${actions}</div>
         ${caption}${more}
         <div class="cmt-box" data-cmt-box="${esc(p.id)}" style="display:none"></div>
       </article>`;
@@ -630,5 +631,10 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchView);
   else watchView();
 
-  window.SpotraForum = { submitFromForm, renderFeed, openViewer };
+  async function openPostById(id){
+    let p = cache.find(x => x.id === id);
+    if(!p){ cache = await B().listPosts({ limit: 60 }); p = cache.find(x => x.id === id); }
+    if(p) openViewer(p); else toast(TT('La publicación ya no está disponible.'));
+  }
+  window.SpotraForum = { submitFromForm, renderFeed, openViewer, openPostById };
 })();
