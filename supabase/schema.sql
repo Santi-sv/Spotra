@@ -3026,3 +3026,43 @@ end;
 $$;
 revoke all on function public.follow_list(text) from public, anon;
 grant execute on function public.follow_list(text) to authenticated;
+
+
+-- =====================================================================
+-- SPOTRA · "Sugerencias para vos" (riders para seguir, en el Foro)
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+create or replace function public.suggested_riders(p_limit int default 6)
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_uid uuid := auth.uid(); v_out json;
+begin
+  if v_uid is null then return '[]'::json; end if;
+  with cand as (
+    select p.id, coalesce(p.username, split_part(p.full_name, ' ', 1)) as username, p.avatar_url, p.verified,
+           (select count(*) from public.follows f where f.followed_id = p.id)::int as followers,
+           (select coalesce(pm.username, split_part(pm.full_name, ' ', 1))
+              from public.follows f1 join public.follows f2 on f2.follower_id = f1.followed_id and f2.followed_id = p.id
+              join public.profiles pm on pm.id = f1.followed_id
+              where f1.follower_id = v_uid limit 1) as mutual,
+           (select max(po.created_at) from public.posts po where po.author_id = p.id) as last_post
+    from public.profiles p
+    where p.id <> v_uid
+      and p.birth_date is not null
+      and p.birth_date <= (current_date - interval '18 years')::date      -- nunca sugerir menores a desconocidos
+      and not exists (select 1 from public.follows f where f.follower_id = v_uid and f.followed_id = p.id)
+      and not exists (select 1 from public.blocks b where (b.blocker_id = v_uid and b.blocked_id = p.id) or (b.blocker_id = p.id and b.blocked_id = v_uid))
+  )
+  select coalesce(json_agg(row_to_json(c)), '[]'::json) into v_out
+  from (select * from cand
+        order by verified desc, (mutual is not null) desc, followers desc, last_post desc nulls last
+        limit greatest(1, least(p_limit, 12))) c;
+  return v_out;
+end;
+$$;
+revoke all on function public.suggested_riders(int) from public, anon;
+grant execute on function public.suggested_riders(int) to authenticated;
