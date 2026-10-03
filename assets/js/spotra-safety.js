@@ -51,14 +51,20 @@
   }
 
   /* ---------- fecha de nacimiento ---------- */
+  let birthMissing = false;
   async function checkBirth(c){
+    c = c || await db();
+    if(!c || !uid) return;
     if(document.body.classList.contains('auth-mode')) return;
-    if(document.body.dataset.role === 'admin' || isAdmin()) return;
+    if(document.body.dataset.isAdmin === '1' || isAdmin()) return;
     const { data, error } = await c.from('profiles').select('birth_date').eq('id', uid).maybeSingle();
-    if(error || !data || data.birth_date) return;
+    if(error || !data) return;
+    birthMissing = !data.birth_date;
+    document.body.classList.toggle('birth-required', birthMissing);
+    if(!birthMissing) return;
     const input = $('birthDate');
     if(input){
-      const max = new Date(); max.setFullYear(max.getFullYear() - 8);
+      const max = new Date(); max.setFullYear(max.getFullYear() - 13);
       input.max = max.toISOString().slice(0, 10);
       input.min = '1920-01-01';
     }
@@ -73,12 +79,16 @@
     if(!v){ err.textContent = 'Elegí tu fecha de nacimiento.'; return; }
     const d = new Date(v + 'T12:00:00');
     const age = (Date.now() - d.getTime()) / (365.25 * 86400000);
-    if(!(age >= 8 && age <= 106)){ err.textContent = 'Revisá la fecha de nacimiento.'; return; }
+    if(age < 13){ err.textContent = 'SPOTRA es para mayores de 13 años.'; return; }
+    if(age > 110){ err.textContent = 'Revisá la fecha de nacimiento.'; return; }
     const c = await db();
     if(!c || !uid){ err.textContent = 'Iniciá sesión.'; return; }
     const { error } = await c.from('profiles').update({ birth_date: v }).eq('id', uid);
     if(error){ err.textContent = error.message || 'No se pudo guardar. Probá de nuevo.'; return; }
+    birthMissing = false;
+    document.body.classList.remove('birth-required');
     if(window.closeModal) window.closeModal();
+    window.dispatchEvent(new Event('spotra-user'));   // ahora pueden seguir los demás pasos (avisos, ubicación, responsable)
     say('Listo, gracias.');
   }
 
@@ -219,6 +229,34 @@
 
   setTimeout(load, 1800);
   window.addEventListener('spotra-user', load);
+
+  // al salir del login/registro hacia la app, volver a revisar la fecha
+  function hookRoute(){
+    if(!window.setRoute || window.setRoute.__birth) return;
+    const orig = window.setRoute;
+    const wrapped = function(route){
+      const r = orig.apply(this, arguments);
+      if(route !== 'login' && route !== 'signup') setTimeout(() => checkBirth(), 400);
+      return r;
+    };
+    Object.keys(orig).forEach(k => { wrapped[k] = orig[k]; });
+    wrapped.__birth = true;
+    window.setRoute = wrapped;
+  }
+  hookRoute();
+  document.addEventListener('DOMContentLoaded', hookRoute);
+
+  // mientras falte la fecha, la hoja no se puede cerrar
+  document.addEventListener('click', e => {
+    if(!birthMissing) return;
+    const form = document.querySelector('.modal-form[data-form="birth"].active');
+    const bg = $('modalBg');
+    if(!form || !bg || !bg.classList.contains('open')) return;
+    if(e.target === bg || e.target.closest('[data-close-modal]')){ e.preventDefault(); e.stopPropagation(); say('Necesitamos tu fecha de nacimiento para continuar.'); }
+  }, true);
+  document.addEventListener('keydown', e => {
+    if(birthMissing && e.key === 'Escape' && document.querySelector('.modal-form[data-form="birth"].active')){ e.stopPropagation(); e.preventDefault(); }
+  }, true);
   document.addEventListener('visibilitychange', () => { if(!document.hidden && !uid) load(); });
 
   window.SpotraSafety = { load, isBlocked, block, reload: load };
