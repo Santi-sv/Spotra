@@ -1905,6 +1905,108 @@ html.theme-light body:not(.auth-mode) .fx-phead .fx-mini{background:rgba(0,0,0,.
 html.theme-light body:not(.auth-mode) .fl-tabs{background:rgba(0,0,0,.05)}
 html.theme-light body:not(.auth-mode) .fl-tabs button.on{background:#0b0f0c;color:#fff}
 html.theme-light body:not(.auth-mode) .fl-av,html.theme-light body:not(.auth-mode) .nt-av{background-color:#0b0f0c;color:#fff}
+/* ===== Foro v8 · estilo Instagram ===== */
+.ig-wrap{display:block}
+.ig-main{margin:-16px -14px 0}
+.ig-side{display:none}
+.ig-stories{display:flex;gap:14px;overflow-x:auto;scrollbar-width:none;padding:12px 14px 10px;border-bottom:1px solid var(--line)}
+.ig-stories::-webkit-scrollbar{display:none}
+.ig-story{flex-shrink:0;width:74px;display:flex;flex-direction:column;align-items:center;gap:6px;background:none;border:0;padding:0;color:var(--text);cursor:pointer}
+.ig-ring{position:relative;width:70px;height:70px;border-radius:50%;padding:3px;display:block}
+.ig-ring.live{background:conic-gradient(from 210deg,#ffcf3d,#ff8a3d,#ff4d6d,#ffcf3d)}
+.ig-ring.ses{background:conic-gradient(from 210deg,#2ee84d,#5aa9ff,#2ee84d)}
+.ig-ring.none{background:var(--line)}
+.ig-in{width:100%;height:100%;border-radius:50%;display:grid;place-items:center;border:3px solid var(--bg,#09090a);background:#17191b;color:#f3f5f2}
+.ig-in svg{width:26px;height:26px}
+.ig-story.me .ig-in{background:#17191b;color:#2ee84d}
+.ig-cnt{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);padding:1px 7px;border-radius:7px;font-size:10px;font-weight:800;white-space:nowrap;background:#ff4d6d;color:#fff;border:2px solid var(--bg,#09090a)}
+.ig-sn{font-size:11.5px;max-width:74px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.ig-tabs{display:flex;justify-content:center;gap:26px;border-bottom:1px solid var(--line)}
+.ig-tabs button{height:42px;padding:0 2px;border:0;border-bottom:2px solid transparent;background:none;color:var(--muted);font-size:14px;font-weight:700}
+.ig-tabs button.on{color:var(--text);border-bottom-color:var(--text)}
+#feed.ig,#feed{display:block;gap:0}
+.ig-post{position:relative;margin:0 0 14px!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+.ig-head{position:relative;display:flex;align-items:center;gap:10px;padding:10px 12px}
+.ig-av{width:34px;height:34px;flex-shrink:0;border-radius:50%;border:0;padding:0;display:grid;place-items:center;font-weight:800;font-size:14px;color:#0b0f0c;background:#e9ece9 center/cover no-repeat;cursor:pointer}
+.ig-av.has-img{color:transparent;box-shadow:0 0 0 1px var(--line)}
+.ig-av.sm{width:44px;height:44px}
+.ig-who{flex:1;min-width:0;line-height:1.2}
+.ig-line{display:flex;align-items:center;gap:4px;min-width:0}
+.ig-line b{font-size:14px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ig-ver{display:inline-grid;place-items:center;width:15px;height:15px;flex-shrink:0;border-radius:50%;background:#2ee84d;color:#06130a}
+.ig-ver svg{width:10px;height:10px}
+.ig-follow{margin-left:6px;height:auto;min-height:0;padding:0;border:0!important;background:none!important;color:#3b82f6!important;font-size:14px;font-weight:700}
+.ig-follow::before{content:"• ";color:var(--muted)}
+.ig-loc{display:block;max-width:100%;padding:0;border:0;background:none;color:var(--text);font-size:12.5px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.ig-loc.static{color:var(--muted)}
+.ig-pin{color:var(--muted);display:grid}.ig-pin svg{width:16px;height:16px}
+.ig-more{width:34px;height:34px;display:grid;place-items:center;border:0;background:none;color:var(--text);padding:0}
+.ig-more svg{width:20px;height:20px}
+.ig-menu{position:absolute;right:10px;top:46px;z-index:20;min-width:190px;padding:6px;border-radius:14px;background:var(--surface,#16181a);border:1px solid var(--line);box-shadow:0 14px 40px rgba(0,0,0,.35);display:flex;flex-direction:column}
+.ig-menu[hidden]{display:none}
+.ig-menu button{height:42px;padding:0 12px;border:0;background:none;color:var(--text);font-size:14.5px;font-weight:600;text-align:left;border-radius:10px}
+.ig-menu button.danger{color:#ff4d4d}
+.ig-media{position:relative;background:#111;cursor:pointer;-webkit-user-select:none;user-select:none}
+.ig-media img{display:block;width:100%;height:auto;max-height:80vh;object-fit:contain;background:#000}
+.ig-textpost{margin:0 12px;padding:22px 18px;border-radius:18px;font-size:19px;font-weight:700;line-height:1.4;white-space:pre-line;background:linear-gradient(135deg,rgba(46,232,77,.14),rgba(90,169,255,.12));border:1px solid var(--line)}
+.ig-acts{display:flex;align-items:center;gap:14px;padding:8px 12px 2px}
+.ig-acts button{display:inline-flex;align-items:center;gap:6px;padding:4px 0;border:0;background:none;color:var(--text);font-weight:700;font-size:14.5px}
+.ig-acts button:last-child{margin-left:2px}
+.ig-acts svg{width:26px;height:26px}
+.ig-acts button.liked{color:#ff3040}
+.ig-acts button.liked svg{fill:#ff3040;stroke:#ff3040}
+.ig-cap{margin:6px 12px 0;font-size:14.5px;line-height:1.45;white-space:pre-line;word-break:break-word}
+.ig-cap b{font-weight:800;cursor:pointer}
+.ig-morec{display:block;margin:4px 12px 0;padding:0;border:0;background:none;color:var(--muted);font-size:14px;text-align:left}
+.ig-time{margin:4px 12px 0;color:var(--muted);font-size:12px}
+.ig-act-row{display:flex;align-items:center;gap:12px;margin:0 12px 16px;padding:12px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.03);cursor:pointer}
+.ig-act-ic{width:40px;height:40px;flex-shrink:0;border-radius:50%;display:grid;place-items:center;color:#fff;background:#5aa9ff}
+.ig-act-ic svg{width:20px;height:20px}
+.ig-k-live .ig-act-ic{background:linear-gradient(135deg,#ff8a3d,#ff4d6d)}
+.ig-k-session .ig-act-ic{background:#2ee84d;color:#06130a}
+.ig-act-tx{flex:1;min-width:0;font-size:13.5px;line-height:1.35}
+.ig-act-tx small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.ig-act-go{font-size:13.5px;font-weight:800;color:#3b82f6}
+.ig-empty{margin:24px 14px}
+.ig-new{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:44px;border-radius:12px;border:0;background:#2ee84d;color:#06130a;font-weight:800}
+.ig-new svg{width:20px;height:20px}
+.ig-sh{display:flex;justify-content:space-between;margin:22px 0 8px;color:var(--muted);font-size:14px;font-weight:700}
+.ig-sug{display:flex;align-items:center;gap:12px;padding:7px 0}
+.ig-sug .ig-who b{font-size:14px}
+.ig-sug .ig-who small{display:block;color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ig-follow-link{border:0;background:none;color:#3b82f6;font-weight:800;font-size:13.5px;padding:0;height:auto;min-height:0}
+.ig-foot{margin-top:24px;color:var(--muted);font-size:12px;line-height:1.7}
+.ig-foot a{color:var(--muted)}
+.tb-new{display:none}
+@media(min-width:900px){
+  .ig-wrap{display:grid;grid-template-columns:minmax(0,500px) 300px;gap:56px;justify-content:center;align-items:start}
+  .ig-main{margin:0}
+  .ig-side{display:block;position:sticky;top:110px}
+  .ig-stories{border:0;padding:4px 0 14px}
+  .ig-post{border-bottom:1px solid var(--line)!important;padding-bottom:14px!important;margin-bottom:18px!important}
+  .ig-media{border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+  .ig-head{padding:10px 2px}
+  .ig-acts,.ig-cap,.ig-morec,.ig-time{padding-left:2px;padding-right:2px;margin-left:0;margin-right:0}
+  .ig-act-row,.ig-textpost{margin-left:0;margin-right:0}
+}
+@media(max-width:899px){
+  body:has([data-view="community"].active) .fab{display:none!important}
+  .tb-new{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:12px;border:0;background:transparent;color:#f3f5f2;place-items:center}
+  .tb-new svg{width:26px;height:26px}
+  body:has([data-view="community"].active) .tb-new{display:grid}
+}
+html.theme-light body:not(.auth-mode) .ig-in{border-color:#ffffff}
+html.theme-light body:not(.auth-mode) .ig-cnt{border-color:#ffffff}
+html.theme-light body:not(.auth-mode) .ig-act-row{background:#ffffff}
+html.theme-light body:not(.auth-mode):has([data-view="community"].active){background:#ffffff!important}
+html.theme-light body:not(.auth-mode):has([data-view="community"].active)::after{display:none}
+/* ===== Celular: barra superior siempre negra, con el logo de noche ===== */
+@media(max-width:899px){
+  html.theme-light body:not(.auth-mode) .topbar,.topbar{background:#0a0a0b!important;border-bottom:1px solid rgba(255,255,255,.08)!important;box-shadow:none!important}
+  html.theme-light body:not(.auth-mode) .topbar .brand-word-on-dark{display:block!important}
+  html.theme-light body:not(.auth-mode) .topbar .brand-word-on-light{display:none!important}
+  html.theme-light body:not(.auth-mode) .topbar .icon-btn{background:rgba(255,255,255,.08)!important;color:#f3f5f2!important;border-color:rgba(255,255,255,.12)!important}
+}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -1940,6 +2042,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <body data-role="rider">
 <div class="app">
   <header class="topbar">
+    <button type="button" class="tb-new" data-open-modal="post" aria-label="Crear publicación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><path d="M12 8v8M8 12h8"/></svg></button>
     <button class="brand" data-route="map">
       <img class="brand-word brand-word-on-dark" src="assets/logo/spotra-brush.webp" alt="SPOTRA">
       <img class="brand-word brand-word-on-light" src="assets/logo/spotra-brush-dark.webp" alt="" aria-hidden="true">
@@ -2084,10 +2187,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     </section>
 
     <section class="view" data-view="community">
-      <div class="fx-head"><h1>Foro<span>.</span></h1><button type="button" class="fx-new" data-open-modal="post" aria-label="Crear publicación"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
-      <div class="fx-tiles" id="fxTiles" style="display:none"></div>
-      <div class="fx-tabs" id="fxTabs"></div>
-      <div id="feed"><div class="meta" style="margin-top:12px">Cargando el foro...</div></div>
+      <div class="ig-wrap"><div class="ig-main"><div class="ig-stories" id="fxTiles"></div><div class="ig-tabs" id="fxTabs"></div><div id="feed"><div class="meta" style="margin:14px">Cargando el foro...</div></div></div><aside class="ig-side" id="igSide"></aside></div>
     </section>
 
     <section class="view" data-view="market">
@@ -2993,7 +3093,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=16"></script>
+<script src="assets/js/spotra-i18n.js?v=17"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=8"></script>
@@ -3009,7 +3109,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
 <script src="assets/js/spotra-market.js?v=4"></script>
-<script src="assets/js/spotra-forum.js?v=7"></script>
+<script src="assets/js/spotra-forum.js?v=8"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=5"></script>
 <script src="assets/js/spotra-spot-picker.js?v=5"></script>
