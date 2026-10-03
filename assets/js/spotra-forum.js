@@ -54,14 +54,12 @@
   let feedLoc = null;
   let postSpot = null;           // spot elegido al publicar { id, name }
 
+  /* ================= Foro v8 · estilo Instagram ================= */
   function feedShell(){
     const v = document.querySelector('[data-view="community"]');
     if(!v) return null;
-    if(!document.getElementById('fxTabs')){
-      v.innerHTML = `<div class="fx-head"><h1>${esc(TT('Foro'))}<span>.</span></h1><button type="button" class="fx-new" data-open-modal="post" aria-label="${esc(TT('Crear publicación'))}">${F_ICON.plus}</button></div>
-        <div class="fx-tiles" id="fxTiles"></div>
-        <div class="fx-tabs" id="fxTabs"></div>
-        <div id="feed"><div class="meta" style="margin-top:12px">${esc(TT('Cargando el foro...'))}</div></div>`;
+    if(!document.getElementById('igSide')){
+      v.innerHTML = `<div class="ig-wrap"><div class="ig-main"><div class="ig-stories" id="fxTiles"></div><div class="ig-tabs" id="fxTabs"></div><div id="feed"><div class="meta" style="margin:14px">${esc(TT('Cargando el foro...'))}</div></div></div><aside class="ig-side" id="igSide"></aside></div>`;
     }
     return v;
   }
@@ -71,82 +69,102 @@
       .map(([k, l]) => `<button type="button" data-fx-tab="${k}" class="${feedTab === k ? 'on' : ''}">${esc(TT(l))}</button>`).join('');
   }
 
+  // fila tipo historias: "Publicar" + spots con riders andando ahora o sesiones pronto
   function tilesHTML(){
     const now = Date.now();
     const live = activity.filter(a => a.kind === 'live');
     const liveIds = new Set(live.map(a => a.place_id));
     const ses = activity.filter(a => a.kind === 'session' && !liveIds.has(a.place_id) && a.starts_at && new Date(a.starts_at) - now < 36 * 3600000);
     const seen = new Set();
-    const tiles = [...live, ...ses].filter(a => { if(seen.has(a.place_id)) return false; seen.add(a.place_id); return true; }).slice(0, 12);
-    if(!tiles.length) return '';
-    return tiles.map(a => {
+    const tiles = [...live, ...ses].filter(a => { if(seen.has(a.place_id)) return false; seen.add(a.place_id); return true; }).slice(0, 14);
+    const me = `<button type="button" class="ig-story me" data-open-modal="post"><span class="ig-ring none"><span class="ig-in">${F_ICON.plus}</span></span><span class="ig-sn">${esc(TT('Publicar'))}</span></button>`;
+    return me + tiles.map(a => {
       const name = String(a.place_name || '').replace(/^(Skatepark|Pista de skate|Skate park)\s+/i, '');
-      return `<button type="button" class="fx-tile" data-fx-place="${esc(a.place_id)}">
-        <span class="fx-tp${a.kind === 'live' ? ' live' : ''}">${F_ICON.pin}${a.kind === 'live' ? `<b class="fx-cnt">${a.n}</b>` : ''}</span>
-        <span class="fx-tn">${esc(name.slice(0, 14))}</span></button>`;
+      return `<button type="button" class="ig-story" data-fx-place="${esc(a.place_id)}">
+        <span class="ig-ring ${a.kind === 'live' ? 'live' : 'ses'}"><span class="ig-in">${F_ICON.pin}</span>${a.kind === 'live' ? `<b class="ig-cnt">${a.n} ${esc(TT('ahora'))}</b>` : ''}</span>
+        <span class="ig-sn">${esc(name.slice(0, 12))}</span></button>`;
     }).join('');
   }
 
-  function verifiedBadge(id){ return verified.has(id) ? `<span class="fx-ver" title="${esc(TT('Cuenta verificada'))}">${F_ICON.check}</span>` : ''; }
+  function verifiedBadge(id){ return verified.has(id) ? `<span class="ig-ver" title="${esc(TT('Cuenta verificada'))}">${F_ICON.check}</span>` : ''; }
 
+  const MORE = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
   function postHTML(p){
     const initial = esc(String(p.username || 'R').charAt(0).toUpperCase());
     const av = p.avatarUrl ? `style="background-image:url('${esc(p.avatarUrl)}')"` : '';
     const canDelete = uid && (p.authorId === uid || isAdmin);
-    const head = `<div class="fx-au"><button type="button" class="fx-av${p.avatarUrl ? ' has-img' : ''}" ${av} data-rider="${esc(p.authorId)}" aria-label="@${esc(p.username)}">${p.avatarUrl ? '' : initial}</button>
-        <div class="fx-who"><b class="rider-link" data-rider="${esc(p.authorId)}">${esc(p.username)}</b>${verifiedBadge(p.authorId)} <button type="button" class="follow-btn" data-follow="${esc(p.authorId)}" data-follow-name="${esc(p.username)}" hidden>${esc(TT('Seguir'))}</button>
-        <small>${p.pinned ? esc(TT('Fijado')) + ' · ' : ''}${timeAgo(p.createdAt)}</small></div>
-        ${p.pinned ? `<span class="fx-pinned">${F_ICON.tack}</span>` : ''}
-        ${isAdmin ? `<button type="button" class="fx-mini" data-fx-pin="${esc(p.id)}" data-pinned="${p.pinned ? '1' : ''}" title="${esc(TT(p.pinned ? 'Desfijar' : 'Fijar'))}">${F_ICON.tack}</button>` : ''}
-        ${canDelete ? `<button type="button" class="fx-mini" data-post-del="${esc(p.id)}" title="${esc(TT('Eliminar'))}">×</button>` : ''}
-        <button type="button" class="fx-mini" data-report="post" data-report-id="${esc(p.id)}" data-report-user="${esc(p.authorId)}" data-report-name="${esc(p.username)}" title="${esc(TT('Reportar'))}">${F_ICON.flag}</button></div>`;
-    const spot = p.placeId ? `<button type="button" class="fx-stk" data-fx-place="${esc(p.placeId)}">${F_ICON.pin}<span>${esc(p.placeName)}</span></button>` : '';
-    const actions = `<div class="fx-acts"><button type="button" data-post-like="${esc(p.id)}" class="${p.likedByMe ? 'liked' : ''}">${F_ICON.heart}<span>${p.likes}</span></button>
-        <button type="button" data-post-cmt="${esc(p.id)}">${F_ICON.cmt}<span>${p.comments}</span></button>
+    const menu = `<div class="ig-menu" data-ig-menu-box="${esc(p.id)}" hidden>
+        <button type="button" data-rider="${esc(p.authorId)}">${esc(TT('Ver perfil'))}</button>
+        <button type="button" data-fx-share="${esc(p.id)}">${esc(TT('Compartir'))}</button>
+        ${isAdmin ? `<button type="button" data-fx-pin="${esc(p.id)}" data-pinned="${p.pinned ? '1' : ''}">${esc(TT(p.pinned ? 'Desfijar' : 'Fijar arriba'))}</button>` : ''}
+        ${canDelete ? `<button type="button" class="danger" data-post-del="${esc(p.id)}">${esc(TT('Eliminar'))}</button>` : ''}
+        ${p.authorId !== uid ? `<button type="button" class="danger" data-report="post" data-report-id="${esc(p.id)}" data-report-user="${esc(p.authorId)}" data-report-name="${esc(p.username)}">${esc(TT('Reportar'))}</button>` : ''}
+      </div>`;
+    const head = `<div class="ig-head">
+        <button type="button" class="ig-av${p.avatarUrl ? ' has-img' : ''}" ${av} data-rider="${esc(p.authorId)}" aria-label="@${esc(p.username)}">${p.avatarUrl ? '' : initial}</button>
+        <div class="ig-who"><div class="ig-line"><b class="rider-link" data-rider="${esc(p.authorId)}">${esc(p.username)}</b>${verifiedBadge(p.authorId)}<button type="button" class="ig-follow follow-btn" data-follow="${esc(p.authorId)}" data-follow-name="${esc(p.username)}" hidden>${esc(TT('Seguir'))}</button></div>
+          ${p.placeId ? `<button type="button" class="ig-loc" data-fx-place="${esc(p.placeId)}">${esc(p.placeName)}</button>` : (p.pinned ? `<span class="ig-loc static">${esc(TT('Fijado'))}</span>` : '')}</div>
+        ${p.pinned && p.placeId ? `<span class="ig-pin" title="${esc(TT('Fijado'))}">${F_ICON.tack}</span>` : ''}
+        <button type="button" class="ig-more" data-ig-menu="${esc(p.id)}" aria-label="${esc(TT('Más opciones'))}">${MORE}</button>
+        ${menu}</div>`;
+    const actions = `<div class="ig-acts">
+        <button type="button" data-post-like="${esc(p.id)}" class="${p.likedByMe ? 'liked' : ''}">${F_ICON.heart}<span>${p.likes || ''}</span></button>
+        <button type="button" data-pv-open="${esc(p.id)}">${F_ICON.cmt}<span>${p.comments || ''}</span></button>
         <button type="button" data-fx-share="${esc(p.id)}">${F_ICON.send}</button></div>`;
-    const caption = p.content ? `<p class="fx-cap"><b>${esc(p.username)}</b> ${esc(p.content)}</p>` : '';
-    const more = p.comments ? `<button type="button" class="fx-more" data-pv-open="${esc(p.id)}">${esc(LG() === 'en' ? `View ${p.comments} comments` : LG() === 'pt' ? `Ver os ${p.comments} comentários` : `Ver los ${p.comments} comentarios`)}</button>` : '';
-    if(p.imageUrl){
-      return `<article class="feed-card fx-post fx-media${p.pinned ? ' is-pinned' : ''}" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
-        <div class="fx-phead">${head}</div>
-        <div class="fx-img" data-fx-img="${esc(p.id)}"><img src="${esc(p.imageUrl)}" alt="" loading="lazy"><span class="fx-grain"></span>
-          ${spot ? `<div class="fx-stks">${spot}</div>` : ''}<span class="fx-burst">${F_ICON.heart}</span></div>
-        <div class="fx-bar static">${actions}</div>
-        ${caption}${more}
-        <div class="cmt-box" data-cmt-box="${esc(p.id)}" style="display:none"></div>
-      </article>`;
-    }
-    return `<article class="feed-card fx-post fx-text${p.pinned ? ' is-pinned' : ''}" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
-      <div class="fx-tbox">${head}<p class="fx-big">${esc(p.content)}</p>${spot ? `<div class="fx-stks static">${spot}</div>` : ''}<div class="fx-bar static">${actions}</div></div>
-      ${more}
+    const caption = p.content ? `<p class="ig-cap"><b class="rider-link" data-rider="${esc(p.authorId)}">${esc(p.username)}</b> ${esc(p.content)}</p>` : '';
+    const L = LG();
+    const more = p.comments ? `<button type="button" class="ig-morec" data-pv-open="${esc(p.id)}">${esc(L === 'en' ? `View all ${p.comments} comments` : L === 'pt' ? `Ver todos os ${p.comments} comentários` : `Ver los ${p.comments} comentarios`)}</button>` : '';
+    const when = `<div class="ig-time">${timeAgo(p.createdAt)}</div>`;
+    const media = p.imageUrl
+      ? `<div class="ig-media" data-fx-img="${esc(p.id)}"><img src="${esc(p.imageUrl)}" alt="" loading="lazy"><span class="fx-burst">${F_ICON.heart}</span></div>`
+      : `<div class="ig-textpost">${esc(p.content)}</div>`;
+    return `<article class="feed-card ig-post${p.pinned ? ' is-pinned' : ''}" data-post-id="${esc(p.id)}" data-author="${esc(p.authorId)}">
+      ${head}${media}${actions}${p.imageUrl ? caption : ''}${more}${when}
       <div class="cmt-box" data-cmt-box="${esc(p.id)}" style="display:none"></div>
     </article>`;
   }
 
   function ticketHTML(a){
     const L = LG();
-    let txt = '', sub = '', go = 'IR', data = `data-fx-place="${esc(a.place_id)}"`;
+    let txt = '', sub = '', go = TT('Ver'), data = `data-fx-place="${esc(a.place_id)}"`, ic = F_ICON.pin;
     const when = a.starts_at ? new Date(a.starts_at) : null;
     const hh = when ? String(when.getHours()).padStart(2, '0') + ':' + String(when.getMinutes()).padStart(2, '0') : '';
     if(a.kind === 'live'){
-      txt = ({ es: `<b>${a.n} ${a.n === 1 ? 'rider' : 'riders'}</b> andando en ${esc(a.place_name)}`, pt: `<b>${a.n} riders</b> andando em ${esc(a.place_name)}`, en: `<b>${a.n} riders</b> riding at ${esc(a.place_name)}` })[L];
-      sub = ({ es: 'ahora', pt: 'agora', en: 'now' })[L];
+      txt = ({ es: `<b>${a.n} riders</b> andando en <b>${esc(a.place_name)}</b>`, pt: `<b>${a.n} riders</b> andando em <b>${esc(a.place_name)}</b>`, en: `<b>${a.n} riders</b> at <b>${esc(a.place_name)}</b>` })[L];
+      sub = ({ es: 'Ahora', pt: 'Agora', en: 'Now' })[L]; go = TT('Ir');
     } else if(a.kind === 'session'){
-      txt = ({ es: `<b>@${esc(a.username)}</b> creó una sesión en <b>${esc(a.place_name)}</b>`, pt: `<b>@${esc(a.username)}</b> criou uma sessão em <b>${esc(a.place_name)}</b>`, en: `<b>@${esc(a.username)}</b> created a session at <b>${esc(a.place_name)}</b>` })[L];
-      const day = when ? when.toLocaleDateString(window.SpotraI18n ? window.SpotraI18n.mapsLang() : 'es', { weekday: 'short', day: 'numeric' }) : '';
-      sub = `${day} ${hh}` + (a.n ? ({ es: ` · ${a.n} se sumaron`, pt: ` · ${a.n} entraram`, en: ` · ${a.n} joined` })[L] : '');
-      go = ({ es: 'VER', pt: 'VER', en: 'VIEW' })[L];
+      txt = ({ es: `<b>${esc(a.username)}</b> creó una sesión en <b>${esc(a.place_name)}</b>`, pt: `<b>${esc(a.username)}</b> criou uma sessão em <b>${esc(a.place_name)}</b>`, en: `<b>${esc(a.username)}</b> created a session at <b>${esc(a.place_name)}</b>` })[L];
+      sub = (when ? when.toLocaleDateString(window.SpotraI18n ? window.SpotraI18n.mapsLang() : 'es', { weekday: 'short', day: 'numeric' }) + ' ' + hh : '') + (a.n ? ({ es: ` · ${a.n} se sumaron`, pt: ` · ${a.n} entraram`, en: ` · ${a.n} joined` })[L] : '');
     } else if(a.kind === 'spot'){
-      txt = ({ es: `Nuevo spot: <b>${esc(a.place_name)}</b>`, pt: `Novo spot: <b>${esc(a.place_name)}</b>`, en: `New spot: <b>${esc(a.place_name)}</b>` })[L];
+      txt = ({ es: `Nuevo spot en el mapa: <b>${esc(a.place_name)}</b>`, pt: `Novo spot no mapa: <b>${esc(a.place_name)}</b>`, en: `New spot on the map: <b>${esc(a.place_name)}</b>` })[L];
       sub = a.city || '';
-      go = ({ es: 'VER', pt: 'VER', en: 'VIEW' })[L];
     } else if(a.kind === 'event'){
       txt = ({ es: `Evento nuevo: <b>${esc(a.place_name)}</b>`, pt: `Evento novo: <b>${esc(a.place_name)}</b>`, en: `New event: <b>${esc(a.place_name)}</b>` })[L];
       sub = [when ? when.toLocaleDateString(window.SpotraI18n ? window.SpotraI18n.mapsLang() : 'es', { day: 'numeric', month: 'short' }) + ' ' + hh : '', a.city].filter(Boolean).join(' · ');
       data = `data-fx-event="${esc(a.id)}"`;
-      go = ({ es: 'VER', pt: 'VER', en: 'VIEW' })[L];
+      ic = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg>';
     }
-    return `<div class="fx-ticket fx-k-${esc(a.kind)}" ${data}><span class="fx-pulse"></span><div class="fx-tt">${txt}<small>${esc(sub)}</small></div><span class="fx-go">${go}</span></div>`;
+    return `<div class="ig-act-row ig-k-${esc(a.kind)}" ${data}><span class="ig-act-ic">${ic}</span><div class="ig-act-tx">${txt}<small>${esc(sub)}</small></div><span class="ig-act-go">${esc(go)}</span></div>`;
+  }
+
+  // barra lateral (compu): tu perfil + sugerencias para seguir
+  let suggestions = [];
+  async function loadSuggestions(){
+    if(!uid) return;
+    try { const c = await B().getClient(); const { data } = await c.rpc('suggested_riders', { p_limit: 6 }); suggestions = data || []; } catch(e){ suggestions = []; }
+  }
+  function sideHTML(){
+    const me = document.querySelector('[data-user-name]');
+    const sug = suggestions.length ? `<div class="ig-sh"><span>${esc(TT('Sugerencias para vos'))}</span></div>` + suggestions.map(r => {
+      const av = r.avatar_url ? `style="background-image:url('${esc(r.avatar_url)}')"` : '';
+      const why = r.mutual ? (({ es: 'Seguido por ', pt: 'Seguido por ', en: 'Followed by ' })[LG()] + r.mutual) : (r.followers ? `${r.followers} ${TT('seguidores')}` : TT('Nuevo en SPOTRA'));
+      return `<div class="ig-sug"><button type="button" class="ig-av sm${r.avatar_url ? ' has-img' : ''}" ${av} data-rider="${esc(r.id)}">${r.avatar_url ? '' : esc(String(r.username || 'R').charAt(0).toUpperCase())}</button>
+        <div class="ig-who"><b class="rider-link" data-rider="${esc(r.id)}">${esc(r.username)}</b>${r.verified ? `<span class="ig-ver">${F_ICON.check}</span>` : ''}<small>${esc(why)}</small></div>
+        <button type="button" class="ig-follow-link" data-follow="${esc(r.id)}" data-follow-name="${esc(r.username)}">${esc(TT('Seguir'))}</button></div>`;
+    }).join('') : '';
+    return `<button type="button" class="ig-new" data-open-modal="post">${F_ICON.plus}<span>${esc(TT('Crear publicación'))}</span></button>
+      ${sug}
+      <div class="ig-foot"><a href="terminos.html">${esc(TT('Términos'))}</a> · <a href="privacidad.html">${esc(TT('Privacidad'))}</a><br>© 2026 SPOTRA</div>`;
   }
 
   async function loadExtras(){
@@ -179,25 +197,23 @@
     const feed = document.getElementById('feed');
     if(!feed) return;
     const tabs = document.getElementById('fxTabs'); if(tabs) tabs.innerHTML = tabsHTML();
-    const tiles = document.getElementById('fxTiles'); if(tiles){ tiles.innerHTML = tilesHTML(); tiles.style.display = tiles.innerHTML ? '' : 'none'; }
+    const tiles = document.getElementById('fxTiles'); if(tiles) tiles.innerHTML = tilesHTML();
+    const side = document.getElementById('igSide'); if(side) side.innerHTML = sideHTML();
     let list = cache.slice();
-    const empty = (t, s) => `<div class="empty-state">${F_ICON.cmt}<b>${esc(TT(t))}</b>${esc(TT(s))}</div>`;
+    const empty = (t, s) => `<div class="empty-state ig-empty">${F_ICON.cmt}<b>${esc(TT(t))}</b>${esc(TT(s))}</div>`;
     if(feedTab === 'following'){
       list = list.filter(p => followingIds && followingIds.has(p.authorId));
-      if(!list.length){ feed.innerHTML = empty('Todavía no hay publicaciones de quienes seguís', 'Seguí riders desde el foro o sus perfiles para ver lo suyo acá.'); return; }
-      feed.innerHTML = list.map(postHTML).join('');
+      feed.innerHTML = list.length ? list.map(postHTML).join('') : empty('Todavía no hay publicaciones de quienes seguís', 'Seguí riders desde el foro o sus perfiles para ver lo suyo acá.');
       return;
     }
     if(feedTab === 'near'){
       if(!feedLoc){ feed.innerHTML = empty('Activá tu ubicación', 'Mostramos publicaciones etiquetadas en spots cerca tuyo.'); return; }
       list = list.filter(p => { const d = kmTo(p); return d != null && d <= 60; }).sort((a, b) => kmTo(a) - kmTo(b));
-      if(!list.length){ feed.innerHTML = empty('No hay publicaciones cerca tuyo', 'Publicá algo y etiquetá el spot donde estás.'); return; }
-      feed.innerHTML = list.map(postHTML).join('');
+      feed.innerHTML = list.length ? list.map(postHTML).join('') : empty('No hay publicaciones cerca tuyo', 'Publicá algo y etiquetá el spot donde estás.');
       return;
     }
-    // Para vos: fijadas primero, y la actividad de la comunidad intercalada
     list.sort((a, b) => (b.pinned - a.pinned) || ((b.createdAt || 0) - (a.createdAt || 0)));
-    const tickets = activity.filter(a => a.kind !== 'live' || a.n >= 2).slice(0, 12);
+    const tickets = activity.filter(a => a.kind !== 'live' || a.n >= 2).slice(0, 10);
     if(!list.length && !tickets.length){ feed.innerHTML = empty('Todavía no hay publicaciones', 'Sé el primero: contá dónde patinás hoy.'); return; }
     const out = [];
     let t = 0;
@@ -212,12 +228,19 @@
   async function renderFeed(){
     if(!feedShell() || !B()) return;
     await refreshIdentity();
-    const [posts] = await Promise.all([B().listPosts({ limit: 60 }), loadExtras()]);
+    const [posts] = await Promise.all([B().listPosts({ limit: 60 }), loadExtras(), loadSuggestions()]);
     cache = posts;
     if(feedTab === 'following') await loadFollowing();
     paintFeed();
     setTimeout(openDeepPost, 0);
   }
+
+  // menú "..." de cada publicación
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-ig-menu]');
+    document.querySelectorAll('.ig-menu').forEach(m => { if(!b || m.dataset.igMenuBox !== b.dataset.igMenu) m.hidden = true; });
+    if(b){ e.preventDefault(); const m = document.querySelector(`[data-ig-menu-box="${b.dataset.igMenu}"]`); if(m) m.hidden = !m.hidden; }
+  });
 
   function goPlace(pid){
     if(window.setRoute) window.setRoute('map');
