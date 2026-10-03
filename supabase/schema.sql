@@ -2686,3 +2686,198 @@ end;
 $$;
 revoke all on function public.organizer_set_event_image(uuid, text) from public, anon;
 grant execute on function public.organizer_set_event_image(uuid, text) to authenticated;
+
+
+-- =====================================================================
+-- SPOTRA · Foro nuevo + Market v4
+-- Cuenta verificada, publicaciones fijadas, spot etiquetado, actividad de la comunidad,
+-- precio rebajado y colecciones de guardados.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+
+-- ---------- Cuentas verificadas (tilde verde). Solo el admin la otorga. ----------
+alter table public.profiles add column if not exists verified boolean not null default false;
+
+create or replace function public.profiles_protect_verified()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.verified is distinct from old.verified
+     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and session_user <> 'postgres' then
+    new.verified := old.verified;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists profiles_protect_verified on public.profiles;
+create trigger profiles_protect_verified
+  before update of verified on public.profiles
+  for each row execute function public.profiles_protect_verified();
+
+-- Lista pública de cuentas verificadas (solo ids, para mostrar el tilde)
+create or replace function public.verified_ids()
+returns setof uuid
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select p.id from public.profiles p where p.verified;
+$$;
+revoke all on function public.verified_ids() from public;
+grant execute on function public.verified_ids() to anon, authenticated;
+
+-- ---------- Publicaciones: spot etiquetado y fijadas ----------
+alter table public.posts add column if not exists place_id uuid references public.places(id) on delete set null;
+alter table public.posts add column if not exists pinned boolean not null default false;
+create index if not exists posts_place_idx on public.posts (place_id);
+
+-- Solo el admin puede fijar publicaciones
+create or replace function public.posts_protect_pinned()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin' and session_user <> 'postgres' then
+    if tg_op = 'INSERT' then new.pinned := false;
+    elsif new.pinned is distinct from old.pinned then new.pinned := old.pinned;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+drop trigger if exists posts_protect_pinned on public.posts;
+create trigger posts_protect_pinned
+  before insert or update of pinned on public.posts
+  for each row execute function public.posts_protect_pinned();
+
+-- El admin fija o desfija una publicación
+create or replace function public.admin_pin_post(p_post uuid, p_pinned boolean)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin' then
+    raise exception 'Solo el admin puede fijar publicaciones.';
+  end if;
+  update public.posts set pinned = coalesce(p_pinned, false) where id = p_post;
+end;
+$$;
+revoke all on function public.admin_pin_post(uuid, boolean) from public, anon;
+grant execute on function public.admin_pin_post(uuid, boolean) to authenticated;
+
+-- ---------- Actividad de la comunidad (para el Foro) ----------
+-- Sesiones recientes, spots nuevos, eventos nuevos y spots con riders andando ahora.
+create or replace function public.community_activity(p_limit int default 30)
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_uid uuid := auth.uid(); v_out json;
+begin
+  if v_uid is null then return '[]'::json; end if;
+  with blocked as (
+    select b.blocked_id as id from public.blocks b where b.blocker_id = v_uid
+    union select b.blocker_id from public.blocks b where b.blocked_id = v_uid
+  ),
+  ses as (
+    select 'session'::text as kind, s.id::text as id, s.place_id, pl.name as place_name, pl.city, s.username, s.created_by as user_id,
+           s.starts_at, (select count(*) from public.session_participants sp where sp.session_id = s.id)::int as n, s.created_at as at
+    from public.sessions s join public.places pl on pl.id = s.place_id
+    where s.ends_at > now() and s.created_at > now() - interval '3 days'
+      and s.created_by not in (select id from blocked)
+    order by s.created_at desc limit 15
+  ),
+  spots as (
+    select 'spot'::text, pl.id::text, pl.id, pl.name, pl.city, null::text, null::uuid, null::timestamptz, 0, pl.created_at
+    from public.places pl
+    where pl.status = 'approved' and coalesce(pl.source, '') <> 'osm' and pl.created_at > now() - interval '21 days'
+    order by pl.created_at desc limit 8
+  ),
+  evs as (
+    select 'event'::text, e.id::text, e.place_id, e.title, pl.city, null::text, e.organizer_id, e.starts_at,
+           (select count(*) from public.event_registrations r where r.event_id = e.id)::int, e.created_at
+    from public.events e left join public.places pl on pl.id = e.place_id
+    where e.status = 'approved' and e.starts_at > now() and e.created_at > now() - interval '30 days'
+    order by e.created_at desc limit 8
+  ),
+  live as (
+    select 'live'::text, x.place_id::text, x.place_id, pl.name, pl.city, null::text, null::uuid, now(), x.n, now()
+    from (
+      select l.place_id, count(distinct l.pid)::int as n from (
+        select rp.place_id, rp.profile_id as pid from public.rider_presence rp where rp.expires_at > now()
+        union select s.place_id, s.created_by from public.sessions s where s.starts_at <= now() and s.ends_at > now()
+        union select s.place_id, sp.profile_id from public.session_participants sp join public.sessions s on s.id = sp.session_id
+          where s.starts_at <= now() and s.ends_at > now()
+      ) l group by l.place_id
+    ) x join public.places pl on pl.id = x.place_id
+    order by x.n desc limit 10
+  )
+  select coalesce(json_agg(row_to_json(a) order by a.at desc), '[]'::json) into v_out
+  from (select * from (select * from ses union all select * from spots union all select * from evs union all select * from live) u
+        order by u.at desc limit greatest(1, least(p_limit, 60))) a;
+  return v_out;
+end;
+$$;
+revoke all on function public.community_activity(int) from public, anon;
+grant execute on function public.community_activity(int) to authenticated;
+
+-- ---------- Market: precio rebajado ----------
+alter table public.listings add column if not exists previous_price numeric;
+alter table public.listings add column if not exists price_dropped_at timestamptz;
+
+create or replace function public.lower_listing_price(p_listing uuid, p_price numeric)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare l public.listings%rowtype;
+begin
+  select * into l from public.listings where id = p_listing;
+  if not found or l.seller_id <> auth.uid() then raise exception 'No es tu publicación.'; end if;
+  if l.sold then raise exception 'La publicación ya está vendida.'; end if;
+  if p_price is null or p_price < 0 or p_price >= l.price then raise exception 'El nuevo precio tiene que ser menor al actual.'; end if;
+  update public.listings
+    set previous_price = coalesce(case when l.price_dropped_at > now() - interval '14 days' then l.previous_price end, l.price),
+        price = p_price, price_dropped_at = now()
+    where id = p_listing;
+end;
+$$;
+revoke all on function public.lower_listing_price(uuid, numeric) from public, anon;
+grant execute on function public.lower_listing_price(uuid, numeric) to authenticated;
+
+-- ---------- Market: colecciones de guardados ----------
+create table if not exists public.listing_collections (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null default auth.uid() references public.profiles(id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 40),
+  created_at timestamptz not null default now()
+);
+create index if not exists listing_collections_owner_idx on public.listing_collections (profile_id);
+alter table public.listing_collections enable row level security;
+revoke all on table public.listing_collections from anon;
+
+drop policy if exists "collections_own" on public.listing_collections;
+create policy "collections_own" on public.listing_collections
+  for all using (profile_id = (select auth.uid()))
+  with check ((select auth.role()) = 'authenticated' and profile_id = (select auth.uid()));
+
+alter table public.saved_listings add column if not exists collection_id uuid references public.listing_collections(id) on delete set null;
+grant update (collection_id) on public.saved_listings to authenticated;
+drop policy if exists "saved_listings_update_own" on public.saved_listings;
+create policy "saved_listings_update_own" on public.saved_listings
+  for update using (profile_id = (select auth.uid()))
+  with check (profile_id = (select auth.uid())
+              and (collection_id is null or exists (select 1 from public.listing_collections c
+                                                    where c.id = collection_id and c.profile_id = (select auth.uid()))));
