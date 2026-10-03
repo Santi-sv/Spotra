@@ -65,23 +65,38 @@
     btn.disabled = false;
     if(error){ say(error.message || t('No se pudo. Probá de nuevo.')); return; }
     paint();
+    if(btn.closest('#followList')) renderList();
   }
 
-  function renderList(kind){
+  let listKind = 'followers';
+  async function renderList(kind){
+    listKind = kind || listKind;
     const box = $('followList');
     if(!box) return;
-    const map = kind === 'followers' ? followers : following;
     const title = $('modalTitle');
-    if(title) title.textContent = t(kind === 'followers' ? 'Seguidores' : 'Siguiendo');
-    if(!map.size){
-      box.innerHTML = `<div class="meta">${esc(t(kind === 'followers' ? 'Todavía no te sigue nadie.' : 'Todavía no seguís a nadie.'))}</div>`;
+    if(title) title.textContent = t(listKind === 'followers' ? 'Seguidores' : 'Siguiendo');
+    const tabs = `<div class="fl-tabs"><button type="button" data-follow-list="followers" class="${listKind === 'followers' ? 'on' : ''}">${esc(t('Seguidores'))} <b>${followers.size}</b></button><button type="button" data-follow-list="following" class="${listKind === 'following' ? 'on' : ''}">${esc(t('Siguiendo'))} <b>${following.size}</b></button></div>`;
+    box.innerHTML = tabs + `<div class="meta" style="padding:10px 2px">${esc(t('Cargando...'))}</div>`;
+    const c = await db();
+    let rows = [];
+    if(c && uid){ const { data } = await c.rpc('follow_list', { p_kind: listKind }); rows = data || []; }
+    if(!rows.length){
+      box.innerHTML = tabs + `<div class="fl-empty">${esc(t(listKind === 'followers' ? 'Todavía no te sigue nadie.' : 'Todavía no seguís a nadie.'))}</div>`;
       return;
     }
-    box.innerHTML = [...map].map(([id, name]) => `<div class="blk-row"><b>@${esc(name)}</b>`
-      + (kind === 'followers'
-        ? `<button type="button" class="ghost-btn" data-follower-remove="${esc(id)}">${esc(t('Quitar'))}</button>`
-        : `<button type="button" class="ghost-btn" data-unfollow="${esc(id)}">${esc(t('Dejar de seguir'))}</button>`)
-      + '</div>').join('');
+    box.innerHTML = tabs + '<div class="fl-list">' + rows.map(r => {
+      const av = r.avatar_url ? `style="background-image:url('${esc(r.avatar_url)}')"` : '';
+      const ini = esc(String(r.username || 'R').charAt(0).toUpperCase());
+      const sub = listKind === 'following' && r.follows_me ? t('Te sigue') : (listKind === 'followers' && r.i_follow ? t('Se siguen mutuamente') : (r.name || ''));
+      const followBtn = `<button type="button" class="fl-btn ${r.i_follow ? 'ghost' : 'main'}" data-follow="${esc(r.id)}" data-follow-name="${esc(r.username || '')}">${esc(t(r.i_follow ? 'Siguiendo' : (r.follows_me ? 'Seguir también' : 'Seguir')))}</button>`;
+      return `<div class="fl-row">
+        <button type="button" class="fl-who" data-rider="${esc(r.id)}" data-close-modal>
+          <span class="fl-av${r.avatar_url ? ' has-img' : ''}" ${av}>${r.avatar_url ? '' : ini}</span>
+          <span class="fl-tx"><b>@${esc(r.username || 'rider')}${r.verified ? ' <i class="fl-ver">✓</i>' : ''}</b><small>${esc(sub)}</small></span>
+        </button>
+        <div class="fl-act">${followBtn}${listKind === 'followers' ? `<button type="button" class="fl-btn ghost" data-follower-remove="${esc(r.id)}" title="${esc(t('Eliminar seguidor'))}">${esc(t('Eliminar'))}</button>` : ''}</div>
+      </div>`;
+    }).join('') + '</div>';
   }
 
   async function removeRow(kind, id){
@@ -109,7 +124,7 @@
       return;
     }
     if((b = el.closest('[data-unfollow]'))){ e.preventDefault(); removeRow('following', b.dataset.unfollow); return; }
-    if((b = el.closest('[data-follower-remove]'))){ e.preventDefault(); removeRow('followers', b.dataset.followerRemove); }
+    if((b = el.closest('[data-follower-remove]'))){ e.preventDefault(); if(window.confirm(t('¿Eliminar a este seguidor? No se le avisa.'))) removeRow('followers', b.dataset.followerRemove); }
   }, true);
 
   // botones que los módulos agregan después (foro, sesiones)
