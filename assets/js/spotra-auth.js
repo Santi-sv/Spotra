@@ -19,6 +19,12 @@
     return null;
   }
 
+  // fecha máxima del registro: tener 13 años cumplidos
+  (function setBirthMax(){
+    const set = () => { const el = document.getElementById('signupBirth'); if(!el) return; const m = new Date(); m.setFullYear(m.getFullYear() - 13); el.max = m.toISOString().slice(0, 10); };
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', set); else set();
+  })();
+
   /* ---------- lectura del formulario de registro ---------- */
   function readSignup(){
     const ins = document.querySelectorAll('#signupForm input');
@@ -34,8 +40,16 @@
       city:     (ins[4] && ins[4].value || '').trim(),
       accountType: TYPE_TO_ACCOUNT[typeLabel.trim().toLowerCase()] || 'rider',
       countryCode: COUNTRY_TO_CODE[countryName.trim().toLowerCase()] || 'UY',
-      discipline: discipline.trim().toLowerCase()
+      discipline: discipline.trim().toLowerCase(),
+      birthDate: (document.getElementById('signupBirth') || {}).value || ''
     };
+  }
+  function ageFrom(iso){
+    if(!iso) return null;
+    const b = new Date(iso + 'T12:00:00'), n = new Date();
+    let a = n.getFullYear() - b.getFullYear();
+    if(n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
+    return a;
   }
 
   function validate(formId){
@@ -70,7 +84,8 @@
       phone: pending.phone || null,
       country_code: pending.countryCode || 'UY',
       city: pending.city || null,
-      discipline: pending.discipline || null
+      discipline: pending.discipline || null,
+      birth_date: pending.birthDate || meta.birth_date || null
     };
 
     // insert idempotente: si ya existe el perfil, no hace nada
@@ -78,6 +93,11 @@
       .upsert(row, { onConflict: 'id', ignoreDuplicates: true });
     if(error) console.warn('[SPOTRA] perfil:', error.message);
 
+    // si el perfil ya existía sin fecha (por ejemplo, se confirmó el email en otro dispositivo), completarla
+    if(row.birth_date){
+      const { data: cur } = await client.from('profiles').select('birth_date').eq('id', user.id).maybeSingle();
+      if(cur && !cur.birth_date) await client.from('profiles').update({ birth_date: row.birth_date }).eq('id', user.id);
+    }
     try { localStorage.removeItem('spotraPendingProfile'); } catch {}
 
     const { data: prof } = await client.from('profiles')
@@ -179,6 +199,10 @@
     if(!validate('signupForm')) return;
     const f = readSignup();
     if(!f.email || !f.password){ notify('Completá email y contraseña.'); return; }
+    const age = ageFrom(f.birthDate);
+    if(age == null){ notify('Completá tu fecha de nacimiento.'); const bf = document.getElementById('signupBirth'); if(bf){ const fl = bf.closest('.field'); if(fl) fl.classList.add('error'); } return; }
+    if(age < 13){ notify('SPOTRA es para mayores de 13 años.'); return; }
+    if(age > 110){ notify('Revisá tu fecha de nacimiento.'); return; }
 
     const client = await db();
     if(!client){ notify('No hay conexión con el backend.'); return; }
@@ -189,7 +213,7 @@
       const { data, error } = await client.auth.signUp({
         email: f.email,
         password: f.password,
-        options: { data: { full_name: f.fullName, account_type: (f.accountType === 'brand' ? 'brand' : 'rider') } }
+        options: { data: { full_name: f.fullName, account_type: (f.accountType === 'brand' ? 'brand' : 'rider'), birth_date: f.birthDate } }
       });
       if(error){ notify(traducir(error.message)); return; }
 
@@ -201,7 +225,7 @@
       if(data.session){
         const profile = await ensureProfile();
         const first = ((profile && profile.full_name) || f.fullName || 'rider').split(' ')[0];
-        notify('Cuenta creada. Bienvenido a SPOTRA, ' + first + '.');
+        notify(age < 18 ? 'Cuenta creada. Como sos menor de 18, el próximo paso es vincular a tu madre, padre o tutor.' : 'Cuenta creada. Bienvenido a SPOTRA, ' + first + '.');
         await applyAuthUI();
         if(window.setRole) window.setRole(roleHome(f.accountType, false));
       } else {
