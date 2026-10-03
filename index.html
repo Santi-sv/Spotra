@@ -1827,6 +1827,17 @@ html.theme-light body:not(.auth-mode) .fx-bar.static{background:#f4f6f4}
 html.theme-light body:not(.auth-mode) .mk-ycard,html.theme-light body:not(.auth-mode) .mk-colcard{background:#ffffff;border-color:rgba(0,0,0,.08)}
 html.theme-light body:not(.auth-mode) .mk-ycard.accent{background:rgba(46,232,77,.12)}
 html.theme-light body:not(.auth-mode) .mk-colimg{background-color:#e7ebe7}
+/* ===== Registro: siempre se puede desplazar (compu y celular) ===== */
+body.auth-mode.signup-mode{height:auto!important;min-height:100vh;min-height:100dvh;overflow-y:auto!important;overflow-x:hidden}
+body.signup-mode .signup-layout{min-height:0;align-items:start}
+body.signup-mode .signup-visual{position:sticky;top:28px;min-height:0;height:calc(100vh - 56px);max-height:760px}
+body.signup-mode .signup-panel{overflow:visible;max-height:none;height:auto}
+@media(max-width:900px){body.signup-mode .signup-visual{position:relative;top:auto;height:auto;min-height:300px}}
+.signup-feats{display:grid;gap:10px;margin-top:18px}
+.signup-feat{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:16px;border:1px solid rgba(46,232,77,.18);background:rgba(6,10,7,.55);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.signup-feat svg{width:22px;height:22px;color:#2ee84d;flex-shrink:0}
+.signup-feat b{display:block;font-size:14px}
+.signup-feat span{display:block;font-size:12.5px;color:var(--muted)}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -2055,19 +2066,14 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
             <div><b>SPOTRA</b><div class="meta">Rider identity</div></div>
           </div>
           <div>
-            <div class="signup-preview-head">
-              <div>
-                <div class="kicker">SPOTRA ID</div>
-                <h1 class="h1">Sponsor ready</h1>
-                <p class="lead">Tu perfil competitivo listo para marcas, spots aprobados y próximas competencias.</p>
-              </div>
-              <div class="signup-avatar" aria-hidden="true"></div>
-            </div>
-            <div class="signup-score"><div><b>92</b><span>SCORE</span></div></div>
-            <div class="signup-proof">
-              <div class="mini-stat"><b>84%</b><span>perfil completo</span></div>
-              <div class="mini-stat"><b>3</b><span>spots aprobados</span></div>
-              <div class="mini-stat"><b>5</b><span>matches abiertos</span></div>
+            <div class="kicker">SPOTRA</div>
+            <h1 class="h1">Tu spot te espera</h1>
+            <p class="lead">La app de los riders de Latinoamérica: skate, BMX, rollers y scooter.</p>
+            <div class="signup-feats">
+              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><div><b>+1.800 spots y skateparks</b><span>Uruguay, Argentina y Brasil</span></div></div>
+              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.2"/><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4 4 0 0 1 6.5-3"/></svg><div><b>Riders andando ahora</b><span>Mirá quién está en cada spot</span></div></div>
+              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><div><b>Sesiones y eventos</b><span>Armá juntadas y competí</span></div></div>
+              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9"/></svg><div><b>Market de riders</b><span>Comprá y vendé tu equipo</span></div></div>
             </div>
           </div>
         </aside>
@@ -2506,6 +2512,7 @@ function setRoute(route, push = true){
   if(target.startsWith('admin-') && document.body.dataset.authReady === '1'
      && document.body.dataset.isAdmin !== '1') target = 'map';
   document.body.classList.toggle('auth-mode', target === 'login' || target === 'signup');
+  document.body.classList.toggle('signup-mode', target === 'signup');
   document.body.classList.toggle('map-mode', target === 'map');
   const role = roleOf(target);
   document.body.dataset.role = role;
