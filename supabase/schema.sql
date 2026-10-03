@@ -2881,3 +2881,148 @@ create policy "saved_listings_update_own" on public.saved_listings
   with check (profile_id = (select auth.uid())
               and (collection_id is null or exists (select 1 from public.listing_collections c
                                                     where c.id = collection_id and c.profile_id = (select auth.uid()))));
+
+
+-- =====================================================================
+-- SPOTRA · La edad mínima (13 años) también se controla al CREAR el perfil
+-- Antes solo se controlaba al cargarla después. Ejecutar en Supabase → SQL Editor. Re-ejecutable.
+-- =====================================================================
+create or replace function public.profiles_birth_on_insert()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.birth_date is not null
+     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and session_user <> 'postgres' then
+    if new.birth_date > (current_date - interval '13 years')::date then
+      raise exception 'SPOTRA es para mayores de 13 años.';
+    end if;
+    if new.birth_date < date '1910-01-01' then
+      raise exception 'Revisá tu fecha de nacimiento.';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists profiles_birth_on_insert on public.profiles;
+create trigger profiles_birth_on_insert
+  before insert on public.profiles
+  for each row execute function public.profiles_birth_on_insert();
+
+
+
+-- =====================================================================
+-- SPOTRA · Notificaciones dentro de la app (campana) + lista completa de seguidores
+-- Avisos: alguien te sigue, le dio me gusta o comentó tu publicación, se sumó a tu sesión.
+-- Ejecutar UNA vez en Supabase → SQL Editor. Es re-ejecutable.
+-- =====================================================================
+create table if not exists public.notifications (
+  id uuid primary key default gen_random_uuid(),
+  profile_id uuid not null references public.profiles(id) on delete cascade,   -- quien recibe
+  kind text not null check (kind in ('follow','like','comment','session_join')),
+  actor_id uuid references public.profiles(id) on delete cascade,             -- quien lo hizo
+  actor_name text,
+  actor_avatar text,
+  ref_id text,
+  ref_text text,
+  created_at timestamptz not null default now(),
+  read_at timestamptz
+);
+create index if not exists notifications_owner_idx on public.notifications (profile_id, created_at desc);
+alter table public.notifications enable row level security;
+revoke all on table public.notifications from anon;
+revoke insert, update on table public.notifications from authenticated;
+grant update (read_at) on public.notifications to authenticated;
+
+drop policy if exists "notifications_select_own" on public.notifications;
+create policy "notifications_select_own" on public.notifications for select using (profile_id = (select auth.uid()));
+drop policy if exists "notifications_update_own" on public.notifications;
+create policy "notifications_update_own" on public.notifications for update using (profile_id = (select auth.uid())) with check (profile_id = (select auth.uid()));
+drop policy if exists "notifications_delete_own" on public.notifications;
+create policy "notifications_delete_own" on public.notifications for delete using (profile_id = (select auth.uid()));
+
+-- Crear un aviso (lo usan los triggers de abajo). Respeta bloqueos y no se avisa a uno mismo.
+create or replace function public.notify_user(p_to uuid, p_kind text, p_actor uuid, p_ref text, p_text text)
+returns void
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare v_name text; v_av text;
+begin
+  if p_to is null or p_actor is null or p_to = p_actor then return; end if;
+  if exists (select 1 from public.blocks b where (b.blocker_id = p_to and b.blocked_id = p_actor) or (b.blocker_id = p_actor and b.blocked_id = p_to)) then return; end if;
+  -- no repetir el mismo aviso en menos de 1 hora (por ejemplo, seguir/dejar de seguir varias veces)
+  if exists (select 1 from public.notifications n where n.profile_id = p_to and n.kind = p_kind and n.actor_id = p_actor
+             and coalesce(n.ref_id, '') = coalesce(p_ref, '') and n.created_at > now() - interval '1 hour') then return; end if;
+  select coalesce(p.username, split_part(p.full_name, ' ', 1)), p.avatar_url into v_name, v_av from public.profiles p where p.id = p_actor;
+  insert into public.notifications (profile_id, kind, actor_id, actor_name, actor_avatar, ref_id, ref_text)
+  values (p_to, p_kind, p_actor, v_name, v_av, p_ref, left(p_text, 120));
+end;
+$$;
+revoke all on function public.notify_user(uuid, text, uuid, text, text) from public, anon, authenticated;
+
+create or replace function public.trg_notify_follow() returns trigger language plpgsql security definer set search_path = '' as $$
+begin perform public.notify_user(new.followed_id, 'follow', new.follower_id, null, null); return new; end; $$;
+create or replace function public.trg_notify_like() returns trigger language plpgsql security definer set search_path = '' as $$
+declare v_author uuid; v_txt text;
+begin
+  select p.author_id, p.content into v_author, v_txt from public.posts p where p.id = new.post_id;
+  perform public.notify_user(v_author, 'like', new.profile_id, new.post_id::text, v_txt); return new;
+end; $$;
+create or replace function public.trg_notify_comment() returns trigger language plpgsql security definer set search_path = '' as $$
+declare v_author uuid;
+begin
+  select p.author_id into v_author from public.posts p where p.id = new.post_id;
+  perform public.notify_user(v_author, 'comment', new.author_id, new.post_id::text, new.content); return new;
+end; $$;
+create or replace function public.trg_notify_session_join() returns trigger language plpgsql security definer set search_path = '' as $$
+declare v_owner uuid; v_place text;
+begin
+  select s.created_by, pl.name into v_owner, v_place from public.sessions s join public.places pl on pl.id = s.place_id where s.id = new.session_id;
+  perform public.notify_user(v_owner, 'session_join', new.profile_id, new.session_id::text, v_place); return new;
+end; $$;
+revoke all on function public.trg_notify_follow() from public, anon, authenticated;
+revoke all on function public.trg_notify_like() from public, anon, authenticated;
+revoke all on function public.trg_notify_comment() from public, anon, authenticated;
+revoke all on function public.trg_notify_session_join() from public, anon, authenticated;
+
+drop trigger if exists notify_follow on public.follows;
+create trigger notify_follow after insert on public.follows for each row execute function public.trg_notify_follow();
+drop trigger if exists notify_like on public.post_likes;
+create trigger notify_like after insert on public.post_likes for each row execute function public.trg_notify_like();
+drop trigger if exists notify_comment on public.post_comments;
+create trigger notify_comment after insert on public.post_comments for each row execute function public.trg_notify_comment();
+drop trigger if exists notify_session_join on public.session_participants;
+create trigger notify_session_join after insert on public.session_participants for each row execute function public.trg_notify_session_join();
+
+-- Lista completa de seguidores / seguidos, con foto y si se siguen mutuamente
+create or replace function public.follow_list(p_kind text)
+returns json
+language plpgsql
+stable
+security definer
+set search_path = ''
+as $$
+declare v_uid uuid := auth.uid(); v_out json;
+begin
+  if v_uid is null then return '[]'::json; end if;
+  select coalesce(json_agg(json_build_object(
+           'id', p.id, 'username', coalesce(p.username, split_part(p.full_name, ' ', 1)), 'name', p.full_name, 'avatar_url', p.avatar_url,
+           'verified', p.verified,
+           'i_follow', exists (select 1 from public.follows f2 where f2.follower_id = v_uid and f2.followed_id = p.id),
+           'follows_me', exists (select 1 from public.follows f3 where f3.follower_id = p.id and f3.followed_id = v_uid))
+         order by f.created_at desc), '[]'::json)
+    into v_out
+  from public.follows f
+  join public.profiles p on p.id = case when p_kind = 'followers' then f.follower_id else f.followed_id end
+  where (p_kind = 'followers' and f.followed_id = v_uid) or (p_kind <> 'followers' and f.follower_id = v_uid);
+  return v_out;
+end;
+$$;
+revoke all on function public.follow_list(text) from public, anon;
+grant execute on function public.follow_list(text) to authenticated;
