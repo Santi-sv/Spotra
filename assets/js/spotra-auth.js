@@ -190,7 +190,7 @@
 
   function roleHome(accountType, isAdmin){
     if(isAdmin || window.SPOTRA_IS_ADMIN) return 'admin';
-    if(accountType === 'brand') return 'brand';
+    // SPOTRA es solo para riders por ahora: las cuentas marca/tienda (como @spotra) usan la misma app que un rider
     return 'rider';
   }
 
