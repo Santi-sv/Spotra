@@ -652,11 +652,13 @@
       photos: Array.isArray(row.photos) ? row.photos : [],
       status: row.status || 'pending',
       sold: !!row.sold,
-      createdAt: row.created_at ? new Date(row.created_at) : null
+      createdAt: row.created_at ? new Date(row.created_at) : null,
+      previousPrice: row.previous_price != null ? Number(row.previous_price) : null,
+      priceDroppedAt: row.price_dropped_at ? new Date(row.price_dropped_at) : null
     };
   }
 
-  const LISTING_COLS = 'id, seller_id, username, whatsapp, title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at';
+  const LISTING_COLS = 'id, seller_id, username, whatsapp, title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at, previous_price, price_dropped_at';
 
   async function listListings(options = {}){
     const db = await client();
@@ -772,6 +774,13 @@
       createdAt: row.created_at ? new Date(row.created_at) : null,
       likes: Array.isArray(row.post_likes) && row.post_likes[0] ? Number(row.post_likes[0].count) || 0 : 0,
       comments: Array.isArray(row.post_comments) && row.post_comments[0] ? Number(row.post_comments[0].count) || 0 : 0,
+      placeId: row.place_id || null,
+      placeName: row.places ? row.places.name : '',
+      placeCity: row.places ? (row.places.city || '') : '',
+      placeType: row.places ? row.places.type : '',
+      placeLat: row.places && row.places.latitude != null ? Number(row.places.latitude) : null,
+      placeLng: row.places && row.places.longitude != null ? Number(row.places.longitude) : null,
+      pinned: !!row.pinned,
       likedByMe: false
     };
   }
@@ -781,7 +790,7 @@
     if(!db) return [];
     const { data, error } = await db
       .from('posts')
-      .select('id, author_id, username, avatar_url, content, image_url, created_at, post_likes(count), post_comments(count)')
+      .select('id, author_id, username, avatar_url, content, image_url, created_at, place_id, pinned, places(name, city, type, latitude, longitude), post_likes(count), post_comments(count)')
       .order('created_at', { ascending: false })
       .limit(options.limit || 40);
     if(error){ console.warn('[SPOTRA] listPosts:', error.message); return []; }
@@ -812,7 +821,8 @@
       username,
       avatar_url: avatar,
       content: payload.content,
-      image_url: payload.imageUrl || null
+      image_url: payload.imageUrl || null,
+      place_id: payload.placeId || null
     });
     if(error){ console.warn('[SPOTRA] createPost:', error.message); return { ok: false, error: error.message }; }
     return { ok: true };
