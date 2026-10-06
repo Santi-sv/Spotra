@@ -3,7 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>SPOTRA App</title>
+<title>SPOTRA · La app de los riders</title>
+<meta name="description" content="La app de los riders de Latinoamérica: más de 1.800 spots y skateparks, quién está andando ahora, sesiones, eventos y market. Skate, BMX, rollers y scooter.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="SPOTRA">
+<meta property="og:title" content="SPOTRA · La app de los riders">
+<meta property="og:description" content="Spots, sesiones y quién está andando ahora. Uruguay, Argentina y Brasil.">
+<meta property="og:image" content="https://spotra.onrender.com/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#070907">
 <meta name="application-name" content="SPOTRA">
 <meta name="apple-mobile-web-app-title" content="SPOTRA">
@@ -2007,6 +2016,27 @@ html.theme-light body:not(.auth-mode):has([data-view="community"].active)::after
   html.theme-light body:not(.auth-mode) .topbar .brand-word-on-light{display:none!important}
   html.theme-light body:not(.auth-mode) .topbar .icon-btn{background:rgba(255,255,255,.08)!important;color:#f3f5f2!important;border-color:rgba(255,255,255,.12)!important}
 }
+/* ===== Guía de ubicación ===== */
+.geo-help{position:fixed;inset:0;z-index:400;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.55);padding:12px}
+.geo-help.open{display:flex}
+.geo-card{width:min(460px,100%);max-height:88vh;overflow:auto;padding:22px 20px calc(18px + env(safe-area-inset-bottom));border-radius:24px;background:#111413;color:#f3f6f3;border:1px solid rgba(255,255,255,.1)}
+.geo-ic{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(46,232,77,.14);color:#2ee84d}
+.geo-ic svg{width:28px;height:28px}
+.geo-card h3{font-family:var(--display);font-size:22px;margin:12px 0 6px}
+.geo-card p{color:#b9c2bc;font-size:14px;line-height:1.45}
+.geo-card ol{margin:12px 0 12px 20px;display:grid;gap:9px;font-size:14.5px;line-height:1.45}
+.geo-card b{color:#fff}
+.geo-note{font-size:12.5px!important}
+.geo-card .primary-btn{width:100%;min-height:48px;margin-top:8px}
+@media(min-width:700px){.geo-help{align-items:center}}
+/* selector de ubicación al crear un spot */
+.spot-pick-status{color:var(--muted);font-size:13px}
+.spot-pick-status.ok{color:var(--green-hot);font-weight:700}
+.spot-pick-search{display:flex;gap:8px;margin-bottom:8px}
+.spot-pick-search input{flex:1;min-width:0;height:42px;border-radius:12px;padding:0 12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--text);font-size:15px}
+.spot-pick-search button{height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--text);font-weight:800}
+html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
+.nt-spot_approved{background:#2ee84d!important;color:#06130a!important}
 /* ===== Compartir ===== */
 #spotShareBtn{display:inline-flex;align-items:center;justify-content:center;gap:8px}
 #spotShareBtn svg,.ses-share svg{width:17px;height:17px}
@@ -2381,9 +2411,10 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       </div>
       <div style="margin-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px">
-          <span style="color:var(--muted);font-size:13px">Tocá el mapa para marcar el lugar</span>
+          <span id="spotPickStatus" class="spot-pick-status">Tocá el mapa para marcar el lugar</span>
           <button type="button" id="spotUseLoc" style="background:var(--green-hot);color:#06100a;border:0;border-radius:999px;padding:9px 14px;font-weight:800;font-size:13px;white-space:nowrap">Usar mi ubicación</button>
         </div>
+        <div class="spot-pick-search"><input id="spotPickSearch" placeholder="Buscar dirección o ciudad" autocomplete="off" enterkeyhint="search"><button type="button" id="spotPickGo">Buscar</button></div>
         <div id="spotPickMap" class="spot-pick-map" style="height:240px;border-radius:16px;overflow:hidden;background:#0c1014"></div>
         <input type="hidden" id="spotLat"><input type="hidden" id="spotLng">
       </div>
@@ -2609,7 +2640,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="pfNombre" required value="Santiago" placeholder="Nombre"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="pfApellido" value="Varela" placeholder="Apellido"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/></svg><input id="pfUsername" placeholder="Usuario (@)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input id="pfDiscipline" placeholder="Disciplina (Skate, BMX, Roller, Scooter)"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13c2-1 16-5 18-4s-1 3-3 4-13 4-15 3-1-2 0-3Z"/><circle cx="7" cy="17" r="1.6"/><circle cx="16" cy="14.5" r="1.6"/></svg><input id="pfDiscipline" placeholder="Disciplina (Skate, BMX, Roller, Scooter)"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/></svg><input id="pfInstagram" placeholder="Instagram (usuario o link)"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4c.4 2 1.6 3.2 3.6 3.4M9 13a3.5 3.5 0 1 0 3.5 3.5V4"/></svg><input id="pfTiktok" placeholder="TikTok (usuario o link)"></div>
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8h2V5h-2c-2 0-3 1.2-3 3v2H9v3h2v6h3v-6h2l.4-3H14V8.4c0-.3.2-.4.5-.4Z"/></svg><input id="pfFacebook" placeholder="Facebook (usuario o link)"></div>
@@ -2656,7 +2687,8 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
-<script src="assets/js/spotra-backend.js?v=20"></script>
+<script src="assets/js/spotra-geo.js?v=1"></script>
+<script src="assets/js/spotra-backend.js?v=21"></script>
 <script src="assets/js/spotra-google-map.js?v=20"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
@@ -3031,7 +3063,7 @@ async function handleCreate(type){
     const latV = document.getElementById('spotLat')?.value;
     const lngV = document.getElementById('spotLng')?.value;
     if(!latV || !lngV){ toast('Marcá la ubicación del spot en el mapa.'); return; }
-    let image = 'assets/spots/spot-7.webp';
+    let image = null;
     const _fi = document.querySelector('#dzSpot input[type="file"]');
     const _file = _fi && _fi.files && _fi.files[0];
     if(_file && window.SpotraMaps?.compressImage && window.SpotraBackend?.uploadSpotImage){
@@ -3043,7 +3075,9 @@ async function handleCreate(type){
         else { toast('No se pudo subir la foto; se usará una imagen por defecto.'); }
       } catch(err){ console.warn('[SPOTRA] subir foto del spot:', err); }
     }
-    let saveMode = 'local';
+    let saveMode = 'error', saveErr = '';
+    const sendBtn = document.querySelector('[data-submit="spot"]');
+    if(sendBtn){ sendBtn.disabled = true; sendBtn.dataset.label = sendBtn.textContent; sendBtn.textContent = 'Enviando...'; }
     try {
       const result = await window.SpotraBackend?.createPlaceSubmission({
         type: kind,
@@ -3054,15 +3088,20 @@ async function handleCreate(type){
         lng: parseFloat(lngV),
         imageUrl: image
       });
-      saveMode = result?.mode || 'local';
+      saveMode = result?.mode || 'error';
+      saveErr = result?.error || '';
     } catch(error) {
-      console.warn('[SPOTRA] No se pudo guardar el spot en backend:', error);
+      console.warn('[SPOTRA] No se pudo guardar el spot:', error);
+    }
+    if(sendBtn){ sendBtn.disabled = false; sendBtn.textContent = sendBtn.dataset.label || 'Enviar a aprobación'; }
+    if(saveMode !== 'supabase'){
+      // el formulario queda como estaba para poder reintentar
+      toast(/row-level security/i.test(saveErr) ? 'Completá tu fecha de nacimiento (o vinculá a tu responsable) para sumar spots.' : (saveErr || 'No se pudo enviar el spot. Probá de nuevo.'));
+      return;
     }
     resetForm('spotForm','dzSpot'); closeModal();
-    const _la=document.getElementById('spotLat'), _lo=document.getElementById('spotLng'); if(_la)_la.value=''; if(_lo)_lo.value='';
-    toast(saveMode === 'supabase'
-      ? 'Spot enviado al backend. Quedó pendiente de aprobación.'
-      : 'Spot enviado. Quedó en cola local hasta conectar Supabase.');
+    if(window.SpotraSpotPicker) window.SpotraSpotPicker.reset();
+    toast('¡Gracias! Tu spot quedó pendiente de aprobación. Te avisamos en la campana cuando esté en el mapa.');
   }
   if(type === 'event'){
     if(!validateForm('eventForm')) return;
@@ -3093,7 +3132,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=17"></script>
+<script src="assets/js/spotra-i18n.js?v=18"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=8"></script>
@@ -3103,7 +3142,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-safety.js?v=3"></script>
 <script src="assets/js/spotra-avatar.js?v=2"></script>
 <script src="assets/js/spotra-riders.js?v=3"></script>
-<script src="assets/js/spotra-notifs.js?v=1"></script>
+<script src="assets/js/spotra-notifs.js?v=2"></script>
 <script src="assets/js/spotra-guardian.js?v=2"></script>
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
@@ -3112,7 +3151,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-forum.js?v=8"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=5"></script>
-<script src="assets/js/spotra-spot-picker.js?v=5"></script>
+<script src="assets/js/spotra-spot-picker.js?v=6"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
 <script src="assets/js/spotra-landing.js?v=17"></script>
 </body>
