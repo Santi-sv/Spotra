@@ -3066,3 +3066,44 @@ end;
 $$;
 revoke all on function public.suggested_riders(int) from public, anon;
 grant execute on function public.suggested_riders(int) to authenticated;
+
+
+-- =====================================================================
+-- SPOTRA · Arreglo: una cuenta que subió fotos de spots no se podía eliminar
+-- (la foto quedaba "atada" a la cuenta). Ahora la foto queda en el spot, sin el nombre del autor,
+-- como dice la Política de Privacidad. Ejecutar en Supabase → SQL Editor. Re-ejecutable.
+-- =====================================================================
+alter table public.place_photos alter column uploaded_by drop not null;
+alter table public.place_photos drop constraint if exists place_photos_uploaded_by_fkey;
+alter table public.place_photos add constraint place_photos_uploaded_by_fkey
+  foreign key (uploaded_by) references public.profiles(id) on delete set null;
+
+
+-- =====================================================================
+-- SPOTRA · Aviso al rider cuando su spot es aprobado (campana)
+-- Ejecutar en Supabase → SQL Editor. Re-ejecutable.
+-- =====================================================================
+alter table public.notifications drop constraint if exists notifications_kind_check;
+alter table public.notifications add constraint notifications_kind_check
+  check (kind in ('follow','like','comment','session_join','spot_approved'));
+
+create or replace function public.trg_notify_spot_approved()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  if new.status::text = 'approved' and old.status::text is distinct from 'approved' and new.submitted_by is not null then
+    insert into public.notifications (profile_id, kind, actor_id, actor_name, ref_id, ref_text)
+    values (new.submitted_by, 'spot_approved', null, 'SPOTRA', new.id::text, left(new.name, 120));
+  end if;
+  return new;
+end;
+$$;
+revoke all on function public.trg_notify_spot_approved() from public, anon, authenticated;
+
+drop trigger if exists notify_spot_approved on public.place_submissions;
+create trigger notify_spot_approved
+  after update of status on public.place_submissions
+  for each row execute function public.trg_notify_spot_approved();
