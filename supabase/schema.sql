@@ -3107,3 +3107,64 @@ drop trigger if exists notify_spot_approved on public.place_submissions;
 create trigger notify_spot_approved
   after update of status on public.place_submissions
   for each row execute function public.trg_notify_spot_approved();
+
+
+-- =====================================================================
+-- SPOTRA · Ajuste: las protecciones del tilde verificado, de publicaciones fijadas
+-- y de la edad al crear el perfil ahora se basan en el rol real de quien hace el cambio.
+-- (Antes, una prueba ejecutada desde el SQL Editor podía saltearlas.)
+-- Ejecutar en Supabase → SQL Editor. Re-ejecutable.
+-- =====================================================================
+create or replace function public.profiles_protect_verified()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.verified is distinct from old.verified
+     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and current_user not in ('postgres', 'supabase_admin', 'service_role') then
+    new.verified := old.verified;
+  end if;
+  return new;
+end;
+$$;
+
+create or replace function public.posts_protect_pinned()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and current_user not in ('postgres', 'supabase_admin', 'service_role') then
+    if tg_op = 'INSERT' then new.pinned := false;
+    elsif new.pinned is distinct from old.pinned then new.pinned := old.pinned;
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+create or replace function public.profiles_birth_on_insert()
+returns trigger
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if new.birth_date is not null
+     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and current_user not in ('postgres', 'supabase_admin', 'service_role') then
+    if new.birth_date > (current_date - interval '13 years')::date then
+      raise exception 'SPOTRA es para mayores de 13 años.';
+    end if;
+    if new.birth_date < date '1910-01-01' then
+      raise exception 'Revisá tu fecha de nacimiento.';
+    end if;
+  end if;
+  return new;
+end;
+$$;
