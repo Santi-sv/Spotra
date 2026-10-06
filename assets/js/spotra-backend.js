@@ -248,7 +248,7 @@
     const db = await client();
     if(db){
       const { data: authData } = await db.auth.getUser();
-      if(!authData?.user?.id) return { mode: 'local', data: saveLocalSubmission(Object.assign({}, payload, mapped)) };
+      if(!authData?.user?.id) return { mode: 'auth', error: 'Iniciá sesión para sumar spots.' };
       mapped.submitted_by = authData.user.id;
       const { data, error } = await db
         .from('place_submissions')
@@ -256,9 +256,10 @@
         .select()
         .single();
       if(!error) return { mode: 'supabase', data };
-      console.warn('[SPOTRA] Supabase submission fallback:', error);
+      console.warn('[SPOTRA] No se pudo enviar el spot:', error);
+      return { mode: 'error', error: error.message || 'No se pudo enviar el spot.' };
     }
-    return { mode: 'local', data: saveLocalSubmission(Object.assign({}, payload, mapped)) };
+    return { mode: 'error', error: 'Sin conexión. Probá de nuevo.' };
   }
 
   async function listSubmissions(){
