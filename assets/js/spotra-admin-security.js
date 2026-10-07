@@ -1,9 +1,12 @@
 /* SPOTRA · Seguridad del admin: Face ID (WebAuthn nativo, sin librerías externas)
-   Blindaje admin, paso 2 (24/09/2026)
-   - Pantalla "Seguridad" (vista admin-security): estado, dispositivos, registrar y probar Face ID.
-   - Todo se verifica en el servidor (Edge Function admin-passkey). Este archivo solo
-     le pide al iPhone/Mac la firma con Face ID/Touch ID y la manda.
-   - Expone window.SpotraFaceID.verify() para las próximas sesiones (desbloqueo y acciones críticas). */
+   Blindaje admin, pasos 2 y 3 (24/09/2026 · 07/10/2026)
+   - Pantalla "Seguridad" (vista admin-security): estado, dispositivos, registrar Face ID,
+     desbloquear y bloquear el panel.
+   - Panel bloqueado: Aprobaciones, Usuarios y Lista de espera quedan tapados hasta pasar
+     Face ID. El desbloqueo dura 2 horas y vale solo para ESTA sesión.
+   - Todo se verifica en el servidor (Edge Function admin-passkey + función is_admin() en la
+     base). Esta pantalla es solo la cara visible: aunque alguien la saltee, la base se niega.
+   - Expone window.SpotraFaceID.verify() para la próxima sesión (Face ID por acción crítica). */
 (function(){
   'use strict';
 
@@ -142,6 +145,125 @@
     return await call({ action: 'auth-verify', response: authenticationJSON(cred) });
   }
 
+  /* ---------- desbloqueo del panel ---------- */
+  const LOCKED_VIEWS = ['admin-approvals', 'admin-users', 'admin-waitlist'];
+  const U = { checked: false, until: null, devices: 0, timer: null, busy: false, error: '' };
+
+  function isUnlocked(){ return !!(U.until && U.until.getTime() > Date.now()); }
+  function hhmm(d){ return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0'); }
+
+  function setUnlocked(iso){
+    const d = iso ? new Date(iso) : null;
+    U.until = (d && !isNaN(d)) ? d : null;
+    clearTimeout(U.timer);
+    if(isUnlocked()){
+      // cuando vence, se vuelve a bloquear solo
+      U.timer = setTimeout(() => { U.until = null; refreshOverlay(); render(); }, Math.min(U.until.getTime() - Date.now() + 500, 2147483000));
+    }
+  }
+
+  async function checkUnlock(){
+    const r = await call({ action: 'status' });
+    U.checked = true;
+    U.error = r.ok ? '' : (r.error || 'No se pudo comprobar el panel.');
+    if(r.ok){
+      setUnlocked(r.unlockedUntil);
+      U.devices = (r.devices || []).length;
+      S.status = { devices: r.devices || [], setupEnabled: !!r.setupEnabled };
+    }
+    return r;
+  }
+
+  async function unlock(){
+    if(U.busy) return;
+    U.busy = true; refreshOverlay(); render();
+    const r = await verify();
+    U.busy = false;
+    if(r.ok && r.unlockedUntil){
+      setUnlocked(r.unlockedUntil);
+      notify('Panel desbloqueado hasta las ' + hhmm(U.until) + '.');
+      refreshOverlay(); render();
+      // recarga para que el panel traiga los datos con el permiso nuevo
+      setTimeout(() => location.reload(), 600);
+      return;
+    }
+    notify(r.error || 'Face ID no válido.');
+    prefetchAuth();
+    refreshOverlay(); render();
+  }
+
+  async function lockNow(){
+    if(U.busy) return;
+    U.busy = true; render();
+    const r = await call({ action: 'lock' });
+    U.busy = false;
+    if(!r.ok){ notify(r.error || 'No se pudo bloquear.'); render(); return; }
+    setUnlocked(null);
+    notify('Panel bloqueado.');
+    setTimeout(() => location.reload(), 600);
+  }
+
+  /* ---------- pantalla de bloqueo (tapa las vistas del panel) ---------- */
+  function activeLockedView(){
+    return LOCKED_VIEWS.some(v => {
+      const el = document.querySelector('[data-view="' + v + '"]');
+      return el && el.classList.contains('active');
+    });
+  }
+
+  function overlayEl(){
+    let o = document.getElementById('adminLock');
+    if(!o){
+      o = document.createElement('div');
+      o.id = 'adminLock';
+      o.setAttribute('role', 'dialog');
+      o.setAttribute('aria-modal', 'true');
+      o.setAttribute('aria-label', 'Panel bloqueado');
+      o.style.cssText = 'position:fixed;inset:0;z-index:70;display:none;align-items:center;justify-content:center;padding:24px 16px calc(24px + env(safe-area-inset-bottom));background:#070a08;color:#fff;overflow:auto';
+      document.body.appendChild(o);
+    }
+    return o;
+  }
+
+  function refreshOverlay(){
+    const show = !!window.SPOTRA_IS_ADMIN && activeLockedView() && !isUnlocked();
+    const o = overlayEl();
+    if(!show){ o.style.display = 'none'; return; }
+    let body;
+    if(!U.checked){
+      body = '<div style="color:#9aa39a">Comprobando el panel...</div>';
+    } else if(U.error){
+      body = '<div style="color:#9aa39a;margin-bottom:16px">' + esc(U.error) + '</div>' +
+        '<button data-lock="retry" style="' + BTN_MAIN + '">Reintentar</button>';
+    } else if(!supported()){
+      body = '<div style="color:#9aa39a;margin-bottom:16px">Este navegador no soporta Face ID. Abrí SPOTRA desde Safari o desde la app instalada.</div>';
+    } else if(!U.devices){
+      body = '<div style="color:#9aa39a;margin-bottom:16px">Primero registrá el Face ID de este dispositivo en Seguridad.</div>' +
+        '<button data-lock="security" style="' + BTN_MAIN + '">Ir a Seguridad</button>';
+    } else {
+      body = '<div style="color:#9aa39a;margin-bottom:16px">Para ver y moderar el panel, confirmá que sos vos. Queda desbloqueado 2 horas en este dispositivo.</div>' +
+        '<button data-lock="unlock" style="' + BTN_MAIN + '"' + (U.busy ? ' disabled' : '') + '>' + (U.busy ? 'Verificando...' : 'Desbloquear con Face ID') + '</button>' +
+        '<button data-lock="security" style="' + BTN_SEC + '">Seguridad</button>';
+    }
+    o.innerHTML = '<div style="width:100%;max-width:360px;text-align:center">' +
+      '<div style="width:56px;height:56px;margin:0 auto 14px;border-radius:16px;display:grid;place-items:center;border:1px solid rgba(116,255,58,.45);color:#74ff3a">' +
+      '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>' +
+      '<div style="font-weight:800;font-size:22px;margin-bottom:6px">Panel bloqueado</div>' + body +
+      '<button data-lock="exit" style="' + BTN_SEC + '">Volver a la app</button></div>';
+    o.style.display = 'flex';
+  }
+
+  document.addEventListener('click', function(e){
+    const b = e.target.closest('[data-lock]');
+    if(!b) return;
+    e.preventDefault();
+    const a = b.dataset.lock;
+    if(a === 'unlock') unlock();
+    else if(a === 'retry'){ U.checked = false; refreshOverlay(); checkUnlock().then(refreshOverlay); }
+    else if(a === 'security'){ if(window.setRoute) window.setRoute('admin-security'); }
+    else if(a === 'exit'){ if(window.setRole) window.setRole('rider', 'map'); else location.hash = '#map'; }
+  });
+
   /* ---------- pantalla Seguridad ---------- */
   const S = { status: null, busy: false, step: 'idle', regOptions: null, regCode: '', regName: '' };
 
@@ -178,6 +300,16 @@
     }
 
     const n = st.devices.length;
+    if(n){
+      const open = isUnlocked();
+      html += '<div style="border-radius:16px;border:1px solid ' + (open ? 'rgba(116,255,58,.4)' : 'rgba(255,255,255,.14)') + ';background:' + (open ? 'rgba(46,232,77,.06)' : 'rgba(255,255,255,.03)') + ';padding:14px;margin-bottom:12px">' +
+        '<div style="font-weight:800">' + (open ? 'Panel desbloqueado hasta las ' + esc(hhmm(U.until)) : 'Panel bloqueado') + '</div>' +
+        '<div style="color:var(--muted);font-size:12.5px;margin-bottom:10px">' + (open ? 'Solo en este dispositivo. Después se bloquea solo.' : 'Desbloquealo con Face ID para moderar. Dura 2 horas.') + '</div>' +
+        (open
+          ? '<button data-sec="lock" style="' + BTN_SEC + ';margin-bottom:0"' + (U.busy ? ' disabled' : '') + '>' + (U.busy ? 'Bloqueando...' : 'Bloquear ahora') + '</button>'
+          : '<button data-sec="unlock" style="' + BTN_MAIN + ';margin-bottom:0"' + (U.busy ? ' disabled' : '') + '>' + (U.busy ? 'Verificando...' : 'Desbloquear con Face ID') + '</button>') +
+        '</div>';
+    }
     html += '<div style="border-radius:16px;border:1px solid ' + (n ? 'rgba(116,255,58,.4)' : 'rgba(255,184,77,.45)') + ';background:' + (n ? 'rgba(46,232,77,.06)' : 'rgba(255,184,77,.06)') + ';padding:14px;margin-bottom:16px;display:flex;gap:12px;align-items:center">' +
       '<div style="width:42px;height:42px;border-radius:12px;display:grid;place-items:center;border:1px solid ' + (n ? 'rgba(116,255,58,.5)' : 'rgba(255,184,77,.5)') + ';color:' + (n ? 'var(--green-hot)' : '#ffb84d') + '">' +
       '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/>' + (n ? '<path d="M8.5 12l2.5 2.5 5-5"/>' : '<path d="M12 8v5M12 16h.01"/>') + '</svg></div>' +
@@ -189,7 +321,6 @@
       html += st.devices.map(d => '<div style="' + CARD + '"><div style="font-weight:800">' + esc(d.name) + '</div>' +
         '<div style="color:var(--muted);font-size:12.5px">Alta ' + esc(fmtDate(d.createdAt)) + ' · usado ' + esc(d.lastUsedAt ? fmtDate(d.lastUsedAt) : 'nunca') + '</div></div>').join('');
       html += '<div style="height:8px"></div>';
-      html += '<button data-sec="test" style="' + BTN_MAIN + '"' + (S.busy ? ' disabled' : '') + '>' + (S.busy && S.step === 'testing' ? 'Verificando...' : 'Probar Face ID') + '</button>';
     }
 
     if(S.step === 'form' || S.step === 'ready' || S.step === 'registering'){
@@ -218,10 +349,10 @@
 
   async function load(){
     S.status = null; render();
-    const r = await call({ action: 'status' });
-    S.status = r.ok ? { devices: r.devices || [], setupEnabled: !!r.setupEnabled } : { error: r.error || 'No se pudo cargar.' };
-    render();
-    if(r.ok && (r.devices || []).length) prefetchAuth();
+    const r = await checkUnlock();
+    if(!r.ok) S.status = { error: r.error || 'No se pudo cargar.' };
+    render(); refreshOverlay();
+    if(r.ok && (r.devices || []).length && !isUnlocked()) prefetchAuth();
   }
 
   async function onContinue(){
@@ -256,26 +387,20 @@
     load();
   }
 
-  async function onTest(){
-    S.busy = true; S.step = 'testing'; render();
-    const r = await verify();
-    S.busy = false; S.step = 'idle';
-    notify(r.ok ? ('Face ID verificado (' + (r.device || 'dispositivo') + ').') : (r.error || 'Face ID no válido.'));
-    load();
-  }
 
   document.addEventListener('click', function(e){
     const b = e.target.closest('[data-sec]');
     if(!b || !view() || !view().contains(b)) return;
     e.preventDefault();
-    if(S.busy) return;
+    if(S.busy || U.busy) return;
     const a = b.dataset.sec;
     if(a === 'reload') load();
     else if(a === 'start'){ S.step = 'form'; render(); }
     else if(a === 'cancel'){ S.step = 'idle'; S.regOptions = null; S.regCode = ''; render(); }
     else if(a === 'continue') onContinue();
     else if(a === 'register') onRegister();
-    else if(a === 'test') onTest();
+    else if(a === 'unlock') unlock();
+    else if(a === 'lock') lockNow();
   });
 
   function watch(){
@@ -287,10 +412,32 @@
     };
     go();
     new MutationObserver(go).observe(v, { attributes: true, attributeFilter: ['class'] });
+
+    // Vistas del panel que se tapan mientras está bloqueado
+    let checking = false;
+    const guard = async () => {
+      refreshOverlay();
+      if(!window.SPOTRA_IS_ADMIN || !activeLockedView() || checking) return;
+      if(U.checked && isUnlocked()) return;
+      if(!U.checked || !U.until){
+        checking = true;
+        const r = await checkUnlock();
+        checking = false;
+        refreshOverlay();
+        if(r.ok && U.devices && !isUnlocked()) prefetchAuth();
+      }
+    };
+    LOCKED_VIEWS.forEach(name => {
+      const el = document.querySelector('[data-view="' + name + '"]');
+      if(el) new MutationObserver(guard).observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+    // el rol admin se confirma después de cargar la sesión
+    new MutationObserver(guard).observe(document.body, { attributes: true, attributeFilter: ['data-is-admin'] });
+    guard();
   }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watch);
   else watch();
 
-  window.SpotraFaceID = { verify, prefetch: prefetchAuth, supported,
+  window.SpotraFaceID = { verify, prefetch: prefetchAuth, supported, isUnlocked, lock: lockNow,
     _test: { toB64url, fromB64url, creationOptions, requestOptions, registrationJSON, authenticationJSON } };
 })();
