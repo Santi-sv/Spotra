@@ -7,7 +7,8 @@
 -- Es idempotente (se puede correr sobre una base existente sin romper nada),
 -- pero NO cambia columnas de tablas que ya existen.
 --
--- No incluye (viven solo en Supabase): Edge Function send-push (index.ts),
+-- Blindaje admin sesión 3 (07/10/2026): admin_unlocks + is_admin().
+-- No incluye (viven solo en Supabase): Edge Functions send-push, session-push y admin-passkey,
 -- secretos VAPID, usuarios de Auth ni los datos de las tablas.
 -- =====================================================================
 
@@ -289,6 +290,44 @@ create or replace view public.rider_rankings with (security_invoker = true) as
   GROUP BY discipline, profile_id;
 
 -- ---------------------------------------------------------------------
+-- Blindaje admin: desbloqueos con Face ID (sesión 3, 07/10/2026)
+-- ---------------------------------------------------------------------
+create table if not exists public.admin_unlocks (
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  session_id text not null,
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  constraint admin_unlocks_pkey primary key (user_id, session_id)
+);
+create index if not exists admin_unlocks_expires_idx on public.admin_unlocks (expires_at);
+alter table public.admin_unlocks enable row level security;
+-- Sin políticas + sin permisos: la app no la ve. Solo la Edge Function (service_role).
+revoke all on table public.admin_unlocks from public, anon, authenticated;
+
+-- ---------------------------------------------------------------------
+-- is_admin(): rol admin + sesión desbloqueada (no vencida)
+-- ---------------------------------------------------------------------
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+security definer
+set search_path = ''
+as $$
+  select coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin'
+     and exists (
+       select 1 from public.admin_unlocks u
+       where u.user_id = (select auth.uid())
+         and u.session_id = ((select auth.jwt()) ->> 'session_id')
+         and u.expires_at > now()
+     );
+$$;
+revoke all on function public.is_admin() from public;
+-- anon también la necesita: las reglas se evalúan para visitantes (siempre da "no").
+grant execute on function public.is_admin() to anon, authenticated, service_role;
+
+
+-- ---------------------------------------------------------------------
 -- Funciones RPC (SECURITY DEFINER; chequean permisos adentro)
 -- ---------------------------------------------------------------------
 CREATE OR REPLACE FUNCTION public.approve_place_photo(photo_id uuid)
@@ -299,7 +338,7 @@ CREATE OR REPLACE FUNCTION public.approve_place_photo(photo_id uuid)
 AS $function$
 declare ph public.place_photos; has_cover boolean;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  if (not public.is_admin()) then raise exception 'no autorizado'; end if;
   select * into ph from public.place_photos where id = photo_id;
   if not found then raise exception 'foto no encontrada'; end if;
   update public.place_photos set status='approved', reviewed_at=now() where id = photo_id;
@@ -318,7 +357,7 @@ CREATE OR REPLACE FUNCTION public.approve_submission(submission_id uuid)
 AS $function$
 declare s public.place_submissions; new_id uuid;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'no autorizado';
   end if;
   select * into s from public.place_submissions where id = submission_id;
@@ -393,7 +432,7 @@ CREATE OR REPLACE FUNCTION public.reject_place_photo(photo_id uuid)
  SET search_path TO 'public'
 AS $function$
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  if (not public.is_admin()) then raise exception 'no autorizado'; end if;
   update public.place_photos set status='rejected', reviewed_at=now() where id = photo_id;
 end; $function$;
 
@@ -404,7 +443,7 @@ CREATE OR REPLACE FUNCTION public.reject_submission(submission_id uuid, notes te
  SET search_path TO 'public'
 AS $function$
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'no autorizado';
   end if;
   update public.place_submissions
@@ -431,7 +470,7 @@ declare
 begin
   select * into v_event from events where id = p_event_id;
   if v_event is null then raise exception 'evento inexistente'; end if;
-  v_role := coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '');
+  v_role := (case when public.is_admin() then 'admin' else '' end);
   if v_event.organizer_id is distinct from auth.uid() and v_role <> 'admin' then
     raise exception 'no autorizado';
   end if;
@@ -486,7 +525,7 @@ CREATE OR REPLACE FUNCTION public.set_place_cover(photo_id uuid)
 AS $function$
 declare ph public.place_photos;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  if (not public.is_admin()) then raise exception 'no autorizado'; end if;
   select * into ph from public.place_photos where id = photo_id;
   if not found then raise exception 'foto no encontrada'; end if;
   if ph.status <> 'approved' then raise exception 'la foto no esta aprobada'; end if;
@@ -502,7 +541,7 @@ CREATE OR REPLACE FUNCTION public.set_submission_location(submission_id uuid, la
 AS $function$
 begin
   -- solo administradores (rol en app_metadata del JWT)
-  if coalesce((auth.jwt() -> 'app_metadata' ->> 'role'), '') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'Solo un administrador puede fijar la ubicación.';
   end if;
 
@@ -536,8 +575,8 @@ alter table public.waitlist_settings enable row level security;
 drop policy if exists "admins manage registrations" on public.event_registrations;
 create policy "admins manage registrations" on public.event_registrations
   for all
-  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((select public.is_admin())))
+  with check (((select public.is_admin())));
 
 drop policy if exists "authenticated can read registrations" on public.event_registrations;
 create policy "authenticated can read registrations" on public.event_registrations
@@ -562,8 +601,8 @@ create policy "results are public" on public.event_results
 drop policy if exists "admins can manage events" on public.events;
 create policy "admins can manage events" on public.events
   for all
-  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((select public.is_admin())))
+  with check (((select public.is_admin())));
 
 drop policy if exists "approved events are public" on public.events;
 create policy "approved events are public" on public.events
@@ -596,13 +635,13 @@ create policy "insert own photos" on public.place_photos
 drop policy if exists "read approved photos" on public.place_photos;
 create policy "read approved photos" on public.place_photos
   for select
-  using (((status = 'approved'::text) OR (uploaded_by = (select auth.uid())) OR (COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text)));
+  using (((status = 'approved'::text) OR (uploaded_by = (select auth.uid())) OR ((select public.is_admin()))));
 
 drop policy if exists "admins can update submissions" on public.place_submissions;
 create policy "admins can update submissions" on public.place_submissions
   for update
-  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((select public.is_admin())))
+  with check (((select public.is_admin())));
 
 drop policy if exists "authenticated users can submit places" on public.place_submissions;
 create policy "authenticated users can submit places" on public.place_submissions
@@ -612,13 +651,13 @@ create policy "authenticated users can submit places" on public.place_submission
 drop policy if exists "users can read their own submissions" on public.place_submissions;
 create policy "users can read their own submissions" on public.place_submissions
   for select
-  using (((submitted_by = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((submitted_by = (select auth.uid())) OR ((select public.is_admin()))));
 
 drop policy if exists "admins can manage places" on public.places;
 create policy "admins can manage places" on public.places
   for all
-  using (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text))
-  with check (((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text));
+  using (((select public.is_admin())))
+  with check (((select public.is_admin())));
 
 drop policy if exists "approved places are public" on public.places;
 create policy "approved places are public" on public.places
@@ -628,7 +667,7 @@ create policy "approved places are public" on public.places
 drop policy if exists "author or admin deletes comments" on public.post_comments;
 create policy "author or admin deletes comments" on public.post_comments
   for delete
-  using (((author_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((author_id = (select auth.uid())) OR ((select public.is_admin()))));
 
 drop policy if exists "comments are public" on public.post_comments;
 create policy "comments are public" on public.post_comments
@@ -658,7 +697,7 @@ create policy "users remove their likes" on public.post_likes
 drop policy if exists "author or admin deletes posts" on public.posts;
 create policy "author or admin deletes posts" on public.posts
   for delete
-  using (((author_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((author_id = (select auth.uid())) OR ((select public.is_admin()))));
 
 drop policy if exists "posts are public" on public.posts;
 create policy "posts are public" on public.posts
@@ -678,7 +717,7 @@ create policy "users can insert their own profile" on public.profiles
 drop policy if exists "users can read their own profile" on public.profiles;
 create policy "users can read their own profile" on public.profiles
   for select
-  using ((((select auth.uid()) = id) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using ((((select auth.uid()) = id) OR ((select public.is_admin()))));
 
 drop policy if exists "users can update their own profile" on public.profiles;
 create policy "users can update their own profile" on public.profiles
@@ -694,18 +733,18 @@ create policy "users create their subscriptions" on public.push_subscriptions
 drop policy if exists "users delete their subscriptions" on public.push_subscriptions;
 create policy "users delete their subscriptions" on public.push_subscriptions
   for delete
-  using (((profile_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((profile_id = (select auth.uid())) OR ((select public.is_admin()))));
 
 drop policy if exists "users read their subscriptions" on public.push_subscriptions;
 create policy "users read their subscriptions" on public.push_subscriptions
   for select
-  using (((profile_id = (select auth.uid())) OR ((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text) = 'admin'::text)));
+  using (((profile_id = (select auth.uid())) OR ((select public.is_admin()))));
 
 drop policy if exists "waitlist_delete_admin" on public.waitlist;
 create policy "waitlist_delete_admin" on public.waitlist
   for delete
   to authenticated
-  using ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
+  using (((select public.is_admin())));
 
 drop policy if exists "waitlist_insert_public" on public.waitlist;
 create policy "waitlist_insert_public" on public.waitlist
@@ -717,14 +756,14 @@ drop policy if exists "waitlist_select_admin" on public.waitlist;
 create policy "waitlist_select_admin" on public.waitlist
   for select
   to authenticated
-  using ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
+  using (((select public.is_admin())));
 
 drop policy if exists "waitlist_settings_admin" on public.waitlist_settings;
 create policy "waitlist_settings_admin" on public.waitlist_settings
   for all
   to authenticated
-  using ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text))
-  with check ((COALESCE((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text));
+  using (((select public.is_admin())))
+  with check (((select public.is_admin())));
 
 drop policy if exists "auth upload place-images" on storage.objects;
 create policy "auth upload place-images" on storage.objects
@@ -801,14 +840,14 @@ create policy "sellers create listings" on public.listings
 drop policy if exists "seller or admin deletes listings" on public.listings;
 create policy "seller or admin deletes listings" on public.listings
   for delete
-  using (seller_id = (select auth.uid()) or coalesce((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text);
+  using (seller_id = (select auth.uid()) or (select public.is_admin()));
 
 -- Moderación: el admin ve y edita todo (aprobar / rechazar)
 drop policy if exists "admins manage listings" on public.listings;
 create policy "admins manage listings" on public.listings
   for all
-  using (coalesce((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text)
-  with check (coalesce((((select auth.jwt()) -> 'app_metadata'::text) ->> 'role'::text), ''::text) = 'admin'::text);
+  using ((select public.is_admin()))
+  with check ((select public.is_admin()));
 
 -- Marcar vendido: solo el vendedor (el vendedor no puede editar nada más)
 create or replace function public.mark_listing_sold(p_listing_id uuid)
@@ -840,7 +879,7 @@ create or replace function public.admin_list_users()
 as $function$
 #variable_conflict use_column
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'no autorizado';
   end if;
   return query
@@ -893,7 +932,7 @@ create or replace function public.admin_delete_user(p_user_id uuid)
 as $function$
 declare v_role text;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'no autorizado';
   end if;
   if p_user_id = auth.uid() then raise exception 'no podés borrar tu propia cuenta'; end if;
@@ -957,25 +996,25 @@ drop policy if exists "event_registrations_select" on public.event_registrations
 create policy "event_registrations_select" on public.event_registrations
   for select using (
     (select auth.role()) = 'authenticated'
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "event_registrations_insert" on public.event_registrations;
 create policy "event_registrations_insert" on public.event_registrations
   for insert with check (
     ((select auth.role()) = 'authenticated' and profile_id = (select auth.uid()))
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "event_registrations_update" on public.event_registrations;
 create policy "event_registrations_update" on public.event_registrations
   for update
-  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
-  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  using ((select public.is_admin()))
+  with check ((select public.is_admin()));
 
 drop policy if exists "event_registrations_delete" on public.event_registrations;
 create policy "event_registrations_delete" on public.event_registrations
   for delete using (
     profile_id = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 -- ===================== events =====================
 drop policy if exists "admins can manage events" on public.events;
@@ -991,7 +1030,7 @@ create policy "events_select" on public.events
     or organizer_id = (select auth.uid())
     or exists (select 1 from public.event_registrations r
                 where r.event_id = events.id and r.profile_id = (select auth.uid()))
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "events_insert" on public.events;
 create policy "events_insert" on public.events
@@ -999,17 +1038,17 @@ create policy "events_insert" on public.events
     ((select auth.role()) = 'authenticated'
       and organizer_id = (select auth.uid())
       and status = 'pending'::spotra_status)
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "events_update" on public.events;
 create policy "events_update" on public.events
   for update
-  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
-  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  using ((select public.is_admin()))
+  with check ((select public.is_admin()));
 
 drop policy if exists "events_delete" on public.events;
 create policy "events_delete" on public.events
-  for delete using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  for delete using ((select public.is_admin()));
 
 -- ===================== listings =====================
 drop policy if exists "admins manage listings" on public.listings;
@@ -1023,7 +1062,7 @@ create policy "listings_select" on public.listings
   for select using (
     (status = 'approved'::spotra_status and sold = false)
     or seller_id = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "listings_insert" on public.listings;
 create policy "listings_insert" on public.listings
@@ -1032,19 +1071,19 @@ create policy "listings_insert" on public.listings
       and seller_id = (select auth.uid())
       and status = 'pending'::spotra_status
       and sold = false)
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "listings_update" on public.listings;
 create policy "listings_update" on public.listings
   for update
-  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
-  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  using ((select public.is_admin()))
+  with check ((select public.is_admin()));
 
 drop policy if exists "listings_delete" on public.listings;
 create policy "listings_delete" on public.listings
   for delete using (
     seller_id = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 -- ===================== places =====================
 drop policy if exists "admins can manage places" on public.places;
@@ -1054,21 +1093,21 @@ drop policy if exists "places_select" on public.places;
 create policy "places_select" on public.places
   for select using (
     status = 'approved'::spotra_status
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "places_insert" on public.places;
 create policy "places_insert" on public.places
-  for insert with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  for insert with check ((select public.is_admin()));
 
 drop policy if exists "places_update" on public.places;
 create policy "places_update" on public.places
   for update
-  using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
-  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  using ((select public.is_admin()))
+  with check ((select public.is_admin()));
 
 drop policy if exists "places_delete" on public.places;
 create policy "places_delete" on public.places
-  for delete using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  for delete using ((select public.is_admin()));
 
 -- ===================== push_subscriptions =====================
 -- Esta política existía en la base pero no en el respaldo.
@@ -1259,7 +1298,7 @@ drop policy if exists "sessions_select" on public.sessions;
 create policy "sessions_select" on public.sessions
   for select using (
     ((select auth.role()) = 'authenticated' and ends_at > now())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "sessions_insert" on public.sessions;
 create policy "sessions_insert" on public.sessions
@@ -1271,14 +1310,14 @@ drop policy if exists "sessions_delete" on public.sessions;
 create policy "sessions_delete" on public.sessions
   for delete using (
     created_by = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "session_participants_select" on public.session_participants;
 create policy "session_participants_select" on public.session_participants
   for select using (
     ((select auth.role()) = 'authenticated'
       and exists (select 1 from public.sessions s where s.id = session_id and s.ends_at > now()))
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "session_participants_insert" on public.session_participants;
 create policy "session_participants_insert" on public.session_participants
@@ -1291,7 +1330,7 @@ create policy "session_participants_delete" on public.session_participants
   for delete using (
     profile_id = (select auth.uid())
     or exists (select 1 from public.sessions s where s.id = session_id and s.created_by = (select auth.uid()))
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 
 -- ---------- Lugares importados de OpenStreetMap (25/09/2026) ----------
@@ -1321,7 +1360,7 @@ set search_path = ''
 as $$
 begin
   if new.birth_date is not distinct from old.birth_date then return new; end if;
-  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin' then return new; end if;
+  if public.is_admin() then return new; end if;
   if old.birth_date is not null then
     raise exception 'La fecha de nacimiento ya está guardada. Escribinos si hay un error.';
   end if;
@@ -1403,16 +1442,16 @@ drop policy if exists "reports_select" on public.reports;
 create policy "reports_select" on public.reports
   for select using (
     reporter_id = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "reports_update_admin" on public.reports;
 create policy "reports_update_admin" on public.reports
-  for update using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')
-  with check (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  for update using ((select public.is_admin()))
+  with check ((select public.is_admin()));
 
 drop policy if exists "reports_delete_admin" on public.reports;
 create policy "reports_delete_admin" on public.reports
-  for delete using (coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+  for delete using ((select public.is_admin()));
 
 -- ---------- Bloqueos ----------
 -- Cada rider maneja su propia lista. El bloqueado no se entera.
@@ -1651,7 +1690,7 @@ drop policy if exists "spot_status_select" on public.spot_status;
 create policy "spot_status_select" on public.spot_status
   for select using (
     ((select auth.role()) = 'authenticated' and expires_at > now())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "spot_status_insert" on public.spot_status;
 create policy "spot_status_insert" on public.spot_status
@@ -1661,7 +1700,7 @@ drop policy if exists "spot_status_delete" on public.spot_status;
 create policy "spot_status_delete" on public.spot_status
   for delete using (
     created_by = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 
 -- =====================================================================
@@ -1680,7 +1719,7 @@ set search_path = ''
 as $$
 begin
   if new.birth_date is not distinct from old.birth_date then return new; end if;
-  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin' then return new; end if;
+  if public.is_admin() then return new; end if;
   if current_setting('spotra.guardian_ok', true) = '1' then return new; end if;
   if old.birth_date is not null then
     raise exception 'La fecha de nacimiento ya está guardada. Escribinos si hay un error.';
@@ -1727,7 +1766,7 @@ revoke all on table public.guardian_attempts from anon, authenticated;
 drop policy if exists "guardian_links_select" on public.guardian_links;
 create policy "guardian_links_select" on public.guardian_links
   for select using (minor_id = (select auth.uid()) or guardian_id = (select auth.uid())
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 -- ---------- Reglas de edad ----------
 create or replace function public.is_minor(uid uuid)
@@ -1953,25 +1992,25 @@ begin
     execute format('drop policy if exists "minors_basic" on public.%I', t);
     execute format($p$create policy "minors_basic" on public.%I as restrictive for insert to authenticated
       with check (public.guardian_allows((select auth.uid()), 'basic')
-        or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')$p$, t);
+        or (select public.is_admin()))$p$, t);
   end loop;
 end $$;
 
 drop policy if exists "minors_adult" on public.events;
 create policy "minors_adult" on public.events as restrictive for insert to authenticated
   with check (public.guardian_allows((select auth.uid()), 'adult')
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 drop policy if exists "minors_market" on public.listings;
 create policy "minors_market" on public.listings as restrictive for insert to authenticated
   with check (public.guardian_allows((select auth.uid()), 'market')
-    or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin');
+    or (select public.is_admin()));
 
 -- sesiones de menores: solo si el responsable las habilitó y solo en skateparks
 drop policy if exists "minors_sessions" on public.sessions;
 create policy "minors_sessions" on public.sessions as restrictive for insert to authenticated
   with check (
-    coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin'
+    (select public.is_admin())
     or (public.guardian_allows((select auth.uid()), 'sessions')
         and (not public.is_minor((select auth.uid()))
              or exists (select 1 from public.places p where p.id = place_id and p.type = 'skatepark'))));
@@ -1979,7 +2018,7 @@ create policy "minors_sessions" on public.sessions as restrictive for insert to 
 drop policy if exists "minors_session_join" on public.session_participants;
 create policy "minors_session_join" on public.session_participants as restrictive for insert to authenticated
   with check (
-    coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin'
+    (select public.is_admin())
     or (public.guardian_allows((select auth.uid()), 'sessions')
         and (not public.is_minor((select auth.uid()))
              or exists (select 1 from public.sessions s join public.places p on p.id = s.place_id
@@ -2128,7 +2167,7 @@ CREATE OR REPLACE FUNCTION public.approve_place_photo(photo_id uuid)
 AS $function$
 declare ph public.place_photos; has_cover boolean;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  if (not public.is_admin()) then raise exception 'no autorizado'; end if;
   select * into ph from public.place_photos where id = photo_id;
   if not found then raise exception 'foto no encontrada'; end if;
   update public.place_photos set status='approved', reviewed_at=now() where id = photo_id;
@@ -2147,7 +2186,7 @@ CREATE OR REPLACE FUNCTION public.approve_submission(submission_id uuid)
 AS $function$
 declare s public.place_submissions; new_id uuid;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'no autorizado';
   end if;
   select * into s from public.place_submissions where id = submission_id;
@@ -2222,7 +2261,7 @@ CREATE OR REPLACE FUNCTION public.reject_place_photo(photo_id uuid)
  SET search_path TO 'public'
 AS $function$
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  if (not public.is_admin()) then raise exception 'no autorizado'; end if;
   update public.place_photos set status='rejected', reviewed_at=now() where id = photo_id;
 end; $function$;
 
@@ -2233,7 +2272,7 @@ CREATE OR REPLACE FUNCTION public.reject_submission(submission_id uuid, notes te
  SET search_path TO 'public'
 AS $function$
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'no autorizado';
   end if;
   update public.place_submissions
@@ -2260,7 +2299,7 @@ declare
 begin
   select * into v_event from events where id = p_event_id;
   if v_event is null then raise exception 'evento inexistente'; end if;
-  v_role := coalesce(auth.jwt() -> 'app_metadata' ->> 'role', '');
+  v_role := (case when public.is_admin() then 'admin' else '' end);
   if v_event.organizer_id is distinct from auth.uid() and v_role <> 'admin' then
     raise exception 'no autorizado';
   end if;
@@ -2315,7 +2354,7 @@ CREATE OR REPLACE FUNCTION public.set_place_cover(photo_id uuid)
 AS $function$
 declare ph public.place_photos;
 begin
-  if coalesce(auth.jwt() -> 'app_metadata' ->> 'role','') <> 'admin' then raise exception 'no autorizado'; end if;
+  if (not public.is_admin()) then raise exception 'no autorizado'; end if;
   select * into ph from public.place_photos where id = photo_id;
   if not found then raise exception 'foto no encontrada'; end if;
   if ph.status <> 'approved' then raise exception 'la foto no esta aprobada'; end if;
@@ -2331,7 +2370,7 @@ CREATE OR REPLACE FUNCTION public.set_submission_location(submission_id uuid, la
 AS $function$
 begin
   -- solo administradores (rol en app_metadata del JWT)
-  if coalesce((auth.jwt() -> 'app_metadata' ->> 'role'), '') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'Solo un administrador puede fijar la ubicación.';
   end if;
 
@@ -2675,7 +2714,7 @@ as $$
 begin
   if not exists (select 1 from public.events e where e.id = p_event_id
                  and (e.organizer_id = auth.uid()
-                      or coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') = 'admin')) then
+                      or public.is_admin())) then
     raise exception 'No sos el organizador de este evento.';
   end if;
   if p_url is not null and left(p_url, 79) <> 'https://threviqdxzbjsdxbjubm.supabase.co/storage/v1/object/public/place-images/' then
@@ -2706,7 +2745,7 @@ set search_path = ''
 as $$
 begin
   if new.verified is distinct from old.verified
-     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and (not public.is_admin())
      and session_user <> 'postgres' then
     new.verified := old.verified;
   end if;
@@ -2744,7 +2783,7 @@ security invoker
 set search_path = ''
 as $$
 begin
-  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin' and session_user <> 'postgres' then
+  if (not public.is_admin()) and session_user <> 'postgres' then
     if tg_op = 'INSERT' then new.pinned := false;
     elsif new.pinned is distinct from old.pinned then new.pinned := old.pinned;
     end if;
@@ -2765,7 +2804,7 @@ security definer
 set search_path = ''
 as $$
 begin
-  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin' then
+  if (not public.is_admin()) then
     raise exception 'Solo el admin puede fijar publicaciones.';
   end if;
   update public.posts set pinned = coalesce(p_pinned, false) where id = p_post;
@@ -2895,7 +2934,7 @@ set search_path = ''
 as $$
 begin
   if new.birth_date is not null
-     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and (not public.is_admin())
      and session_user <> 'postgres' then
     if new.birth_date > (current_date - interval '13 years')::date then
       raise exception 'SPOTRA es para mayores de 13 años.';
@@ -3123,7 +3162,7 @@ set search_path = ''
 as $$
 begin
   if new.verified is distinct from old.verified
-     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and (not public.is_admin())
      and current_user not in ('postgres', 'supabase_admin', 'service_role') then
     new.verified := old.verified;
   end if;
@@ -3138,7 +3177,7 @@ security invoker
 set search_path = ''
 as $$
 begin
-  if coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+  if (not public.is_admin())
      and current_user not in ('postgres', 'supabase_admin', 'service_role') then
     if tg_op = 'INSERT' then new.pinned := false;
     elsif new.pinned is distinct from old.pinned then new.pinned := old.pinned;
@@ -3156,7 +3195,7 @@ set search_path = ''
 as $$
 begin
   if new.birth_date is not null
-     and coalesce(((select auth.jwt()) -> 'app_metadata' ->> 'role'), '') <> 'admin'
+     and (not public.is_admin())
      and current_user not in ('postgres', 'supabase_admin', 'service_role') then
     if new.birth_date > (current_date - interval '13 years')::date then
       raise exception 'SPOTRA es para mayores de 13 años.';
