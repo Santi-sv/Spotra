@@ -323,8 +323,8 @@
       + '<div style="width:min(440px,95vw);background:linear-gradient(150deg,rgba(14,20,15,.99),rgba(6,9,7,1));border:1px solid rgba(116,255,58,.4);border-radius:24px;padding:24px;box-shadow:0 40px 110px rgba(0,0,0,.7)">'
       +   '<b style="font-family:var(--display);font-size:24px;color:#fff;display:block">Nueva contraseña</b>'
       +   '<p style="color:var(--muted);font-size:13.5px;line-height:1.5;margin:8px 0 16px">Escribí dos veces tu nueva contraseña para tu cuenta de SPOTRA.</p>'
-      +   '<div class="field full" style="margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="recPass1" type="password" minlength="8" placeholder="Nueva contraseña (min. 8)" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
-      +   '<div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="recPass2" type="password" minlength="8" placeholder="Reingresa la contraseña" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
+      +   '<div class="field full" style="margin-bottom:10px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="recPass1" type="password" minlength="10" placeholder="Nueva contraseña (mín. 10)" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
+      +   '<div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--green-hot);width:22px;height:22px"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="recPass2" type="password" minlength="10" placeholder="Reingresa la contraseña" autocomplete="new-password" style="flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px"></div>'
       +   '<div id="recMsg" style="display:none;margin-top:12px;font-size:13px;line-height:1.4"></div>'
       +   '<button id="recSave" type="button" style="width:100%;height:54px;margin-top:18px;border-radius:16px;font-family:var(--display);font-size:16px;font-weight:700;color:#051006;background:linear-gradient(135deg,#46f05f,#2ee84d 55%,#21c93e);box-shadow:0 12px 30px rgba(46,232,77,.3)">Guardar contraseña</button>'
       +   '<button id="recCancel" type="button" style="width:100%;height:46px;margin-top:10px;border-radius:14px;border:1px solid rgba(255,255,255,.16);color:var(--muted);background:transparent;font-weight:700">Cancelar</button>'
@@ -351,7 +351,9 @@
     if(recBusy) return;
     const v1 = (document.getElementById('recPass1') || {}).value || '';
     const v2 = (document.getElementById('recPass2') || {}).value || '';
-    if(v1.length < 8){ recStatus('La contraseña debe tener al menos 8 caracteres.', false); return; }
+    if(v1.length < 10 || !/[a-z]/.test(v1) || !/[A-Z]/.test(v1) || !/[0-9]/.test(v1)){
+      recStatus('Usá al menos 10 caracteres, con mayúsculas, minúsculas y números.', false); return;
+    }
     if(v1 !== v2){ recStatus('Las contraseñas no coinciden.', false); return; }
     const client = await db();
     if(!client){ recStatus('No hay conexión con el backend.', false); return; }
@@ -360,6 +362,7 @@
     if(btn){ btn.disabled = true; btn.textContent = 'Guardando...'; }
     recStatus('Guardando...', true);
     try {
+      try { await authUrlDone; } catch(e){}
       const { data: sess } = await client.auth.getSession();
       if(!(sess && sess.session)){
         recStatus('El enlace venció o ya se usó. Cerrá esto y pedí uno nuevo desde "Olvidaste tu contraseña".', false);
@@ -406,12 +409,48 @@
     else handleLogin(loginBtn ? 'loginForm' : 'signinForm');
   }, true);
 
+  /* ---------- vuelta desde un mail (recuperar contraseña / confirmar cuenta) ----------
+     El cliente tiene detectSessionInUrl:false (por el cuelgue de Safari en iOS), así que
+     la sesión que trae el enlace se arma acá a mano y después se limpia la dirección. */
+  let authUrlDone = Promise.resolve(null);
+  async function consumeAuthUrl(){
+    const hp = new URLSearchParams((location.hash || '').replace(/^#/, ''));
+    const qp = new URLSearchParams(location.search || '');
+    const at = hp.get('access_token'), rt = hp.get('refresh_token');
+    const code = qp.get('code');
+    const errDesc = hp.get('error_description') || qp.get('error_description');
+    if(!at && !code && !errDesc) return null;
+    const r = { type: hp.get('type') || qp.get('type') || '', ok: false, error: '' };
+    try {
+      const client = await db();
+      if(!client) r.error = 'Sin conexión';
+      else if(errDesc) r.error = errDesc;
+      else if(at && rt){
+        const { error } = await client.auth.setSession({ access_token: at, refresh_token: rt });
+        if(error) r.error = error.message; else r.ok = true;
+      } else if(code){
+        const { error } = await client.auth.exchangeCodeForSession(code);
+        if(error) r.error = error.message; else r.ok = true;
+      }
+    } catch(err){ r.error = (err && err.message) || 'error'; }
+    // saca los códigos de la dirección (no quedan en el historial ni se comparten)
+    try { history.replaceState(null, '', location.pathname + '#login'); } catch(e){}
+    return r;
+  }
+
   /* ---------- arranque + cambios de sesión ---------- */
   function boot(){
-    if(/type=recovery/.test(location.hash) || /[?&]type=recovery/.test(location.search)){
-      openRecovery();
-    }
-    applyAuthUI().then(({ session, profile, isAdmin }) => {
+    const wantsRecovery = /type=recovery/.test(location.hash) || /[?&]type=recovery/.test(location.search);
+    if(wantsRecovery) openRecovery();
+    authUrlDone = consumeAuthUrl();
+    authUrlDone.then(r => {
+      if(r && r.error){
+        const msg = 'El enlace venció o ya se usó. Pedí uno nuevo desde "¿Olvidaste tu contraseña?".';
+        if(wantsRecovery) recStatus(msg, false); else notify(msg);
+      } else if(r && r.ok && r.type === 'signup'){
+        notify('¡Cuenta confirmada! Bienvenido a SPOTRA.');
+      }
+    }).catch(() => {}).then(() => applyAuthUI()).then(({ session, profile, isAdmin }) => {
       const h = location.hash;
       if(session && (h === '#login' || h === '#signup' || h === '' || h === '#')){
         if(window.setRole) window.setRole(roleHome(profile && profile.account_type, isAdmin));
