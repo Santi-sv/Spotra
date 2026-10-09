@@ -2066,8 +2066,6 @@ document.addEventListener('DOMContentLoaded',apply);
 document.addEventListener('visibilitychange',function(){if(!document.hidden)apply();});
 document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-theme-set]');if(b)window.spotraSetTheme(b.getAttribute('data-theme-set'));});
 })();</script>
-<style id="spotra-gate-lock">html.gate-lock body>*:not(.spotra-gate){display:none!important}html.gate-lock,html.gate-lock body{background:#070907!important}</style>
-<script>(function(){var open=false;try{if(sessionStorage.getItem('spotra_session')==='ok')open=true;else if(!localStorage.getItem('spotra_bio_id')&&localStorage.getItem('spotra_access')==='ok')open=true;}catch(e){open=false;}if(!open)document.documentElement.classList.add('gate-lock');})();</script>
 </head>
 <body data-role="rider">
 <div class="app">
@@ -3153,6 +3151,5 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-profile.js?v=5"></script>
 <script src="assets/js/spotra-spot-picker.js?v=6"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
-<script src="assets/js/spotra-landing.js?v=17"></script>
 </body>
 </html>
