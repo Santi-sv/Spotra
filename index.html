@@ -1865,6 +1865,12 @@ html:not(.theme-light) body::after{background:linear-gradient(rgba(255,255,255,.
 /* ===== 09/10: fondo negro liso en modo oscuro (sin cuadrícula, sin tintes ni textura) ===== */
 html:not(.theme-light) body{background:#070907}
 html:not(.theme-light) body::before,html:not(.theme-light) body::after{display:none}
+/* ===== 10/10: estabilidad tipo app nativa (nada se sale de la pantalla ni se arrastra de costado) ===== */
+html{overflow-x:hidden}
+html,body{overscroll-behavior:none}
+.modal{overflow-x:hidden;overscroll-behavior:contain}
+.modal-form div[style*="grid-template-columns"]>*,.form-grid>*,.field{min-width:0}
+.field input,.field select,.field textarea{min-width:0;width:100%}
 .fx-tabs button.on{background:#f3f5f2;border-color:#f3f5f2;color:#0b0f0c}
 .fx-tp{color:#f3f5f2;border-color:rgba(243,245,242,.85);background:radial-gradient(circle at 30% 25%,#2b2f33,#121416 70%);box-shadow:0 4px 0 #050606}
 .fx-k-spot,.fx-k-event{border-color:rgba(90,169,255,.6)}
