@@ -1,4 +1,5 @@
-/* SPOTRA · Guía de bienvenida con SPOTRI (v1)
+/* SPOTRA · Guía de bienvenida con SPOTRI (v2)
+   - v2: botones con alto fijo (en el iPhone instalado se estiraban), contenido centrado en pantallas altas, logo sin tapar a SPOTRI.
    - La ven una sola vez las cuentas nuevas y las que ya existían (después de esta actualización).
    - "Guía vista" se guarda en la cuenta (Supabase Auth, user_metadata.spotri_guide) y en el teléfono,
      así no reaparece en otro dispositivo. No usa tablas ni SQL.
@@ -165,15 +166,15 @@ body.spotri-open .geo-help{z-index:9200}
 .sg-skip{background:none;border:0;color:#9aa39a;font:600 15px var(--body,'General Sans',sans-serif);padding:12px 0 12px 16px;min-height:44px;cursor:pointer}
 .sg-skip:hover{color:#f5f7f4}
 .sg-body{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding:6px max(22px,env(safe-area-inset-right)) 12px max(22px,env(safe-area-inset-left));touch-action:pan-y}
-.sg-slide{display:flex;flex-direction:column;min-height:100%}
+.sg-slide{display:flex;flex-direction:column;justify-content:center;min-height:100%}
 .sg-slide.in-next{animation:sgInNext .32s ease both}
 .sg-slide.in-prev{animation:sgInPrev .32s ease both}
 @keyframes sgInNext{from{opacity:0;transform:translateX(28px)}to{opacity:1;transform:none}}
 @keyframes sgInPrev{from{opacity:0;transform:translateX(-28px)}to{opacity:1;transform:none}}
-.sg-bottom{flex-shrink:0;display:flex;gap:10px;padding:10px max(22px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));background:linear-gradient(to bottom,rgba(7,9,7,0),#070907 18px)}
-.sg-btn{height:56px;border-radius:16px;font:700 16px var(--body,'General Sans',sans-serif);cursor:pointer;-webkit-tap-highlight-color:transparent}
-.sg-btn.back{width:96px;flex-shrink:0;border:1px solid #2a332b;background:transparent;color:#f5f7f4}
-.sg-btn.main{flex:1;border:0;background:#74ff3a;color:#051006;font:600 17px var(--display,'Clash Display',sans-serif);letter-spacing:.05em;text-transform:uppercase;box-shadow:0 0 24px rgba(116,255,58,.25)}
+.sg-bottom{flex:0 0 auto;display:flex;align-items:center;gap:10px;padding:10px max(22px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(22px,env(safe-area-inset-left));background:linear-gradient(to bottom,rgba(7,9,7,0),#070907 18px)}
+.sg-btn{box-sizing:border-box;height:56px;min-height:56px;max-height:56px;padding:0 16px;margin:0;display:flex;align-items:center;justify-content:center;line-height:1;-webkit-appearance:none;appearance:none;align-self:center;border-radius:16px;font:700 16px var(--body,'General Sans',sans-serif);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sg-btn.back{width:96px;flex:0 0 96px;border:1px solid #2a332b;background:transparent;color:#f5f7f4}
+.sg-btn.main{flex:1 1 auto;min-width:0;border:0;background:#74ff3a;color:#051006;font:600 17px var(--display,'Clash Display',sans-serif);letter-spacing:.05em;text-transform:uppercase;box-shadow:0 0 24px rgba(116,255,58,.25)}
 .sg-btn:active{transform:scale(.98)}
 .sg-btn:focus-visible,.sg-skip:focus-visible,.sg-tab:focus-visible,.sg-act:focus-visible{outline:2px solid #74ff3a;outline-offset:2px}
 .sg-art{position:relative;flex-shrink:0;height:clamp(170px,44vh,420px);height:clamp(170px,44svh,420px);margin-top:4px}
@@ -244,7 +245,7 @@ body.spotri-open .geo-help{z-index:9200}
 .sg-act svg{width:18px;height:18px}
 .sg-act[disabled]{opacity:1}
 .sg-line{position:absolute;left:0;right:0;bottom:7%;height:4px;border-radius:2px;background:#74ff3a}
-.sg-logo{position:absolute;top:6%;left:0;width:min(150px,38vw);height:auto;opacity:.95}
+.sg-logo{position:absolute;top:0;left:0;width:min(118px,30vw);height:auto;opacity:.95}
 .sg-floor{position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(116,255,58,.25)}
 .sg-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media (max-height:700px){
@@ -254,7 +255,7 @@ body.spotri-open .geo-help{z-index:9200}
   .sg-list li,.sg-steps li{font-size:14px}
   .sg-hide-short{display:none!important}
   .sg-art.sm{height:clamp(130px,26vh,200px)!important;height:clamp(130px,26svh,200px)!important}
-  .sg-btn{height:52px}
+  .sg-btn{height:52px;min-height:52px;max-height:52px}
 }
 @media (max-height:480px){
   .sg-art{height:150px}
