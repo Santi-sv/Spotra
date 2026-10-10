@@ -2622,6 +2622,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
           <button id="pushBtn"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg><span data-push-label>Activar notificaciones</span></span><b>›</b></button>
         </div>
         <div id="pushHint" style="display:none;color:var(--muted);font-size:13px;line-height:1.5;padding:10px 14px;border-radius:14px;border:1px solid rgba(255,210,74,.3);background:rgba(255,210,74,.06)"></div>
+        <button type="button" data-open-guide data-close-modal translate="no"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .9c0 1.7-2.5 2.2-2.5 3.9"/><circle cx="12" cy="17.2" r=".6" fill="currentColor"/></svg><span data-spotri-label>Guía de SPOTRI</span></span><b>›</b></button>
         <button class="admin-only" data-role-set="admin" data-close-modal><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5l8-3Z"/><path d="M8.5 12l2.5 2.5 5-5"/></svg>Cambiar a cuenta admin</span><b>›</b></button>
         <button data-open-alerts><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg>Avisos de sesiones</span><b>›</b></button>
         <button data-open-guardian><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.2"/><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4 4 0 0 1 6.5-3"/></svg>Responsable / menores de 18</span><b>›</b></button>
@@ -3152,5 +3153,6 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-profile.js?v=5"></script>
 <script src="assets/js/spotra-spot-picker.js?v=6"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
+<script src="assets/js/spotra-guide.js?v=1"></script>
 </body>
 </html>
