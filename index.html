@@ -1862,6 +1862,9 @@ body.birth-required #modalBg.open .modal-close{visibility:hidden}
 html:not(.theme-light) .topbar{background:rgba(11,13,12,.9)!important;border-bottom:1px solid rgba(255,255,255,.07)!important;box-shadow:0 6px 20px rgba(0,0,0,.35)!important}
 html:not(.theme-light) body{background:radial-gradient(circle at 12% 0,rgba(46,232,77,.05),transparent 30%),radial-gradient(circle at 95% 8%,rgba(255,138,61,.05),transparent 28%),#09090a}
 html:not(.theme-light) body::after{background:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);background-size:42px 42px}
+/* ===== 09/10: fondo negro liso en modo oscuro (sin cuadrícula, sin tintes ni textura) ===== */
+html:not(.theme-light) body{background:#070907}
+html:not(.theme-light) body::before,html:not(.theme-light) body::after{display:none}
 .fx-tabs button.on{background:#f3f5f2;border-color:#f3f5f2;color:#0b0f0c}
 .fx-tp{color:#f3f5f2;border-color:rgba(243,245,242,.85);background:radial-gradient(circle at 30% 25%,#2b2f33,#121416 70%);box-shadow:0 4px 0 #050606}
 .fx-k-spot,.fx-k-event{border-color:rgba(90,169,255,.6)}
