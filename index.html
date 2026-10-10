@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <script>/* la app vive en app.spotra.online: la dirección vieja de Render redirige (conserva enlaces y mails). spotra.online es la web oficial (repo spotra-web) */(function(){var h=location.hostname;if(h==="spotra.onrender.com"){location.replace("https://app.spotra.online"+location.pathname+location.search+location.hash);}})();</script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<style>/* sin zoom, como una app nativa: sin doble toque para acercar ni ajuste de letra del sistema */html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}</style>
+<script>/* sin zoom con dos dedos en iPhone (iOS ignora user-scalable=no). En el mapa se sigue pudiendo hacer zoom. */(function(){function block(e){var t=e.target;if(t&&t.closest&&t.closest('.gm-style'))return;e.preventDefault();}['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,block,{passive:false});});})();</script>
 <title>SPOTRA · La app de los riders</title>
 <meta name="description" content="La app de los riders de Latinoamérica: más de 1.800 spots y skateparks, quién está andando ahora, sesiones, eventos y market. Skate, BMX, rollers y scooter.">
 <meta property="og:type" content="website">
