@@ -344,7 +344,11 @@
     if(meta) meta.textContent = place.meta || place.address || '';
     if(cover){
       cover.style.background = `url('${place.imageUrl || 'assets/banners/banner-skatepark-4.webp'}') center/cover`;
-      cover.style.boxShadow = 'inset 0 -90px 70px rgba(0,0,0,.82)';
+      cover.style.boxShadow = 'inset 0 -40px 40px rgba(0,0,0,.3)';
+      // visor: mientras cargan las fotos, la portada sola (si es una foto real)
+      spvUrls = place.imageUrl ? [place.imageUrl] : [];
+      spvCover = 0;
+      spvBadge(cover);
     }
     const desc = document.getElementById('spotDesc');
     if(desc){
@@ -762,17 +766,28 @@
     gallery.style.display = 'none';
     if(!canUse || !window.SpotraBackend) return;
     const photos = await window.SpotraBackend.listPlacePhotos(place.id);
+    if(currentDetail !== place) return; // el rider ya abrió otro spot
     if(!photos.length) return;
     gallery.style.display = 'flex';
+    spvUrls = photos.map(p => p.url);
+    spvCover = Math.max(0, photos.findIndex(p => p.is_cover || p.url === place.imageUrl));
+    spvBadge(document.getElementById('spotCover'));
     const admin = window.SpotraAuth ? await window.SpotraAuth.isAdmin() : false;
-    photos.forEach(p => {
+    photos.forEach((p, i) => {
       const thumb = document.createElement('div');
       thumb.className = 'spot-gallery-thumb' + (p.is_cover ? ' is-cover' : '');
       thumb.style.backgroundImage = "url('" + p.url + "')";
-      thumb.addEventListener('click', () => {
+      thumb.setAttribute('role', 'button');
+      thumb.setAttribute('tabindex', '0');
+      thumb.setAttribute('aria-label', 'Ver foto ' + (i + 1) + ' de ' + photos.length);
+      const show = () => {
         const cover = document.getElementById('spotCover');
         if(cover) cover.style.backgroundImage = "url('" + p.url + "')";
-      });
+        spvCover = i;
+        openPhotoViewer(i);
+      };
+      thumb.addEventListener('click', show);
+      thumb.addEventListener('keydown', e => { if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); show(); } });
       if(admin && !p.is_cover){
         const b = document.createElement('button');
         b.className = 'set-cover';
@@ -818,6 +833,170 @@
       if(window.toast) window.toast('No se pudo enviar el lugar. Probá de nuevo.');
     }
   }
+
+  /* ---------- visor de fotos del spot (v21) ----------
+     Toca la portada o una miniatura: la foto se ve entera, a pantalla completa.
+     Deslizar = otra foto · doble toque = ampliar · Esc / flechas en computadora. */
+  let spvUrls = [], spvCover = 0, spvIdx = 0, spvEl = null, spvLastTap = 0;
+  const SPV_CSS = `
+.spot-detail .cover{position:relative;cursor:zoom-in}
+.spv-badge{position:absolute;right:10px;bottom:10px;display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:rgba(5,9,6,.72);color:#fff;font:600 12px var(--body,'General Sans',sans-serif);pointer-events:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.spv-badge svg{width:14px;height:14px}
+.spv{position:fixed;inset:0;z-index:9500;display:none;flex-direction:column;background:#000;color:#fff;-webkit-user-select:none;user-select:none}
+.spv.open{display:flex}
+.spv-top{position:absolute;left:0;right:0;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:max(12px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) 12px max(16px,env(safe-area-inset-left));background:linear-gradient(rgba(0,0,0,.6),rgba(0,0,0,0))}
+.spv-count{font:600 14px var(--body,'General Sans',sans-serif);letter-spacing:.04em}
+.spv-x{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;cursor:pointer}
+.spv-x svg{width:20px;height:20px}
+.spv-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+.spv-stage img{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:opacity .2s}
+.spv-stage.zoom{display:block}
+.spv-stage.zoom img{max-width:none;max-height:none;width:220%;cursor:zoom-out}
+.spv-nav{position:absolute;top:50%;z-index:2;width:48px;height:48px;margin-top:-24px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;display:none;place-items:center;cursor:pointer}
+.spv-nav svg{width:22px;height:22px}
+.spv-prev{left:max(12px,env(safe-area-inset-left))}
+.spv-next{right:max(12px,env(safe-area-inset-right))}
+.spv-dots{position:absolute;left:0;right:0;bottom:max(16px,env(safe-area-inset-bottom));z-index:2;display:flex;justify-content:center;gap:6px;pointer-events:none}
+.spv-dots span{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.35)}
+.spv-dots span.on{width:18px;background:#74ff3a}
+.spv button:focus-visible{outline:2px solid #74ff3a;outline-offset:2px}
+@media (hover:hover) and (pointer:fine){.spv.multi .spv-nav{display:grid}}
+`;
+  const SPV_IC = {
+    x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+    prev: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>',
+    next: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>',
+    photos: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m21 16-5-5-8 8"/></svg>'
+  };
+  function spvCssOnce(){
+    if(document.getElementById('spvCss')) return;
+    const st = document.createElement('style');
+    st.id = 'spvCss';
+    st.textContent = SPV_CSS;
+    document.head.appendChild(st);
+  }
+  function spvBadge(cover){
+    if(!cover) return;
+    spvCssOnce();
+    cover.innerHTML = spvUrls.length ? `<span class="spv-badge">${SPV_IC.photos}${spvUrls.length}</span>` : '';
+    if(spvUrls.length){
+      cover.setAttribute('role', 'button');
+      cover.setAttribute('tabindex', '0');
+      cover.setAttribute('aria-label', spvUrls.length > 1 ? 'Ver las ' + spvUrls.length + ' fotos' : 'Ver foto');
+      cover.style.cursor = '';
+    } else {
+      cover.removeAttribute('role');
+      cover.removeAttribute('tabindex');
+      cover.removeAttribute('aria-label');
+      cover.style.cursor = 'default';
+    }
+  }
+  function spvEnsure(){
+    if(spvEl) return spvEl;
+    spvCssOnce();
+    spvEl = document.createElement('div');
+    spvEl.className = 'spv';
+    spvEl.setAttribute('role', 'dialog');
+    spvEl.setAttribute('aria-modal', 'true');
+    spvEl.setAttribute('aria-label', 'Fotos del spot');
+    spvEl.innerHTML = `<div class="spv-top"><span class="spv-count" aria-live="polite"></span><button type="button" class="spv-x" aria-label="Cerrar">${SPV_IC.x}</button></div>
+      <div class="spv-stage"><img alt="Foto del spot" draggable="false"></div>
+      <button type="button" class="spv-nav spv-prev" aria-label="Foto anterior">${SPV_IC.prev}</button>
+      <button type="button" class="spv-nav spv-next" aria-label="Foto siguiente">${SPV_IC.next}</button>
+      <div class="spv-dots" aria-hidden="true"></div>`;
+    document.body.appendChild(spvEl);
+    const stage = spvEl.querySelector('.spv-stage');
+    spvEl.querySelector('.spv-x').addEventListener('click', closePhotoViewer);
+    spvEl.querySelector('.spv-prev').addEventListener('click', () => spvGo(-1));
+    spvEl.querySelector('.spv-next').addEventListener('click', () => spvGo(1));
+    // tocar el fondo negro (fuera de la foto) cierra
+    stage.addEventListener('click', e => { if(e.target === stage && !stage.classList.contains('zoom')) closePhotoViewer(); });
+    stage.addEventListener('dblclick', e => { e.preventDefault(); spvZoom(e); });
+    let sx = 0, sy = 0, moved = false;
+    stage.addEventListener('touchstart', e => {
+      if(e.touches.length !== 1) return;
+      sx = e.touches[0].clientX; sy = e.touches[0].clientY; moved = false;
+    }, { passive: true });
+    stage.addEventListener('touchmove', e => {
+      const t = e.touches[0]; if(!t) return;
+      if(Math.abs(t.clientX - sx) > 10 || Math.abs(t.clientY - sy) > 10) moved = true;
+    }, { passive: true });
+    stage.addEventListener('touchend', e => {
+      const t = e.changedTouches[0]; if(!t) return;
+      const dx = t.clientX - sx, dy = t.clientY - sy;
+      if(!stage.classList.contains('zoom') && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.3){ spvGo(dx < 0 ? 1 : -1); return; }
+      if(!moved && e.target.tagName === 'IMG'){
+        const now = Date.now();
+        if(now - spvLastTap < 300){ e.preventDefault(); spvZoom({ clientX: t.clientX, clientY: t.clientY }); spvLastTap = 0; }
+        else spvLastTap = now;
+      }
+    });
+    return spvEl;
+  }
+  function spvZoom(e){
+    const stage = spvEl.querySelector('.spv-stage');
+    const img = stage.querySelector('img');
+    if(stage.classList.contains('zoom')){ stage.classList.remove('zoom'); stage.scrollTo(0, 0); return; }
+    const r = img.getBoundingClientRect();
+    const fx = r.width ? Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)) : .5;
+    const fy = r.height ? Math.min(1, Math.max(0, (e.clientY - r.top) / r.height)) : .5;
+    stage.classList.add('zoom');
+    requestAnimationFrame(() => {
+      stage.scrollLeft = fx * img.offsetWidth - stage.clientWidth / 2;
+      stage.scrollTop = fy * img.offsetHeight - stage.clientHeight / 2;
+    });
+  }
+  function spvShow(){
+    const n = spvUrls.length;
+    const stage = spvEl.querySelector('.spv-stage');
+    stage.classList.remove('zoom');
+    const img = stage.querySelector('img');
+    img.style.opacity = '0';
+    img.onload = () => { img.style.opacity = '1'; };
+    img.src = spvUrls[spvIdx];
+    if(img.complete) img.style.opacity = '1';
+    spvEl.classList.toggle('multi', n > 1);
+    spvEl.querySelector('.spv-count').textContent = n > 1 ? (spvIdx + 1) + ' / ' + n : '';
+    spvEl.querySelector('.spv-dots').innerHTML = n > 1 ? spvUrls.map((_, i) => `<span class="${i === spvIdx ? 'on' : ''}"></span>`).join('') : '';
+    // precargar la anterior y la siguiente
+    [spvIdx - 1, spvIdx + 1].forEach(i => { if(i >= 0 && i < n){ const pre = new Image(); pre.src = spvUrls[i]; } });
+  }
+  function spvGo(step){
+    const n = spvUrls.length;
+    if(n < 2) return;
+    spvIdx = (spvIdx + step + n) % n;
+    spvShow();
+  }
+  function spvKey(e){
+    if(!spvEl || !spvEl.classList.contains('open')) return;
+    if(e.key === 'Escape'){ e.preventDefault(); closePhotoViewer(); }
+    else if(e.key === 'ArrowRight'){ e.preventDefault(); spvGo(1); }
+    else if(e.key === 'ArrowLeft'){ e.preventDefault(); spvGo(-1); }
+  }
+  let spvPrevFocus = null;
+  function openPhotoViewer(idx){
+    if(!spvUrls.length) return;
+    spvEnsure();
+    spvIdx = Math.min(Math.max(0, idx || 0), spvUrls.length - 1);
+    spvPrevFocus = document.activeElement;
+    spvShow();
+    spvEl.classList.add('open');
+    document.addEventListener('keydown', spvKey, true);
+    setTimeout(() => { try { spvEl.querySelector('.spv-x').focus({ preventScroll: true }); } catch(e){} }, 30);
+  }
+  function closePhotoViewer(){
+    if(!spvEl) return;
+    spvEl.classList.remove('open');
+    document.removeEventListener('keydown', spvKey, true);
+    try { if(spvPrevFocus && spvPrevFocus.focus) spvPrevFocus.focus({ preventScroll: true }); } catch(e){}
+  }
+  document.addEventListener('click', e => {
+    const cover = e.target.closest && e.target.closest('#spotCover');
+    if(cover && spvUrls.length) openPhotoViewer(spvCover);
+  });
+  document.addEventListener('keydown', e => {
+    if((e.key === 'Enter' || e.key === ' ') && e.target && e.target.id === 'spotCover' && spvUrls.length){ e.preventDefault(); openPhotoViewer(spvCover); }
+  });
 
   window.SpotraMaps = { init, refresh, setFilter, ensureApi: loadGoogleMaps, compressImage, current: () => currentDetail, center: () => { const c = map && map.getCenter ? map.getCenter() : null; return c ? { lat: c.lat(), lng: c.lng() } : null; }, openPlaceById, openDetail, closeDetail };
 })();
