@@ -1,4 +1,5 @@
-/* SPOTRA · Guía de bienvenida con SPOTRI (v2)
+/* SPOTRA · Guía de bienvenida con SPOTRI (v3)
+   - v3: en el iPhone instalado el botón seguía estirado: estilo con prioridad máxima + control que lo corrige al dibujar.
    - v2: botones con alto fijo (en el iPhone instalado se estiraban), contenido centrado en pantallas altas, logo sin tapar a SPOTRI.
    - La ven una sola vez las cuentas nuevas y las que ya existían (después de esta actualización).
    - "Guía vista" se guarda en la cuenta (Supabase Auth, user_metadata.spotri_guide) y en el teléfono,
@@ -248,7 +249,9 @@ body.spotri-open .geo-help{z-index:9200}
 .sg-logo{position:absolute;top:0;left:0;width:min(118px,30vw);height:auto;opacity:.95}
 .sg-floor{position:absolute;left:0;right:0;bottom:0;height:1px;background:rgba(116,255,58,.25)}
 .sg-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#spotriGuide .sg-btn{box-sizing:border-box!important;height:56px!important;min-height:56px!important;max-height:56px!important;padding:0 16px!important;margin:0!important;display:block!important;line-height:56px!important;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
 @media (max-height:700px){
+  #spotriGuide .sg-btn{height:52px!important;min-height:52px!important;max-height:52px!important;line-height:52px!important}
   .sg-art{height:clamp(150px,36vh,300px);height:clamp(150px,36svh,300px)}
   .sg-text{margin-top:14px;gap:8px}
   .sg-p{font-size:15px}
@@ -513,10 +516,24 @@ body.spotri-open .geo-help{z-index:9200}
     const mainLabel = state.idx === 0 ? t.start : s.last ? t.goMap : t.next;
     bottom.innerHTML = (state.idx > 0 && !s.last ? `<button type="button" class="sg-btn back" data-sg-back>${t.back}</button>` : '')
       + `<button type="button" class="sg-btn main" data-sg-next>${mainLabel}</button>`;
+    fixButtons(bottom);
     if(dir){
       const h = body.querySelector('#sgTitle');
       root.querySelector('.sg-sr').textContent = (h ? h.textContent : '') + ' · ' + t.step.replace('{n}', state.idx + 1).replace('{t}', total);
     }
+  }
+
+  // control: si algún estilo del sistema estira el botón, lo devolvemos a su alto
+  function fixButtons(box){
+    const check = () => box.querySelectorAll('.sg-btn').forEach(b => {
+      const want = window.innerHeight <= 700 ? 52 : 56;
+      if(Math.round(b.getBoundingClientRect().height) > want + 2){
+        ['padding-top', 'padding-bottom', 'margin-top', 'margin-bottom'].forEach(p => b.style.setProperty(p, '0px', 'important'));
+        ['height', 'min-height', 'max-height', 'line-height'].forEach(p => b.style.setProperty(p, want + 'px', 'important'));
+      }
+    });
+    requestAnimationFrame(check);
+    setTimeout(check, 300);
   }
 
   function go(step){
