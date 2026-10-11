@@ -125,12 +125,13 @@
     if(!c || !user){ notify('Iniciá sesión.'); return; }
     const cur = val('currentPassword'), nw = val('newPassword'), rp = val('repeatPassword');
     if(!cur || !nw){ notify('Completá las contraseñas.'); return; }
-    if(nw.length < 8){ notify('La nueva contraseña debe tener al menos 8 caracteres.'); return; }
+    const pwBad = window.SpotraPassword ? window.SpotraPassword.problem(nw) : (nw.length < 10 ? 'La nueva contraseña debe tener al menos 10 caracteres.' : '');
+    if(pwBad){ notify(pwBad); return; }
     if(nw !== rp){ notify('Las contraseñas nuevas no coinciden.'); return; }
     const { error: e1 } = await c.auth.signInWithPassword({ email: user.email, password: cur });
     if(e1){ notify('La contraseña actual es incorrecta.'); return; }
     const { error: e2 } = await c.auth.updateUser({ password: nw });
-    if(e2){ notify('No se pudo cambiar: ' + e2.message); return; }
+    if(e2){ const tx = window.SpotraAuth && window.SpotraAuth.translateError; notify(tx ? tx(e2.message) : ('No se pudo cambiar: ' + e2.message)); return; }
     notify('Contraseña actualizada.');
     closeModal();
   }
