@@ -19,11 +19,119 @@
     return null;
   }
 
-  // fecha máxima del registro: tener 13 años cumplidos
-  (function setBirthMax(){
-    const set = () => { const el = document.getElementById('signupBirth'); if(!el) return; const m = new Date(); m.setFullYear(m.getFullYear() - 13); el.max = m.toISOString().slice(0, 10); };
-    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', set); else set();
-  })();
+  /* ---------- contraseña: la misma regla que exige Supabase ----------
+     10+ caracteres, con minúscula, mayúscula, número y símbolo de esta lista (otros símbolos, como ¡ ¿ ñ, no cuentan). */
+  const PW_MSG = 'Contraseña: 10 caracteres o más, con mayúscula, minúscula, número y símbolo (por ejemplo ! ? # .).';
+  const PW_SYMBOL = /[!@#$%^&*()_+\-=\[\]{};'\\:"|<>?,.\/`~]/;
+  function passwordProblem(pw){
+    pw = String(pw || '');
+    if(pw.length < 10 || !/[a-z]/.test(pw) || !/[A-Z]/.test(pw) || !/[0-9]/.test(pw) || !PW_SYMBOL.test(pw)) return PW_MSG;
+    return '';
+  }
+  window.SpotraPassword = { problem: passwordProblem, message: PW_MSG };
+
+  /* ---------- fecha de nacimiento: Día / Mes / Año ----------
+     El selector nativo de fecha no se podía tocar en iPhone (quedaba vacío y sin alto).
+     Se reemplaza por tres listas; el <input> original queda oculto y guarda el valor AAAA-MM-DD,
+     así el resto de los módulos lo siguen leyendo igual (#signupBirth, #birthDate, #grdBirth). */
+  const BP_SELECTOR = '#signupBirth,#birthDate,#grdBirth';
+  const BP_TXT = {
+    es: { d: 'Día', m: 'Mes', y: 'Año', loc: 'es-UY' },
+    pt: { d: 'Dia', m: 'Mês', y: 'Ano', loc: 'pt-BR' },
+    en: { d: 'Day', m: 'Month', y: 'Year', loc: 'en-US' }
+  };
+  function bpLang(){
+    try { const l = window.SpotraI18n && window.SpotraI18n.lang(); return BP_TXT[l] ? l : 'es'; } catch(e){ return 'es'; }
+  }
+  function bpMonths(lang){
+    let f = null;
+    try { f = new Intl.DateTimeFormat(BP_TXT[lang].loc, { month: 'long', timeZone: 'UTC' }); } catch(e){}
+    const es = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    return es.map((m, i) => {
+      if(!f) return m;
+      const s = f.format(new Date(Date.UTC(2000, i, 15)));
+      return s.charAt(0).toUpperCase() + s.slice(1);
+    });
+  }
+  function bpPad(n){ return (n < 10 ? '0' : '') + n; }
+  function bpDays(y, m){ return new Date(Date.UTC(y || 2000, m || 1, 0)).getUTCDate(); }   // m en 1..12; sin año, febrero = 29
+  function bpOption(value, text){ const o = document.createElement('option'); o.value = value; o.textContent = text; return o; }
+
+  function bpUpgrade(input){
+    if(!input || input.dataset.bp === '1') return;
+    input.dataset.bp = '1';
+    const required = input.required;
+    const initial = /^\d{4}-\d{2}-\d{2}$/.test(input.value || '') ? input.value : '';
+    input.required = false;
+    input.type = 'hidden';
+    input.value = initial;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'bp';
+    wrap.setAttribute('translate', 'no');
+    const sd = document.createElement('select'), sm = document.createElement('select'), sy = document.createElement('select');
+    sd.className = 'bp-d'; sm.className = 'bp-m'; sy.className = 'bp-y';
+    [sd, sm, sy].forEach(s => { if(required) s.required = true; wrap.appendChild(s); });
+    input.insertAdjacentElement('afterend', wrap);
+
+    const thisYear = new Date().getFullYear();
+    function paint(){
+      const L = bpLang(), T = BP_TXT[L];
+      const d = sd.value, m = sm.value, y = sy.value;
+      sd.setAttribute('aria-label', T.d); sm.setAttribute('aria-label', T.m); sy.setAttribute('aria-label', T.y);
+      // meses
+      sm.textContent = '';
+      sm.appendChild(bpOption('', T.m));
+      bpMonths(L).forEach((name, i) => sm.appendChild(bpOption(String(i + 1), name)));
+      sm.value = m;
+      // años: de 13 años atrás hasta 1920 (lo que acepta la base)
+      if(!sy.options.length){
+        sy.appendChild(bpOption('', T.y));
+        for(let yr = thisYear - 13; yr >= 1920; yr--) sy.appendChild(bpOption(String(yr), String(yr)));
+      } else sy.options[0].textContent = T.y;
+      sy.value = y;
+      paintDays(d);
+    }
+    function paintDays(keep){
+      const T = BP_TXT[bpLang()];
+      const max = bpDays(+sy.value, +sm.value || 1);
+      const cur = keep != null ? keep : sd.value;
+      sd.textContent = '';
+      sd.appendChild(bpOption('', T.d));
+      for(let i = 1; i <= max; i++) sd.appendChild(bpOption(String(i), String(i)));
+      sd.value = (cur && +cur <= max) ? cur : (cur ? String(max) : '');
+    }
+    function sync(){
+      const d = +sd.value, m = +sm.value, y = +sy.value;
+      input.value = (d && m && y) ? (y + '-' + bpPad(m) + '-' + bpPad(d)) : '';
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      const field = wrap.closest('.field');
+      if(field && input.value) field.classList.remove('error');
+    }
+    if(initial){
+      const [y, m, d] = initial.split('-');
+      paint();
+      sy.value = String(+y); sm.value = String(+m); paintDays(String(+d));
+    } else paint();
+    sd.addEventListener('change', sync);
+    sm.addEventListener('change', () => { paintDays(); sync(); });
+    sy.addEventListener('change', () => { paintDays(); sync(); });
+    window.addEventListener('spotra-lang', paint);
+  }
+  function bpScan(root){
+    try {
+      (root && root.querySelectorAll ? root : document).querySelectorAll(BP_SELECTOR).forEach(el => { if(el.tagName === 'INPUT') bpUpgrade(el); });
+    } catch(e){ console.warn('[SPOTRA] fecha:', e); }
+  }
+  function bpStart(){
+    bpScan(document);
+    // el formulario del responsable (#grdBirth) se arma después
+    new MutationObserver(muts => {
+      for(const m of muts){ for(const n of m.addedNodes){ if(n.nodeType === 1 && (n.matches(BP_SELECTOR) || n.querySelector(BP_SELECTOR))){ bpScan(n.parentNode || document); return; } } }
+    }).observe(document.body, { childList: true, subtree: true });
+  }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bpStart); else bpStart();
+  window.SpotraBirthPicker = { scan: bpScan };
 
   /* ---------- lectura del formulario de registro ---------- */
   function readSignup(){
@@ -55,14 +163,23 @@
   function validate(formId){
     const form = document.getElementById(formId);
     if(!form) return true;
-    let bad = 0;
+    let bad = 0, pwBad = false, birthBad = false;
+    const badFields = new Set();
     form.querySelectorAll('input,select').forEach(inp => {
       const invalid = !inp.checkValidity();
       const field = inp.closest('.field');
       if(field) field.classList.toggle('error', invalid);
-      if(invalid) bad++;
+      if(invalid){ badFields.add(field || inp); if(inp.type === 'password') pwBad = true; if(inp.closest('.bp')) birthBad = true; }
     });
-    if(bad){ notify('Revisá los campos marcados en rojo.'); return false; }
+    bad = badFields.size;
+    // la fecha tiene tres listas: si falta una, toda la fila queda en rojo
+    form.querySelectorAll('.bp').forEach(bp => { const fl = bp.closest('.field'); if(fl && [...bp.querySelectorAll('select')].some(x => !x.checkValidity())) fl.classList.add('error'); });
+    if(bad){
+      if(bad === 1 && pwBad && formId === 'signupForm') notify(PW_MSG);
+      else if(bad === 1 && birthBad) notify('Completá tu fecha de nacimiento (día, mes y año).');
+      else notify('Revisá los campos marcados en rojo.');
+      return false;
+    }
     return true;
   }
 
@@ -195,12 +312,32 @@
   }
 
   /* ---------- registro ---------- */
+  let signupBusy = false;
   async function handleSignup(){
+    if(signupBusy) return;
+    signupBusy = true;
+    const btn = document.querySelector('.signup-cta[data-validate="signupForm"]');
+    const label = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.style.opacity = '.6'; }
+    try { await doSignup(); }
+    finally {
+      signupBusy = false;
+      if(btn){ btn.disabled = false; btn.style.opacity = ''; if(btn.textContent !== label) btn.textContent = label; }
+    }
+  }
+  async function doSignup(){
     if(!validate('signupForm')) return;
     const f = readSignup();
     if(!f.email || !f.password){ notify('Completá email y contraseña.'); return; }
+    const pwBad = passwordProblem(f.password);
+    if(pwBad){
+      notify(pwBad);
+      const pf = document.querySelector('#signupForm input[type="password"]');
+      if(pf){ const fl = pf.closest('.field'); if(fl) fl.classList.add('error'); }
+      return;
+    }
     const age = ageFrom(f.birthDate);
-    if(age == null){ notify('Completá tu fecha de nacimiento.'); const bf = document.getElementById('signupBirth'); if(bf){ const fl = bf.closest('.field'); if(fl) fl.classList.add('error'); } return; }
+    if(age == null){ notify('Completá tu fecha de nacimiento (día, mes y año).'); const bf = document.getElementById('signupBirth'); if(bf){ const fl = bf.closest('.field'); if(fl) fl.classList.add('error'); } return; }
     if(age < 13){ notify('SPOTRA es para mayores de 13 años.'); return; }
     if(age > 110){ notify('Revisá tu fecha de nacimiento.'); return; }
 
@@ -230,6 +367,11 @@
         if(window.setRole) window.setRole(roleHome(f.accountType, false));
       } else {
         notify('Te enviamos un email para confirmar tu cuenta. Confirmalo y luego iniciá sesión.');
+        setTimeout(() => {
+          if(typeof window.setRoute === 'function') window.setRoute('login'); else location.hash = 'login';
+          const li = document.querySelector('#loginForm input');
+          if(li && !li.value) li.value = f.email;
+        }, 1800);
       }
     } catch(err){
       console.error('[SPOTRA] signup error:', err);
@@ -285,7 +427,13 @@
     if(/Invalid login credentials/i.test(msg)) return 'Email o contraseña incorrectos.';
     if(/Email not confirmed/i.test(msg)) return 'Tenés que confirmar tu email antes de entrar.';
     if(/already registered|User already/i.test(msg)) return 'Ese email ya tiene una cuenta.';
-    if(/Password should be/i.test(msg)) return 'La contraseña debe tener al menos 6 caracteres.';
+    if(/Password should|weak_password|weak password/i.test(msg)) return PW_MSG;
+    if(/rate limit|you can only request this after|too many requests/i.test(msg)) return 'Hiciste muchos intentos seguidos. Esperá un minuto y probá de nuevo.';
+    if(/invalid format|Unable to validate email|valid email/i.test(msg)) return 'Revisá el email: no parece válido.';
+    if(/Error sending confirmation|sending.*email/i.test(msg)) return 'No pudimos enviar el email de confirmación. Probá de nuevo en unos minutos.';
+    if(/Signups not allowed/i.test(msg)) return 'Los registros están cerrados por el momento.';
+    if(/Failed to fetch|NetworkError|Load failed/i.test(msg)) return 'Sin conexión. Revisá internet y probá de nuevo.';
+    if(/New password should be different/i.test(msg)) return 'La nueva contraseña tiene que ser distinta a la anterior.';
     return msg;
   }
 
@@ -351,9 +499,7 @@
     if(recBusy) return;
     const v1 = (document.getElementById('recPass1') || {}).value || '';
     const v2 = (document.getElementById('recPass2') || {}).value || '';
-    if(v1.length < 10 || !/[a-z]/.test(v1) || !/[A-Z]/.test(v1) || !/[0-9]/.test(v1)){
-      recStatus('Usá al menos 10 caracteres, con mayúsculas, minúsculas y números.', false); return;
-    }
+    if(passwordProblem(v1)){ recStatus(PW_MSG, false); return; }
     if(v1 !== v2){ recStatus('Las contraseñas no coinciden.', false); return; }
     const client = await db();
     if(!client){ recStatus('No hay conexión con el backend.', false); return; }
@@ -478,7 +624,7 @@
   })();
 
   window.SpotraAuth = {
-    applyAuthUI, ensureProfile, requestPasswordReset: handleForgot, openRecovery,
+    applyAuthUI, ensureProfile, requestPasswordReset: handleForgot, openRecovery, translateError: traducir,
     isAdmin: async () => {
       const c = await db(); if(!c) return false;
       const { data } = await c.auth.getSession();
