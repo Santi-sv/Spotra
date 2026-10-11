@@ -1852,9 +1852,16 @@ body.signup-mode .signup-panel{overflow:visible;max-height:none;height:auto}
 .signup-feat span{display:block;font-size:12.5px;color:var(--muted)}
 /* ===== Fecha de nacimiento en el registro ===== */
 .signup-birth{position:relative}
-.signup-birth .sb-label{flex-shrink:0;font-size:14px;color:var(--muted);margin-right:6px;white-space:nowrap}
-.signup-birth input[type=date]{flex:1;min-width:0;text-align:right;color:var(--text);background:transparent;border:0;font-size:16px;-webkit-appearance:none;appearance:none}
-.signup-birth input[type=date]::-webkit-date-and-time-value{text-align:right}
+.signup-birth-label{margin:6px 4px -4px;font-size:13px;font-weight:700;color:var(--muted)}
+/* 11/10: fecha de nacimiento con Día / Mes / Año (el selector nativo de fecha no se podía tocar en iPhone) */
+.bp{flex:1;min-width:0;width:100%;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.55fr) minmax(0,1fr);gap:8px;align-items:center}
+.field .bp select{width:100%;min-width:0;height:40px;margin:0;padding:0 26px 0 11px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa39c' stroke-width='2.4'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center/14px;color:var(--text);font-size:16px;line-height:40px;-webkit-appearance:none;appearance:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.field .bp select:invalid{color:var(--muted)}
+.field .bp select:focus{border-color:var(--green-hot);outline:0}
+.field.error .bp select:invalid{border-color:#ff6b6b}
+.field:has(.bp){height:auto!important;min-height:54px;padding-top:7px;padding-bottom:7px}
+@media(max-width:400px){.signup-birth svg{display:none}.field:has(.bp){padding-left:8px;padding-right:8px}.field .bp{gap:6px;grid-template-columns:minmax(0,.75fr) minmax(0,1.6fr) minmax(0,1fr)}.field .bp select{padding:0 6px;background-image:none;text-align:center;text-align-last:center;font-size:15px}}
+html.theme-light body:not(.auth-mode) .field .bp select{border-color:rgba(0,0,0,.16);background-color:rgba(0,0,0,.03)}
 .signup-birth-hint{margin:-2px 4px 4px;font-size:12px;color:var(--muted);line-height:1.4}
 #signupForm .full{grid-column:1/-1}
 body.birth-required #modalBg.open .modal-close{visibility:hidden}
@@ -2304,11 +2311,13 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required placeholder="Nombre completo" autocomplete="name"></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input required type="email" placeholder="Email" autocomplete="email"></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input required type="tel" placeholder="Celular" autocomplete="tel"></div>
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña (mín. 8)" minlength="8" autocomplete="new-password"></div>
+            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña (mín. 10)" minlength="10" autocomplete="new-password"></div>
             <div class="field country-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg><select required id="signupCountry"><option>Uruguay</option><option>Argentina</option><option>Brasil</option></select></div>
             <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Ciudad"></div>
-            <div class="field full signup-birth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><span class="sb-label">Fecha de nacimiento</span><input required type="date" id="signupBirth" min="1915-01-01" aria-label="Fecha de nacimiento"></div>
+            <div class="signup-birth-label full">Fecha de nacimiento</div>
+            <div class="field full signup-birth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input required type="date" id="signupBirth" aria-label="Fecha de nacimiento"></div>
             <p class="signup-birth-hint full">Mínimo 13 años. Si tenés entre 13 y 17, tu cuenta se vincula a tu madre, padre o tutor. No se muestra en tu perfil.</p>
+            <p class="signup-birth-hint full">Contraseña: 10 caracteres o más, con mayúscula, minúscula, número y símbolo (por ejemplo ! ? # .).</p>
             <div class="country-picker" aria-label="País de inicio">
               <button type="button" class="country-chip active" data-country="Uruguay"><span class="flag-img uy-real" aria-hidden="true"></span><span class="card-label">Uruguay</span></button>
               <button type="button" class="country-chip" data-country="Argentina"><span class="flag-img ar-real" aria-hidden="true"></span><span class="card-label">Argentina</span></button>
@@ -2671,8 +2680,8 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
       <p class="hint">Confirmá que sos vos y escribí dos veces la nueva contraseña.</p>
       <div class="form-grid" id="passwordForm" style="grid-template-columns:1fr">
         <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="currentPassword" required type="password" placeholder="Contraseña actual" autocomplete="current-password"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="newPassword" required type="password" minlength="8" placeholder="Nueva contraseña (mín. 8)" autocomplete="new-password"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="repeatPassword" required type="password" minlength="8" placeholder="Reingresar nueva contraseña" autocomplete="new-password"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="newPassword" required type="password" minlength="10" placeholder="Nueva contraseña (mín. 10)" autocomplete="new-password"></div>
+        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="repeatPassword" required type="password" minlength="10" placeholder="Reingresar nueva contraseña" autocomplete="new-password"></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-change-password>Cambiar contraseña</button>
     </div>
@@ -3143,10 +3152,10 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=18"></script>
+<script src="assets/js/spotra-i18n.js?v=19"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
-<script src="assets/js/spotra-auth.js?v=9"></script>
+<script src="assets/js/spotra-auth.js?v=10"></script>
 <script src="assets/js/spotra-admin.js?v=15"></script>
 <script src="assets/js/spotra-admin-security.js?v=2"></script>
 <script src="assets/js/spotra-events.js?v=5"></script>
@@ -3161,7 +3170,7 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-market.js?v=4"></script>
 <script src="assets/js/spotra-forum.js?v=8"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
-<script src="assets/js/spotra-profile.js?v=5"></script>
+<script src="assets/js/spotra-profile.js?v=6"></script>
 <script src="assets/js/spotra-spot-picker.js?v=7"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
 <script src="assets/js/spotra-guide.js?v=3"></script>
