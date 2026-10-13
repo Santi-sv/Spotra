@@ -703,6 +703,9 @@ button:active{transform:scale(.96)}
 .modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:6px}
 .modal-head h3{font-family:var(--display);font-size:28px;line-height:1.05}
 .modal-close{width:40px;height:40px;border-radius:13px;border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;color:var(--muted);flex-shrink:0}
+.modal-back{width:40px;height:40px;border-radius:13px;border:1px solid rgba(255,255,255,.12);display:grid;place-items:center;color:var(--text);background:transparent;flex-shrink:0;cursor:pointer;padding:0}
+.modal-back[hidden]{display:none}
+.modal-head h3{flex:1;min-width:0}
 .modal-close:hover{color:var(--text);border-color:rgba(255,255,255,.3)}
 .modal .hint{color:var(--muted);font-size:13.5px;line-height:1.5;margin-bottom:16px}
 .modal .form-grid{margin-top:8px}
@@ -2507,6 +2510,7 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
 <div class="modal-bg" id="modalBg">
   <div class="modal" role="dialog" aria-modal="true">
     <div class="modal-head">
+      <button type="button" class="modal-back" id="modalBack" data-modal-back hidden aria-label="Volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
       <h3 id="modalTitle">Crear</h3>
       <button class="modal-close" data-close-modal><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     </div>
@@ -3074,7 +3078,18 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 const modalBg = document.getElementById('modalBg');
 const MODAL_TITLES = { presence:'¿Mostrar dónde estás andando?', guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
+/* 13/10/2026: lo que se abre desde Configuración muestra "‹ Volver" para regresar a Configuración */
+let modalBackTo = null, modalBackArm = 0;
+document.addEventListener('click', e => {
+  if(e.target.closest('.modal-form.active[data-form="settings"] button')) modalBackArm = Date.now();
+}, true);
 function openModal(type){
+  modalBackTo = (type !== 'settings' && Date.now() - modalBackArm < 1500) ? 'settings' : null;
+  modalBackArm = 0;
+  const mb = document.getElementById('modalBack');
+  if(mb) mb.hidden = !modalBackTo;
+  const md = modalBg.querySelector('.modal');
+  if(md) md.scrollTop = 0;
   document.getElementById('modalTitle').textContent = MODAL_TITLES[type] || 'Crear';
   document.querySelectorAll('.modal-form').forEach(f => f.classList.toggle('active', f.dataset.form === type));
   modalBg.classList.add('open');
@@ -3095,6 +3110,7 @@ document.addEventListener('click', e => {
     openModal(type);
     return;
   }
+  if(e.target.closest('[data-modal-back]')){ e.preventDefault(); openModal(modalBackTo || 'settings'); return; }
   if(e.target.closest('[data-close-modal]') || e.target === modalBg){ closeModal(); return; }
 
   /* segmentos dentro del modal */
