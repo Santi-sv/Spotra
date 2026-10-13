@@ -2068,15 +2068,114 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
   html.pwa body.map-mode .map-stage{bottom:calc(62px + env(safe-area-inset-bottom))}
   html.pwa body.map-mode .map-list-sheet,html.pwa body.map-mode .spot-detail{bottom:calc(66px + env(safe-area-inset-bottom))}
 }
+/* ===== 13/10: Perfil rediseñado (mi perfil y perfil de otros riders) ===== */
+.pf{max-width:640px;margin:0 auto;color:#f5f7f4;font-family:var(--body)}
+.pf button{font-family:var(--body)}
+.pf button:focus-visible,.pf a:focus-visible{outline:2px solid var(--green-hot);outline-offset:2px}
+.pf-top{height:52px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.pf-top .pf-handle{flex:1;min-width:0}
+.pf-handle{font-weight:700;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-top.other .pf-handle{text-align:center}
+.pf-icon{width:44px;height:44px;flex-shrink:0;border:0;border-radius:12px;background:transparent;color:#f5f7f4;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.pf-icon svg{width:22px;height:22px}
+.pf-icon:active{background:#151915}
+.pf-cover{position:relative;height:150px;border-radius:20px;overflow:hidden;background:linear-gradient(135deg,#142a14,#0b0f0b) center/cover no-repeat}
+@media(min-width:761px){.pf-cover{height:210px}}
+.pf-cover-edit{position:absolute;top:10px;right:10px;width:44px;height:44px;border-radius:50%;border:0;background:rgba(7,9,7,.62);color:#f5f7f4;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.pf-cover-edit svg{width:18px;height:18px}
+.pf-now{position:absolute;left:12px;top:12px;max-width:calc(100% - 24px);height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:999px;border:0;background:rgba(7,9,7,.8);color:#f5f7f4;font-size:12.5px;font-weight:700;cursor:pointer}
+.pf-now i{width:8px;height:8px;flex-shrink:0;border-radius:50%;background:var(--green-hot);box-shadow:0 0 0 4px rgba(116,255,58,.22);animation:pfPulse 1.8s ease-in-out infinite}
+.pf-now span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@keyframes pfPulse{50%{box-shadow:0 0 0 7px rgba(116,255,58,0)}}
+.pf-body{position:relative;margin-top:-48px;padding:0 8px;display:flex;flex-direction:column;gap:14px}
+.pf-row{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
+.pf-avatar{position:relative;width:100px;height:100px;flex-shrink:0;border-radius:50%;border:4px solid #070907;background:#142a14 center/cover no-repeat;display:flex;align-items:center;justify-content:center}
+.pf-avatar.has-img .pf-initial{display:none}
+.pf-avatar[data-lightbox]{cursor:zoom-in}
+.pf-initial{font:600 40px var(--display);color:var(--green-hot)}
+.pf-avatar-edit{position:absolute;right:-2px;bottom:2px;width:32px;height:32px;border-radius:50%;border:3px solid #070907;background:var(--green-hot);color:#051006;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.pf-avatar-edit::after{content:'';position:absolute;inset:-8px}
+.pf-avatar-edit svg{width:14px;height:14px}
+.pf-counts{display:flex;gap:16px;padding-bottom:6px}
+.pf-counts>*{min-width:64px;min-height:44px;padding:0;border:0;background:transparent;color:#f5f7f4;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.pf-counts>button{cursor:pointer}
+.pf-counts b{font:600 22px/1 var(--display)}
+.pf-counts span{font-size:12.5px;color:#8d968e}
+.pf-name{margin:0;display:flex;align-items:center;flex-wrap:wrap;gap:8px;font:600 28px/1.05 var(--display);letter-spacing:.01em;text-transform:uppercase;overflow-wrap:anywhere}
+.pf-verified{width:20px;height:20px;flex-shrink:0}
+.pf-verified[hidden]{display:none}
+.pf-meta{margin-top:-6px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px;color:#a9b1aa}
+.pf-chip{height:26px;display:inline-flex;align-items:center;padding:0 10px;border-radius:999px;background:rgba(116,255,58,.12);color:var(--green-hot);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.pf-chip:empty{display:none}
+.pf-loc{display:inline-flex;align-items:center;gap:4px;min-width:0}
+.pf-loc svg{width:14px;height:14px;flex-shrink:0}
+.pf-loc span:empty,.pf-loc:has(span:empty){display:none}
+.pf-bio{margin:-4px 0 0;font-size:15px;line-height:1.5;color:#c9cfca;white-space:pre-line;overflow-wrap:anywhere}
+.pf-bio:empty{display:none}
+.pf-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pf-actions.other{grid-template-columns:minmax(0,1fr)}
+.pf-btn{height:44px;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:12px;border:1px solid #2a312a;background:#111411;color:#f5f7f4;font-size:14px;font-weight:700;cursor:pointer}
+.pf-btn:active{background:#181d18}
+.pf-follow{height:44px;padding:0 14px;border-radius:12px;border:0;background:var(--green-hot);color:#051006;font:600 15px var(--display)!important;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.pf-follow.on{background:#111411;color:#f5f7f4;box-shadow:inset 0 0 0 1px #2a312a}
+.pf-follow[hidden]{display:none}
+.pf-social{display:flex;flex-wrap:wrap;gap:8px}
+.pf-social:empty{display:none}
+.pf-social>*{width:44px;height:44px;border-radius:12px;border:1px solid #222822;background:transparent;color:#f5f7f4;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0}
+.pf-social svg{width:20px;height:20px}
+.pf-social .is-empty{color:#596159;border-style:dashed}
+.pf-tabs{margin-top:22px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid #1b201b}
+.pf-tabs button{height:48px;border:0;border-bottom:2px solid transparent;background:transparent;color:#8d968e;font-size:14px;font-weight:600;cursor:pointer;padding:0 4px}
+.pf-tabs button[aria-selected="true"]{color:#f5f7f4;font-weight:700;border-bottom-color:var(--green-hot)}
+.pf-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:2px;margin-top:2px}
+.pf-tile{aspect-ratio:1;border:0;padding:0;background:#111411 center/cover no-repeat;cursor:pointer;overflow:hidden;display:block;width:100%}
+.pf-tile.txt{padding:10px;font-size:12px;line-height:1.35;color:#c9cfca;text-align:left;display:flex;align-items:flex-start;overflow-wrap:anywhere}
+.pf-empty{padding:34px 16px;text-align:center;color:#8d968e;font-size:14px;line-height:1.5}
+.pf-list{display:flex;flex-direction:column;gap:10px;padding:14px 0}
+.pf-ses{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;border:1px solid #222822;background:#0f120f}
+.pf-ses.live{border-color:var(--green-hot);background:rgba(116,255,58,.06)}
+.pf-date{width:56px;height:60px;flex-shrink:0;border-radius:12px;border:1px solid #2a312a;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px}
+.pf-date span{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:#8d968e;text-transform:uppercase}
+.pf-date b{font:600 22px/1 var(--display)}
+.pf-date svg{width:18px;height:18px}
+.pf-ses.live .pf-date{background:var(--green-hot);border-color:var(--green-hot);color:#051006}
+.pf-ses.live .pf-date span{color:#051006}
+.pf-ses-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;border:0;background:transparent;color:inherit;text-align:left;padding:0;cursor:pointer}
+.pf-ses-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-ses-tx span{font-size:13px;color:#a9b1aa}
+.pf-ses-tx small{font-size:12.5px;font-weight:600;color:#8d968e}
+.pf-ses.live .pf-ses-tx small{color:var(--green-hot)}
+.pf-ses-act{height:44px;flex-shrink:0;padding:0 14px;border-radius:12px;border:1px solid #2a312a;background:transparent;color:#f5f7f4;font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+.pf-ses-act.go{border-color:var(--green-hot);background:var(--green-hot);color:#051006}
+.pf-ses-own{flex-shrink:0;font-size:12px;font-weight:700;color:#8d968e}
+.pf-mk{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px;padding:14px 0}
+@media(min-width:561px){.pf-mk{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.pf-item{min-width:0;border:0;padding:0;background:transparent;color:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:5px}
+.pf-item-img{position:relative;aspect-ratio:1;border-radius:14px;background:#111411 center/cover no-repeat;overflow:hidden}
+.pf-badge{position:absolute;left:8px;top:8px;height:24px;display:inline-flex;align-items:center;padding:0 8px;border-radius:8px;background:rgba(7,9,7,.85);color:#f5f7f4;font-size:11.5px;font-weight:700}
+.pf-badge.warn{color:#ffc857}
+.pf-badge.bad{color:#ff8a8a}
+.pf-item b{font:600 16px var(--display)}
+.pf-item span{font-size:13px;color:#c9cfca;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-menu-wrap{position:relative;flex-shrink:0}
+.pf-menu{position:absolute;right:0;top:48px;z-index:40;min-width:230px;padding:6px;border-radius:14px;border:1px solid #2a312a;background:#111411;box-shadow:0 18px 40px rgba(0,0,0,.55);display:none}
+.pf-menu.open{display:block}
+.pf-menu button{width:100%;min-height:44px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:#f5f7f4;font-size:14px;font-weight:600;text-align:left;display:flex;align-items:center;gap:10px;cursor:pointer}
+.pf-menu button:active,.pf-menu button:hover{background:#1a1f1a}
+.pf-menu button svg{width:18px;height:18px;flex-shrink:0}
+.pf-menu .danger{color:#ff8a8a}
+@media(max-width:760px){.pf-bleed{margin-left:-14px;margin-right:-14px}}
+/* en los perfiles, el botón de ayuda de SPOTRI no tapa el contenido (queda solo el +) */
+body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active[data-view="rider"]) #spotriHelpFab{display:none!important}
 </style>
 <script>(function(){try{if((window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone)document.documentElement.classList.add('pwa');}catch(e){}})();</script>
 <script>/* Tema: automático (día 06:00–21:00, noche 21:00–06:00) o fijo, según Configuración */
 (function(){var d=document.documentElement,last=null;
 function pref(){try{return localStorage.getItem('spotra_theme')||'auto';}catch(e){return 'auto';}}
 function night(){var h=new Date().getHours();return h>=21||h<6;}
-function apply(){var p=pref(),dark=p==='dark'||(p==='auto'&&night());
+function apply(){var p=pref(),dark=true;/* 13/10/2026: la app es siempre oscura; el mapa se ve claro aparte */
 d.classList.toggle('theme-dark',dark);d.classList.toggle('theme-light',!dark);
-var t=document.querySelector('meta[name="theme-color"]');if(t)t.setAttribute('content',dark?'#0a2211':'#ffffff');
+var t=document.querySelector('meta[name="theme-color"]');if(t)t.setAttribute('content',dark?'#070907':'#ffffff');
 var bs=document.querySelectorAll('#themeSeg button');for(var i=0;i<bs.length;i++)bs[i].classList.toggle('active',bs[i].getAttribute('data-theme-set')===p);
 if(last!==dark){last=dark;try{window.dispatchEvent(new Event('spotra-theme'));}catch(e){}}}
 window.spotraSetTheme=function(v){try{localStorage.setItem('spotra_theme',v);}catch(e){}apply();};
@@ -2242,33 +2341,38 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     </section>
 
     <section class="view" data-view="profile">
-      <section class="profile-screen">
-        <div class="profile-hero">
-          <div class="profile-cover"><button type="button" class="pc-edit" data-pick-photo="cover" aria-label="Cambiar portada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Cambiar portada</span></button></div>
-          <div class="profile-identity">
-            <div class="profile-avatar"><span class="pa-initial">R</span><button type="button" class="pa-edit" data-pick-photo="avatar" aria-label="Cambiar foto de perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button></div>
-            <div>
-              <h1><span data-profile-name>Rider</span></h1>
-              <p data-profile-handle></p>
-              <div class="profile-meta"><span data-profile-discipline></span><span data-profile-location></span></div>
-              <p class="profile-bio" data-profile-bio style="margin-top:8px;color:var(--muted);font-size:14px"></p>
-              <div class="follow-counts"><button type="button" data-follow-list="followers"><b id="followersCount">0</b> <span>Seguidores</span></button><button type="button" data-follow-list="following"><b id="followingCount">0</b> <span>Siguiendo</span></button></div>
+      <section class="pf" id="pfMine">
+        <div class="pf-top">
+          <span class="pf-handle" data-profile-handle></span>
+          <button type="button" class="pf-icon" data-open-modal="settings" aria-label="Configuración"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
+        </div>
+        <div class="pf-cover" data-pf-cover>
+          <button type="button" class="pf-cover-edit" data-pick-photo="cover" aria-label="Cambiar portada"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4Z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+        </div>
+        <div class="pf-body">
+          <div class="pf-row">
+            <div class="pf-avatar" data-pf-avatar><span class="pf-initial">R</span><button type="button" class="pf-avatar-edit" data-pick-photo="avatar" aria-label="Cambiar foto de perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button></div>
+            <div class="pf-counts">
+              <button type="button" data-follow-list="followers"><b id="followersCount">0</b><span>Seguidores</span></button>
+              <button type="button" data-follow-list="following"><b id="followingCount">0</b><span>Siguiendo</span></button>
             </div>
           </div>
-          <div class="social-grid">
-            <button data-social="instagram"><span class="social-logo social-ig" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1.2" fill="#fff" stroke="none"/></svg></span>Instagram</button>
-            <button data-social="tiktok"><span class="social-logo social-tk" aria-hidden="true"><svg viewBox="0 0 24 24" fill="#fff"><path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg></span>TikTok</button>
-            <button data-social="facebook"><span class="social-logo social-fb" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#0866FF"/><path fill="#fff" d="M15.12 15.47l.53-3.47h-3.33V9.75c0-.95.47-1.87 1.96-1.87h1.51V4.93s-1.37-.23-2.69-.23c-2.74 0-4.53 1.66-4.53 4.66V12H5.52v3.47h3.05V24a12.1 12.1 0 0 0 3.75 0v-8.53h2.8Z"/></svg></span>Facebook</button>
-            <button data-social="email"><span class="social-logo social-mail" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5.5" width="18" height="13" rx="2.5"/><path d="M3.5 7.5l8.5 6 8.5-6"/></svg></span>Email</button>
+          <h1 class="pf-name"><span data-profile-name>Rider</span><svg class="pf-verified" data-profile-verified hidden viewBox="0 0 24 24" role="img" aria-label="Cuenta verificada"><circle cx="12" cy="12" r="11" fill="#74ff3a"/><path d="m7 12.5 3.2 3.2L17 9" fill="none" stroke="#051006" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg></h1>
+          <div class="pf-meta"><span class="pf-chip" data-profile-discipline></span><span class="pf-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.6 7-13a7 7 0 0 0-14 0c0 5.4 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg><span data-profile-location></span></span></div>
+          <p class="pf-bio" data-profile-bio></p>
+          <div class="pf-actions">
+            <button type="button" class="pf-btn" data-open-modal="editProfile">Editar perfil</button>
+            <button type="button" class="pf-btn" data-pf-share="me">Compartir perfil</button>
+          </div>
+          <div class="pf-social">
+            <button type="button" data-social="instagram" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg></button>
+            <button type="button" data-social="tiktok" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3v11.5a3.5 3.5 0 1 1-3.5-3.5"/><path d="M14 3c.5 2.8 2.3 4.5 5 4.8"/></svg></button>
+            <button type="button" data-social="facebook" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h-2.5A3.5 3.5 0 0 0 9 6.5V21M6 11h8"/></svg></button>
+            <button type="button" data-social="email" aria-label="Email"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="m3.5 7 8.5 6 8.5-6"/></svg></button>
           </div>
         </div>
-
         <div id="guardianBanner"></div>
-        <div id="myPosts" class="rp-wrap"></div>
-        <button class="profile-settings-entry panel" data-open-modal="settings">
-          <span><b>Configuración</b><small>Privacidad, contacto, contraseña y seguridad de cuenta</small></span>
-          <i>›</i>
-        </button>
+        <div id="myPosts"></div>
       </section>
     </section>
 
@@ -2627,9 +2731,6 @@ document.addEventListener('click',function(e){var b=e.target.closest&&e.target.c
     </div>
     <div class="modal-form" data-form="settings">
       <p class="hint">Gestioná tu perfil y la seguridad de tu cuenta desde un panel privado.</p>
-      <div class="ses-label" style="margin-top:4px">Apariencia</div>
-      <div class="seg" id="themeSeg"><button type="button" data-theme-set="auto">Automático</button><button type="button" data-theme-set="light">Día</button><button type="button" data-theme-set="dark">Noche</button></div>
-      <p class="theme-hint">Automático: modo día de 06:00 a 21:00 y modo noche de 21:00 a 06:00.</p>
       <div class="ses-label">Ubicación en spots</div>
       <label class="grd-toggle"><input type="checkbox" id="presenceOn"> <span>Mostrar cuando estoy andando en un spot</span></label>
       <label class="grd-toggle"><input type="checkbox" id="presenceVisible"> <span>Que mis seguidores vean mi nombre</span></label>
@@ -2709,7 +2810,7 @@ if('serviceWorker' in navigator){
 </script>
 <script src="assets/js/spotra-geo.js?v=1"></script>
 <script src="assets/js/spotra-backend.js?v=21"></script>
-<script src="assets/js/spotra-google-map.js?v=21"></script>
+<script src="assets/js/spotra-google-map.js?v=22"></script>
 <script>
 const routes = Array.from(document.querySelectorAll('[data-view]')).map(view => view.dataset.view);
 const ROLE_HOME = { rider:'map', brand:'brand-home', admin:'admin-approvals' };
@@ -3152,7 +3253,7 @@ async function handleCreate(type){
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
 </script>
-<script src="assets/js/spotra-i18n.js?v=19"></script>
+<script src="assets/js/spotra-i18n.js?v=20"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=10"></script>
@@ -3160,17 +3261,17 @@ setRoute(location.hash.replace('#','') || 'login', false);
 <script src="assets/js/spotra-admin-security.js?v=2"></script>
 <script src="assets/js/spotra-events.js?v=5"></script>
 <script src="assets/js/spotra-safety.js?v=3"></script>
-<script src="assets/js/spotra-avatar.js?v=2"></script>
-<script src="assets/js/spotra-riders.js?v=3"></script>
+<script src="assets/js/spotra-avatar.js?v=3"></script>
+<script src="assets/js/spotra-riders.js?v=4"></script>
 <script src="assets/js/spotra-notifs.js?v=2"></script>
 <script src="assets/js/spotra-guardian.js?v=2"></script>
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
-<script src="assets/js/spotra-market.js?v=4"></script>
+<script src="assets/js/spotra-market.js?v=5"></script>
 <script src="assets/js/spotra-forum.js?v=8"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
-<script src="assets/js/spotra-profile.js?v=6"></script>
+<script src="assets/js/spotra-profile.js?v=7"></script>
 <script src="assets/js/spotra-spot-picker.js?v=7"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
 <script src="assets/js/spotra-guide.js?v=3"></script>
