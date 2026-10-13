@@ -670,5 +670,18 @@
   window.addEventListener('spotra-lang', () => { const v = view(); if(v && v.classList.contains('active')) render(); });
   window.addEventListener('spotra-user', () => { loadSaved(); });
 
-  window.SpotraMarket = { submitFromForm };
+  // abrir un producto desde otro lado (por ejemplo, la pestaña Market de un perfil)
+  // (usa el mismo camino que el link /?listing=ID: al entrar al Market en "Explorar" se abre el detalle)
+  async function openById(id){
+    if(!id) return;
+    await ensureListings([id]);
+    current = null;
+    tab = 'explore';
+    deepListing = id;
+    const v = view();
+    if(v && v.classList.contains('active')){ await loadExplore(); return; }
+    if(window.setRoute) window.setRoute('market');
+  }
+
+  window.SpotraMarket = { submitFromForm, openById };
 })();
