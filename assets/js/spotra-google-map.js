@@ -36,7 +36,8 @@
     { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#5f7480' }] }
   ];
   const isDark = () => document.documentElement.classList.contains('theme-dark');
-  const mapStyle = () => (isDark() ? nightStyle : []).concat(HIDE);
+  // 13/10/2026: el mapa se ve siempre claro (calles y parques reales); los menús encima siguen oscuros
+  const mapStyle = () => [].concat(HIDE);
   window.addEventListener('spotra-theme', () => {
     if(map && !cfg().GOOGLE_MAP_ID) map.setOptions({ styles: mapStyle() });
   });
