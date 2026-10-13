@@ -9,18 +9,19 @@
   async function db(){ return B() && B().getClient ? await B().getClient() : null; }
 
   function paint(){
-    const av = document.querySelector('.profile-avatar');
-    const cv = document.querySelector('.profile-cover');
+    // solo los de MI perfil (el perfil de otro rider también tiene foto y portada)
+    const av = document.querySelector('[data-pf-avatar]');
+    const cv = document.querySelector('[data-pf-cover]');
     const initial = ((me && me.name) || 'R').trim().charAt(0).toUpperCase();
     if(av){
       av.classList.toggle('has-img', !!(me && me.avatar_url));
       av.style.backgroundImage = me && me.avatar_url ? `url("${me.avatar_url}")` : '';
-      const i = av.querySelector('.pa-initial');
+      const i = av.querySelector('.pf-initial');
       if(i) i.textContent = initial;
     }
     if(cv){
       cv.classList.toggle('has-img', !!(me && me.cover_url));
-      cv.style.backgroundImage = me && me.cover_url ? `linear-gradient(180deg,transparent,rgba(0,0,0,.55)),url("${me.cover_url}")` : '';
+      cv.style.backgroundImage = me && me.cover_url ? `url("${me.cover_url}")` : '';
     }
     document.querySelectorAll('.nav-avatar').forEach(n => {
       n.classList.toggle('has-img', !!(me && me.avatar_url));
