@@ -192,6 +192,15 @@
     'perfil completo':['perfil completo','profile complete'],'spots aprobados':['spots aprovados','approved spots'],'matches abiertos':['matches abertos','open matches'],
     'Volver a iniciar sesión':['Voltar para entrar','Back to log in'],'Creá':['Crie','Create'],'tu cuenta':['sua conta','your account'],
     'Elegí el tipo de cuenta que mejor te representa y armá tu acceso al ecosistema SPOTRA.':['Escolha o tipo de conta que mais combina com você e monte seu acesso ao ecossistema SPOTRA.','Choose the account type that fits you best and set up your access to SPOTRA.'],
+    // ---- perfil rediseñado (13/10/2026)
+    'Compartir perfil':['Compartilhar perfil','Share profile'],'Contenido del perfil':['Conteúdo do perfil','Profile content'],
+    'No tenés sesiones activas. Creá una desde un spot con el +.':['Você não tem sessões ativas. Crie uma em um spot com o +.','You have no active sessions. Create one from a spot with the +.'],
+    'No tiene sesiones activas ahora.':['Não tem sessões ativas agora.','No active sessions right now.'],
+    'Hasta las':['Até','Until'],'1 rider va':['1 rider vai','1 rider going'],'riders van':['riders vão','riders going'],'Ahora':['Agora','Now'],'Tu sesión':['Sua sessão','Your session'],
+    'No tenés productos publicados.':['Você não tem produtos publicados.','You have no listings.'],'No tiene productos a la venta.':['Não tem produtos à venda.','No items for sale.'],
+    'En revisión':['Em revisão','In review'],'No se pudo cargar. Probá de nuevo.':['Não foi possível carregar. Tente de novo.','Could not load. Try again.'],
+    'Andando ahora':['Andando agora','Riding now'],'Reportar o bloquear':['Denunciar ou bloquear','Report or block'],
+    'Mirá el perfil de':['Veja o perfil de','Check out the profile of'],'en SPOTRA':['no SPOTRA','on SPOTRA'],'Mirá este perfil en SPOTRA':['Veja este perfil no SPOTRA','Check out this profile on SPOTRA'],
     // ---- registro y contraseñas (11/10/2026)
     'Contraseña (mín. 10)':['Senha (mín. 10)','Password (min 10)'],'Nueva contraseña (mín. 10)':['Nova senha (mín. 10)','New password (min 10)'],
     'Contraseña: 10 caracteres o más, con mayúscula, minúscula, número y símbolo (por ejemplo ! ? # .).':['Senha: 10 caracteres ou mais, com maiúscula, minúscula, número e símbolo (por exemplo ! ? # .).','Password: 10+ characters, with an uppercase letter, a lowercase letter, a number and a symbol (for example ! ? # .).'],
