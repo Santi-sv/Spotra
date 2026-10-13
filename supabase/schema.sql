@@ -2087,6 +2087,7 @@ create policy "profiles folder delete" on storage.objects
 -- =====================================================================
 
 -- Datos públicos de un rider (solo para usuarios logueados; nunca email, teléfono ni fecha de nacimiento).
+-- 13/10/2026: + verified y now (perfil-rediseno.sql)
 create or replace function public.rider_profile(p_id uuid)
 returns json
 language plpgsql
@@ -2094,16 +2095,40 @@ stable
 security definer
 set search_path = ''
 as $$
-declare r public.profiles%rowtype;
+declare
+  r public.profiles%rowtype;
+  v_uid uuid := auth.uid();
+  v_now json;
 begin
-  if auth.uid() is null then return null; end if;
+  if v_uid is null then return null; end if;
   if exists (select 1 from public.blocks b
-             where (b.blocker_id = auth.uid() and b.blocked_id = p_id)
-                or (b.blocker_id = p_id and b.blocked_id = auth.uid())) then
+             where (b.blocker_id = v_uid and b.blocked_id = p_id)
+                or (b.blocker_id = p_id and b.blocked_id = v_uid)) then
     return null;
   end if;
   select * into r from public.profiles p where p.id = p_id;
   if not found then return null; end if;
+
+  if r.id <> v_uid
+     and r.presence_visible
+     and r.birth_date is not null
+     and r.birth_date <= (current_date - interval '18 years')::date
+     and exists (select 1 from public.follows f where f.follower_id = v_uid and f.followed_id = r.id) then
+    select json_build_object('place_id', pl.id, 'name', pl.name) into v_now
+    from public.places pl
+    where pl.id = coalesce(
+      (select rp.place_id from public.rider_presence rp
+        where rp.profile_id = r.id and rp.expires_at > now() limit 1),
+      (select s.place_id from public.sessions s
+        where s.created_by = r.id and s.starts_at <= now() and s.ends_at > now()
+        order by s.starts_at desc limit 1),
+      (select s.place_id from public.session_participants sp
+        join public.sessions s on s.id = sp.session_id
+        where sp.profile_id = r.id and s.starts_at <= now() and s.ends_at > now()
+        order by s.starts_at desc limit 1))
+    limit 1;
+  end if;
+
   return json_build_object(
     'id', r.id,
     'username', r.username,
@@ -2117,10 +2142,12 @@ begin
     'instagram', r.instagram,
     'tiktok', r.tiktok,
     'facebook', r.facebook,
+    'verified', r.verified,
     'followers', (select count(*) from public.follows f where f.followed_id = r.id),
     'following', (select count(*) from public.follows f where f.follower_id = r.id),
     'posts', (select count(*) from public.posts po where po.author_id = r.id),
-    'is_me', r.id = auth.uid());
+    'now', v_now,
+    'is_me', r.id = v_uid);
 end;
 $$;
 revoke all on function public.rider_profile(uuid) from public, anon;
