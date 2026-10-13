@@ -52,14 +52,16 @@
     const c = await db(); if(!c) return;
     const user = await currentUser(); if(!user) return;
     const { data: p, error } = await c.from('profiles')
-      .select('full_name, username, email, phone, country_code, city, discipline, bio, instagram, tiktok, facebook, account_type')
+      .select('full_name, username, email, phone, country_code, city, discipline, bio, instagram, tiktok, facebook, account_type, verified')
       .eq('id', user.id).maybeSingle();
     if(error || !p){ if(error) console.warn('[SPOTRA] perfil:', error.message); return; }
 
     setText('[data-profile-name]', p.full_name || 'Rider');
     setText('[data-profile-handle]', '@' + (p.username || (p.full_name || 'rider').toLowerCase().replace(/\s+/g, '.')));
-    setText('[data-profile-discipline]', p.discipline ? cap(p.discipline) : 'Rider');
-    setText('[data-profile-location]', [p.city, countryName(p.country_code)].filter(Boolean).join(', ') || '—');
+    setText('[data-profile-discipline]', p.discipline ? cap(p.discipline) : '');
+    setText('[data-profile-location]', [p.city, countryName(p.country_code)].filter(Boolean).join(', '));
+    const ver = document.querySelector('[data-profile-verified]');
+    if(ver) ver.hidden = !p.verified;
     const bioEl = document.querySelector('[data-profile-bio]');
     if(bioEl) bioEl.textContent = p.bio || '';
     if(window.setUserName) window.setUserName((p.full_name || 'Rider').split(' ')[0]);
