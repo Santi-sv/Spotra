@@ -92,7 +92,7 @@
     if(!supabaseLoadPromise){
       supabaseLoadPromise = new Promise((resolve, reject) => {
         const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+        script.src = 'assets/vendor/supabase-js-2.117.3.js'; // copia fija en nuestro repo (13/10/2026): no depende de un CDN externo
         script.onload = () => resolve(true);
         script.onerror = reject;
         document.head.appendChild(script);

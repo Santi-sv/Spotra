@@ -1,0 +1,4 @@
+/* SPOTRA · arranque en <head>: redirección del dominio viejo y bloqueo de zoom con dos dedos
+   (13/10/2026: antes estaba escrito dentro de index.html; se pasó a archivo para poder activar la protección CSP, que bloquea todo código escrito dentro del HTML) */
+/* la app vive en app.spotra.online: la dirección vieja de Render redirige (conserva enlaces y mails). spotra.online es la web oficial (repo spotra-web) */(function(){var h=location.hostname;if(h==="spotra.onrender.com"){location.replace("https://app.spotra.online"+location.pathname+location.search+location.hash);}})();
+/* sin zoom con dos dedos en iPhone (iOS ignora user-scalable=no). En el mapa se sigue pudiendo hacer zoom. */(function(){function block(e){var t=e.target;if(t&&t.closest&&t.closest('.gm-style'))return;e.preventDefault();}['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,block,{passive:false});});})();

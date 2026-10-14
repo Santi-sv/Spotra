@@ -131,7 +131,7 @@
     if(window.__spotraClusterLoading) return window.__spotraClusterLoading;
     window.__spotraClusterLoading = new Promise(resolve => {
       const sc = document.createElement('script');
-      sc.src = 'https://cdn.jsdelivr.net/npm/@googlemaps/markerclusterer@2.5.3/dist/index.min.js';
+      sc.src = 'assets/vendor/markerclusterer-2.5.3.min.js'; // copia fija en nuestro repo (13/10/2026)
       sc.async = true;
       sc.onload = () => resolve(!!window.markerClusterer);
       sc.onerror = () => resolve(false);
