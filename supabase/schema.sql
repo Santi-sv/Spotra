@@ -3234,3 +3234,25 @@ begin
   return new;
 end;
 $$;
+
+-- ===================== 13/10/2026: el organizador elimina su evento =====================
+create or replace function public.organizer_delete_event(p_event_id uuid)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is null then
+    raise exception 'no autorizado';
+  end if;
+  delete from public.events
+  where id = p_event_id
+    and organizer_id = auth.uid();
+  if not found then
+    raise exception 'no autorizado';
+  end if;
+end $$;
+
+revoke all on function public.organizer_delete_event(uuid) from public, anon;
+grant execute on function public.organizer_delete_event(uuid) to authenticated;
