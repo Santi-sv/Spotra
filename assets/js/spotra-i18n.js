@@ -91,7 +91,7 @@
     'Cargando tus eventos...':['Carregando seus eventos...','Loading your events...'],'Iniciá sesión para ver tus eventos.':['Entre para ver seus eventos.','Log in to see your events.'],
     'Organizás vos':['Você organiza','You are hosting'],'Cargando ranking...':['Carregando ranking...','Loading ranking...'],'No se pudo abrir el evento.':['Não foi possível abrir o evento.','Could not open the event.'],
     'Inscripción:':['Inscrição:','Entry:'],'Premios:':['Prêmios:','Prizes:'],'Categorías':['Categorias','Categories'],'Info del evento':['Informações do evento','Event info'],
-    'Evento cancelado':['Evento cancelado','Event canceled'],'Evento cancelado.':['Evento cancelado.','Event canceled.'],'Cargar resultados':['Enviar resultados','Add results'],'Cancelar evento':['Cancelar evento','Cancel event'],
+    'Evento cancelado':['Evento cancelado','Event canceled'],'Evento cancelado.':['Evento cancelado.','Event canceled.'],'Cargar resultados':['Enviar resultados','Add results'],'Cancelar evento':['Cancelar evento','Cancel event'],'Eliminar evento':['Excluir evento','Delete event'],'Eliminando evento...':['Excluindo evento...','Deleting event...'],'Evento eliminado.':['Evento excluído.','Event deleted.'],'No se pudo eliminar. Probá de nuevo.':['Não foi possível excluir. Tente de novo.','Could not delete. Try again.'],
     'Este evento fue cancelado por el organizador.':['Este evento foi cancelado pelo organizador.','This event was canceled by the organizer.'],
     'Cancelar inscripción':['Cancelar inscrição','Cancel registration'],'Este evento ya pasó.':['Este evento já passou.','This event is over.'],'Cupo completo':['Vagas esgotadas','Full'],
     'La inscripción cerró.':['As inscrições encerraram.','Registration is closed.'],'Inscribirme':['Me inscrever','Register'],'Contactar':['Contatar','Contact'],
@@ -514,6 +514,10 @@
     [/^Ver inscriptos \((\d+)\)$/, (m,i) => ['Ver inscritos (','See registered ('][i] + m[1] + ')'],
     [/^Todavía no hay puntos en (.*)$/, (m,i) => ['Ainda não há pontos em ','No points yet in '][i] + m[1]],
     [/^— inscripción hasta (.*)$/, (m,i) => ['— inscrições até ','— registration until '][i] + m[1]],
+    [/^¿Eliminar "(.*)"\? Se borra para siempre junto con (?:su inscripción|sus (\d+) inscripciones)\.( Si querés que los inscriptos vean el aviso, usá "Cancelar evento"\.)?$/, (m,i) => ['Excluir "','Delete "'][i] + m[1]
+      + (m[2] ? ['"? Ele será apagado para sempre junto com as ' + m[2] + ' inscrições.','"? It will be deleted forever along with its ' + m[2] + ' registrations.'][i] : ['"? Ele será apagado para sempre junto com a inscrição.','"? It will be deleted forever along with its registration.'][i])
+      + (m[3] ? [' Se quiser que os inscritos vejam o aviso, use "Cancelar evento".',' If you want registered riders to see a notice, use "Cancel event".'][i] : '')],
+    [/^¿Eliminar "(.*)"\? Se borra para siempre\. Esto no se puede deshacer\.$/, (m,i) => ['Excluir "','Delete "'][i] + m[1] + ['"? Ele será apagado para sempre. Não dá para desfazer.','"? It will be deleted forever. This cannot be undone.'][i]],
     [/^¿Cancelar "(.*)"\? Los inscriptos lo verán como cancelado\. Esto no se puede deshacer\.$/, (m,i) => ['Cancelar "','Cancel "'][i] + m[1] + ['"? Os inscritos vão ver como cancelado. Não dá para desfazer.','"? Registered riders will see it as canceled. This cannot be undone.'][i]]
   ];
 

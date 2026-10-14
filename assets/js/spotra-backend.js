@@ -584,6 +584,15 @@
     return { ok: true };
   }
 
+  // 13/10/2026: el organizador puede eliminar su evento (se borra con inscripciones, resultados e interesados)
+  async function organizerDeleteEvent(id){
+    const db = await client();
+    if(!db) return { ok: false, error: 'sin conexión' };
+    const { error } = await db.rpc('organizer_delete_event', { p_event_id: id });
+    if(error){ console.warn('[SPOTRA] organizerDeleteEvent:', error.message); return { ok: false, error: error.message }; }
+    return { ok: true };
+  }
+
   async function organizerCancelEvent(id){
     const db = await client();
     if(!db) return { ok: false, error: 'sin conexión' };
@@ -1026,6 +1035,7 @@
     listEventRegistrations,
     organizerUpdateEvent,
     organizerCancelEvent,
+    organizerDeleteEvent,
     saveEventResults,
     listEventResults,
     listRanking,

@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v4)
+/* SPOTRA · Eventos (v6)
+   - v6: el organizador puede eliminar su evento (botón "Eliminar evento" en el detalle, en cualquier estado).
    - v4: resultados por categoría (organizador) + ranking por disciplina.
    - v3: el organizador puede editar y cancelar sus eventos.
    - Sección Eventos: Próximos / Mis eventos, filtro por disciplina, detalle con inscripción.
@@ -414,6 +415,7 @@
         action = `<button class="primary-btn" data-ev-attendlist="${esc(ev.id)}" style="width:100%;min-height:52px;margin-top:14px">Ver inscriptos (${ev.regCount})</button>
           <div class="ev-actions-2"><button class="ghost-btn" data-ev-edit="${esc(ev.id)}">Editar</button><button class="ghost-btn" data-ev-cancelev="${esc(ev.id)}" style="color:#ff7a7a;border-color:rgba(255,122,122,.4)">Cancelar evento</button></div>`;
       }
+      action += `<button class="ghost-btn" data-ev-delete="${esc(ev.id)}" style="width:100%;min-height:46px;margin-top:9px;color:#ff7a7a;border-color:rgba(255,122,122,.4)">Eliminar evento</button>`;
     } else if(ev.status === 'archived'){
       action = `<div class="ev-info-row off" style="border-color:rgba(255,122,122,.4);background:rgba(255,122,122,.08);color:#ff7a7a">Este evento fue cancelado por el organizador.</div>`;
     } else if(mine){
@@ -819,6 +821,25 @@
     renderHomeEvents();
   }
 
+  async function doDeleteEvent(evd){
+    const n = Number(evd.regCount) || 0;
+    const canCancel = (evd.status === 'pending' || evd.status === 'approved') && evd.startsAt instanceof Date && evd.startsAt > new Date();
+    const msg = n > 0
+      ? '¿Eliminar "' + evd.title + '"? Se borra para siempre junto con ' + (n === 1 ? 'su inscripción' : 'sus ' + n + ' inscripciones') + '.'
+        + (canCancel ? ' Si querés que los inscriptos vean el aviso, usá "Cancelar evento".' : '')
+      : '¿Eliminar "' + evd.title + '"? Se borra para siempre. Esto no se puede deshacer.';
+    if(!window.confirm(msg)) return;
+    toast('Eliminando evento...');
+    const res = await B().organizerDeleteEvent(evd.id);
+    if(!res.ok){ toast('No se pudo eliminar. Probá de nuevo.'); return; }
+    toast('Evento eliminado.');
+    currentEvent = null;
+    upcomingCache = [];
+    delete myRegs[evd.id];
+    renderSection();
+    renderHomeEvents();
+  }
+
   /* ================= Crear evento ================= */
   // portada del evento: lado mayor 1600 px, JPG
   function coverBlob(file){
@@ -1015,6 +1036,8 @@
     if(edt && currentEvent){ openEdit(currentEvent); return; }
     const cev = e.target.closest('[data-ev-cancelev]');
     if(cev && currentEvent){ doCancelEvent(currentEvent); return; }
+    const dev = e.target.closest('[data-ev-delete]');
+    if(dev && currentEvent){ doDeleteEvent(currentEvent); return; }
     if(e.target.closest('[data-open-modal]') || e.target.closest('[data-close-modal]')){ resetEditState(); }
     if(e.target.closest('#eventPlacePick')){ e.preventDefault(); openSpotPicker(); return; }
   });
