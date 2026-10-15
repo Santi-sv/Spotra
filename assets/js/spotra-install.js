@@ -1,6 +1,6 @@
-/* SPOTRA · Aviso "Instalá SPOTRA en tu inicio" (v1, 15/10/2026)
+/* SPOTRA · Aviso "Instalá SPOTRA en tu inicio" (v2, 15/10/2026 · v2: aparece a los 10 segundos)
    Para quien usa SPOTRA desde Safari o Chrome en el celular sin haberla instalado.
-   - Aparece a los 25 segundos, como una tarjeta chica abajo (no tapa la app). Nunca en la app ya instalada,
+   - Aparece a los 10 segundos, como una tarjeta chica abajo (no tapa la app). Nunca en la app ya instalada,
      ni en computadora, ni dentro de Instagram/TikTok (eso lo resuelve spotra-inapp.js), ni con la guía de SPOTRI abierta.
    - Android con Chrome: botón "Instalar" abre el instalador del sistema. Si no está disponible, muestra los pasos.
    - iPhone: muestra los pasos con el ícono de Compartir (Safari o Chrome).
@@ -184,5 +184,5 @@
   }
 
   window.SpotraInstall = { open: openSheet, show: showBar, install, canShow };
-  if(canShow()) setTimeout(() => tryShow(0), 25000);
+  if(canShow()) setTimeout(() => tryShow(0), 10000);
 })();
