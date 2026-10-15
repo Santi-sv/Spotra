@@ -268,15 +268,21 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { presence:'¿Mostrar dónde estás andando?', guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { presence:'¿Mostrar dónde estás andando?', guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', account:'Cuenta y seguridad', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
 
-/* 13/10/2026: lo que se abre desde Configuración muestra "‹ Volver" para regresar a Configuración */
-let modalBackTo = null, modalBackArm = 0;
+/* 13/10/2026: lo que se abre desde Configuración muestra "‹ Volver" para regresar a Configuración.
+   15/10/2026: también desde "Cuenta y seguridad" (vuelve ahí), y al volver se mantiene el camino hacia atrás. */
+const MODAL_PARENT = { account:'settings', editContact:'account', password:'account', deleteAccount:'account' };
+let modalBackTo = null, modalBackArm = 0, modalBackFrom = null;
 document.addEventListener('click', e => {
-  if(e.target.closest('.modal-form.active[data-form="settings"] button')) modalBackArm = Date.now();
+  const b = e.target.closest('.modal-form.active[data-form="settings"] button, .modal-form.active[data-form="account"] button');
+  if(b){ modalBackArm = Date.now(); modalBackFrom = b.closest('.modal-form').dataset.form; }
 }, true);
-function openModal(type){
-  modalBackTo = (type !== 'settings' && Date.now() - modalBackArm < 1500) ? 'settings' : null;
+function openModal(type, viaBack){
+  if(type === 'settings') modalBackTo = null;
+  else if(Date.now() - modalBackArm < 1500 && modalBackFrom && modalBackFrom !== type) modalBackTo = modalBackFrom;
+  else if(viaBack && MODAL_PARENT[type]) modalBackTo = MODAL_PARENT[type];
+  else modalBackTo = null;
   modalBackArm = 0;
   const mb = document.getElementById('modalBack');
   if(mb) mb.hidden = !modalBackTo;
@@ -302,7 +308,7 @@ document.addEventListener('click', e => {
     openModal(type);
     return;
   }
-  if(e.target.closest('[data-modal-back]')){ e.preventDefault(); openModal(modalBackTo || 'settings'); return; }
+  if(e.target.closest('[data-modal-back]')){ e.preventDefault(); openModal(modalBackTo || 'settings', true); return; }
   if(e.target.closest('[data-close-modal]') || e.target === modalBg){ closeModal(); return; }
 
   /* segmentos dentro del modal */

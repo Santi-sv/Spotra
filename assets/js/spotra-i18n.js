@@ -149,7 +149,7 @@
     'Detalles, uso, qué incluye, dónde entregás...':['Detalhes, uso, o que inclui, onde entrega...','Details, use, what is included, where you deliver...'],
     'Tu WhatsApp':['Seu WhatsApp','Your WhatsApp'],'Usar mi ubicación (para "cerca de mí")':['Usar minha localização (para "perto de mim")','Use my location (for "near me")'],
     // ---- perfil y configuración
-    'Configuración':['Configurações','Settings'],'Privacidad, contacto, contraseña y seguridad de cuenta':['Privacidade, contato, senha e segurança da conta','Privacy, contact, password and account security'],
+    'Configuración':['Configurações','Settings'],'Cuenta y seguridad':['Conta e segurança','Account & security'],'Tu contacto privado, tu contraseña y el acceso a tu cuenta.':['Seu contato privado, sua senha e o acesso à sua conta.','Your private contact, your password and access to your account.'],'Editar contacto':['Editar contato','Edit contact'],'Eliminar cuenta':['Excluir conta','Delete account'],'Privacidad, contacto, contraseña y seguridad de cuenta':['Privacidade, contato, senha e segurança da conta','Privacy, contact, password and account security'],
     'Gestioná tu perfil y la seguridad de tu cuenta desde un panel privado.':['Gerencie seu perfil e a segurança da sua conta em um painel privado.','Manage your profile and account security from a private panel.'],
     'Apariencia':['Aparência','Appearance'],'Automático':['Automático','Automatic'],'Noche':['Noite','Night'],'Idioma':['Idioma','Language'],
     'Automático: modo día de 06:00 a 21:00 y modo noche de 21:00 a 06:00.':['Automático: modo dia das 06:00 às 21:00 e modo noite das 21:00 às 06:00.','Automatic: day mode 06:00–21:00, night mode 21:00–06:00.'],
