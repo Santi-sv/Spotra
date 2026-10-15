@@ -1,4 +1,5 @@
 /* SPOTRA · Market C2C (v3, estilo Facebook Marketplace)
+   - v6 (15/10/2026): sin sesión no se ve el WhatsApp del vendedor; el botón invita a iniciar sesión.
    - Buscador, ubicación + radio, categorías de riders con íconos, filtros (precio, estado, orden).
    - Tarjetas con precio grande, "Recién publicado", distancia y ♥ Guardar.
    - Pestañas: Explorar · Guardados · Mis publicaciones. En compu: menú lateral; en celular: arriba.
@@ -266,7 +267,8 @@
     const missing = ids.filter(id => !byId.has(id));
     if(!missing.length) return;
     const c = await db();
-    const { data } = await c.from('listings').select('id, seller_id, username, whatsapp, title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at, previous_price, price_dropped_at').in('id', missing.slice(0, 60));
+    const cols = 'id, seller_id, username, ' + ((await uid()) ? 'whatsapp, ' : '') + 'title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at, previous_price, price_dropped_at';
+    const { data } = await c.from('listings').select(cols).in('id', missing.slice(0, 60));
     (data || []).forEach(r => byId.set(r.id, { id: r.id, sellerId: r.seller_id, username: r.username || 'rider', whatsapp: r.whatsapp || '', title: r.title, description: r.description || '', category: r.category, condition: r.condition, price: Number(r.price), currency: r.currency, city: r.city || '', lat: r.latitude, lng: r.longitude, photos: r.photos || [], status: r.status, sold: !!r.sold, createdAt: r.created_at ? new Date(r.created_at) : null, previousPrice: r.previous_price != null ? Number(r.previous_price) : null, priceDroppedAt: r.price_dropped_at ? new Date(r.price_dropped_at) : null }));
   }
 
@@ -391,7 +393,7 @@
           <h2 class="mk-dtitle">${esc(l.title)}</h2>
           <div class="mk-meta">${[l.city, d != null ? fmtKm(d) : '', ago(l.createdAt)].filter(Boolean).map(esc).join(' · ')}</div>
           <div class="ev-chips" style="margin-top:10px"><span class="ev-chip on">${esc(t(CAT_LABEL[l.category] || l.category))}</span><span class="ev-chip">${esc(t(COND_LABEL[l.condition] || l.condition))}</span>${l.sold ? `<span class="ev-chip off">${esc(t('Vendido'))}</span>` : ''}</div>
-          ${wa ? `<a class="primary-btn mk-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa}<span>${esc(t('Contactar por WhatsApp'))}</span></a>` : ''}
+          ${wa ? `<a class="primary-btn mk-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa}<span>${esc(t('Contactar por WhatsApp'))}</span></a>` : (!num && !l.sold ? `<button type="button" class="primary-btn mk-wa" data-route="login">${ICON.wa}<span>${esc(t('Iniciá sesión para contactar'))}</span></button>` : '')}
           <div class="mk-actions">
             <button type="button" class="mk-act${saved.has(l.id) ? ' on' : ''}" data-mk-save="${esc(l.id)}">${ICON.heart}<span>${esc(t('Guardar'))}</span></button>
             <button type="button" class="mk-act" data-mk-share>${ICON.share}<span>${esc(t('Compartir'))}</span></button>

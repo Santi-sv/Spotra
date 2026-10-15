@@ -3256,3 +3256,10 @@ end $$;
 
 revoke all on function public.organizer_delete_event(uuid) from public, anon;
 grant execute on function public.organizer_delete_event(uuid) to authenticated;
+
+-- ===================== 15/10/2026: WhatsApp del market solo con sesión =====================
+revoke select on public.listings from anon;
+grant select (id, seller_id, username, title, description, category, condition, price, currency,
+              city, latitude, longitude, photos, status, sold, created_at, updated_at,
+              previous_price, price_dropped_at)
+  on public.listings to anon;

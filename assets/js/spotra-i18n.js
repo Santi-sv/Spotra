@@ -314,6 +314,7 @@
     "Todavía no publicaste nada":["Você ainda não publicou nada", "You have not posted anything yet"],
     "Tocá \"Publicar\" y vendé lo que ya no uses.":["Toque em \"Publicar\" e venda o que você não usa mais.", "Tap \"Post\" and sell what you no longer use."],
     "Contactar por WhatsApp":["Contatar pelo WhatsApp", "Contact on WhatsApp"],
+    "Iniciá sesión para contactar":["Entre para entrar em contato", "Log in to contact"],
     "Vendedor":["Vendedor", "Seller"],
     "Ver perfil":["Ver perfil", "View profile"],
     "Máximo 6 fotos.":["Máximo 6 fotos.", "Up to 6 photos."],

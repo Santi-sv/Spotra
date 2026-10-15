@@ -669,11 +669,17 @@
   }
 
   const LISTING_COLS = 'id, seller_id, username, whatsapp, title, description, category, condition, price, currency, city, latitude, longitude, photos, status, sold, created_at, previous_price, price_dropped_at';
+  // 15/10/2026: sin sesión no se puede leer el WhatsApp del vendedor (lo bloquea la base: supabase/listings-whatsapp.sql)
+  const LISTING_COLS_PUBLIC = LISTING_COLS.replace('whatsapp, ', '');
+  async function listingCols(db){
+    try { const { data } = await db.auth.getSession(); return data && data.session ? LISTING_COLS : LISTING_COLS_PUBLIC; }
+    catch(e){ return LISTING_COLS_PUBLIC; }
+  }
 
   async function listListings(options = {}){
     const db = await client();
     if(!db) return [];
-    let query = db.from('listings').select(LISTING_COLS)
+    let query = db.from('listings').select(await listingCols(db))
       .eq('status', 'approved').eq('sold', false)
       .order('created_at', { ascending: false })
       .limit(options.limit || 100);
