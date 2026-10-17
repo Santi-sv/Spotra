@@ -268,11 +268,12 @@ document.querySelectorAll('.tabs button,.filter-row button,.type-card,.sub-tabs 
 
 /* ===== Modales de creación ===== */
 const modalBg = document.getElementById('modalBg');
-const MODAL_TITLES = { presence:'¿Mostrar dónde estás andando?', guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', account:'Cuenta y seguridad', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta' };
+const MODAL_TITLES = { presence:'¿Mostrar dónde estás andando?', guardian:'Responsable', status:'Avisar estado', alerts:'Avisos de sesiones', follows:'Siguiendo', report:'Reportar', blocked:'Usuarios bloqueados', birth:'Tu fecha de nacimiento', session:'Crear sesión', adminSettings:'Ajustes de admin', menu:'Crear', spot:'Agregar spot', post:'Crear publicación', event:'Crear evento', product:'Publicar producto', settings:'Configuración', account:'Cuenta y seguridad', editProfile:'Editar perfil', editContact:'Editar contacto', password:'Cambiar contraseña', privacy:'Privacidad', deleteAccount:'Eliminar cuenta', passkeys:'Face ID / huella' };
 
 /* 13/10/2026: lo que se abre desde Configuración muestra "‹ Volver" para regresar a Configuración.
-   15/10/2026: también desde "Cuenta y seguridad" (vuelve ahí), y al volver se mantiene el camino hacia atrás. */
-const MODAL_PARENT = { account:'settings', editContact:'account', password:'account', deleteAccount:'account' };
+   15/10/2026: también desde "Cuenta y seguridad" (vuelve ahí), y al volver se mantiene el camino hacia atrás.
+   16/10/2026: "Face ID / huella" (passkeys) también cuelga de Cuenta y seguridad. */
+const MODAL_PARENT = { account:'settings', editContact:'account', password:'account', deleteAccount:'account', passkeys:'account' };
 let modalBackTo = null, modalBackArm = 0, modalBackFrom = null;
 document.addEventListener('click', e => {
   const b = e.target.closest('.modal-form.active[data-form="settings"] button, .modal-form.active[data-form="account"] button');

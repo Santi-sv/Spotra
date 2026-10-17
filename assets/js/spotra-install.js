@@ -1,4 +1,4 @@
-/* SPOTRA · Aviso "Instalá SPOTRA en tu inicio" (v2, 15/10/2026 · v2: aparece a los 10 segundos)
+/* SPOTRA · Aviso "Instalá SPOTRA en tu inicio" (v3, 16/10/2026 · v2: aparece a los 10 segundos · v3: en la pantalla de login va arriba, para no tapar el botón Entrar en celulares chicos)
    Para quien usa SPOTRA desde Safari o Chrome en el celular sin haberla instalado.
    - Aparece a los 10 segundos, como una tarjeta chica abajo (no tapa la app). Nunca en la app ya instalada,
      ni en computadora, ni dentro de Instagram/TikTok (eso lo resuelve spotra-inapp.js), ni con la guía de SPOTRI abierta.
@@ -65,6 +65,7 @@
   const CSS = `
 #spotraInstall{position:fixed;left:10px;right:10px;bottom:calc(env(safe-area-inset-bottom) + 98px);z-index:8500;display:flex;justify-content:center;pointer-events:none;font-family:var(--body,'General Sans',sans-serif)}
 #spotraInstall .si-bar{pointer-events:auto;width:100%;max-width:440px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 12px;border-radius:20px;background:#0b0f0c;border:1px solid rgba(116,255,58,.34);box-shadow:0 14px 44px rgba(0,0,0,.6);color:#f5f7f4;animation:siUp .3s ease both}
+body.auth-mode #spotraInstall{top:calc(env(safe-area-inset-top) + 8px);bottom:auto}
 @keyframes siUp{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
 #spotraInstall .si-face{flex:0 0 46px;width:46px;height:46px;border-radius:14px;background:#13201a url('${FACE}') center/cover no-repeat;border:1px solid rgba(116,255,58,.3)}
 #spotraInstall .si-tx{flex:1;min-width:0}
