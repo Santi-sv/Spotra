@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v6)
+/* SPOTRA · Eventos (v7)
+   - v7 (17/10/2026): rediseño — hojas con borde gris, títulos chicos en gris, botón secundario gris.
    - v6: el organizador puede eliminar su evento (botón "Eliminar evento" en el detalle, en cualquier estado).
    - v4: resultados por categoría (organizador) + ranking por disciplina.
    - v3: el organizador puede editar y cancelar sus eventos.
@@ -491,7 +492,7 @@
     box.innerHTML = '<div class="f-label" style="margin-top:14px">Resultados</div>' +
       Object.keys(groups).map(cat =>
         `<div class="ev-info-row" style="flex-direction:column;align-items:stretch;gap:6px">
-          <b style="font-size:12px;letter-spacing:.12em;color:var(--green-hot);text-transform:uppercase">${esc(cat)}</b>
+          <b style="font-size:12px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase">${esc(cat)}</b>
           ${groups[cat].map(r => `<div style="display:flex;justify-content:space-between;font-size:13px"><span>${esc(MEDALS[r.position - 1] || r.position)} ${esc(r.username || 'rider')}</span><span style="color:var(--green-hot)">${r.points} pts</span></div>`).join('')}
         </div>`).join('');
   }
@@ -507,10 +508,10 @@
     const body = document.getElementById('evResBody');
     body.innerHTML = cats.map((cat, ci) => {
       const pool = ev.categories.length ? regs.filter(r => (r.categories || []).includes(cat)) : regs;
-      if(!pool.length) return `<div style="margin-top:14px"><b style="font-size:12px;letter-spacing:.12em;color:#2ee84d;text-transform:uppercase">${esc(cat)}</b><div style="color:#9aa69f;font-size:12.5px;margin-top:4px">Sin inscriptos en esta categoría.</div></div>`;
+      if(!pool.length) return `<div style="margin-top:14px"><b style="font-size:12px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase">${esc(cat)}</b><div style="color:#9aa69f;font-size:12.5px;margin-top:4px">Sin inscriptos en esta categoría.</div></div>`;
       const opts = '<option value="">—</option>' + pool.map(r => `<option value="${esc(r.profile_id)}">${esc(r.username || 'rider')}</option>`).join('');
       return `<div data-res-cat="${esc(cat)}" style="margin-top:14px">
-        <b style="font-size:12px;letter-spacing:.12em;color:#2ee84d;text-transform:uppercase">${esc(cat)}</b>
+        <b style="font-size:12px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase">${esc(cat)}</b>
         ${[0, 1, 2].map(p => `<div style="display:flex;align-items:center;gap:9px;margin-top:7px">
           <span style="width:30px;color:#9aa69f;font-size:13px">${MEDALS[p]}</span>
           <select data-res-pos="${p}" style="flex:1;height:42px;border-radius:11px;border:1px solid rgba(255,255,255,.16);background:#101712;color:#fff;padding:0 10px;font-size:13.5px">${opts}</select>
@@ -526,7 +527,7 @@
     const o = document.createElement('div');
     o.id = 'evResOverlay';
     o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center';
-    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(46,232,77,.4);border-radius:24px 24px 0 0;padding:20px 18px;max-height:88vh;overflow-y:auto">
+    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(255,255,255,.12);border-radius:24px 24px 0 0;padding:20px 18px;max-height:88vh;overflow-y:auto">
       <div style="width:52px;height:5px;border-radius:999px;background:rgba(255,255,255,.25);margin:0 auto 14px"></div>
       <b id="evResTitle" style="font-size:17px;color:#fff;display:block"></b>
       <div style="color:#9aa69f;font-size:12.5px;margin:4px 0 2px">Elegí el podio de cada categoría. Puntos al ranking: 1º 100 · 2º 60 · 3º 30. Guardar reemplaza resultados anteriores.</div>
@@ -583,7 +584,7 @@
     const o = document.createElement('div');
     o.id = 'evRegOverlay';
     o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center';
-    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(46,232,77,.4);border-radius:24px 24px 0 0;padding:20px 18px;max-height:85vh;overflow-y:auto">
+    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(255,255,255,.12);border-radius:24px 24px 0 0;padding:20px 18px;max-height:85vh;overflow-y:auto">
       <div style="width:52px;height:5px;border-radius:999px;background:rgba(255,255,255,.25);margin:0 auto 14px"></div>
       <b id="evRegTitle" style="font-size:17px;color:#fff;display:block"></b>
       <div style="color:#9aa69f;font-size:12.5px;margin:4px 0 14px">Elegí en qué categorías competís (podés marcar más de una)</div>
@@ -647,7 +648,7 @@
       box.innerHTML = '<div style="color:#9aa69f;font-size:13px">Todavía no hay inscriptos.</div>';
     } else {
       box.innerHTML = Object.keys(groups).map(c =>
-        `<div style="font-size:11px;letter-spacing:.15em;color:#2ee84d;margin:10px 0 6px;text-transform:uppercase">${esc(c)} (${groups[c].length})</div>` +
+        `<div style="font-size:11px;letter-spacing:.15em;color:var(--muted);margin:10px 0 6px;text-transform:uppercase">${esc(c)} (${groups[c].length})</div>` +
         groups[c].map(n => `<div style="padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);margin-bottom:5px;font-size:13px;color:#e8efe8">${esc(n)}</div>`).join('')
       ).join('');
     }
@@ -660,12 +661,12 @@
     const o = document.createElement('div');
     o.id = 'evAttOverlay';
     o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);display:none;align-items:flex-end;justify-content:center';
-    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(46,232,77,.4);border-radius:24px 24px 0 0;padding:20px 18px;max-height:85vh;overflow-y:auto">
+    o.innerHTML = `<div style="width:min(560px,100%);background:#0a100b;border:1px solid rgba(255,255,255,.12);border-radius:24px 24px 0 0;padding:20px 18px;max-height:85vh;overflow-y:auto">
       <div style="width:52px;height:5px;border-radius:999px;background:rgba(255,255,255,.25);margin:0 auto 14px"></div>
       <b id="evAttTitle" style="font-size:17px;color:#fff;display:block"></b>
       <div id="evAttMeta" style="color:#9aa69f;font-size:12.5px;margin:4px 0 8px"></div>
       <div id="evAttBody"></div>
-      <button id="evAttCopy" style="width:100%;height:48px;border-radius:14px;background:transparent;color:#2ee84d;border:1px solid #2ee84d;font-weight:700;font-size:13.5px;cursor:pointer;margin-top:12px">Copiar lista</button>
+      <button id="evAttCopy" style="width:100%;height:48px;border-radius:14px;background:rgba(255,255,255,.045);color:#f5f7f4;border:1px solid rgba(255,255,255,.18);font-weight:700;font-size:13.5px;cursor:pointer;margin-top:12px">Copiar lista</button>
       <button id="evAttClose" style="width:100%;height:46px;border-radius:14px;background:transparent;color:#dce3dd;border:1px solid rgba(255,255,255,.18);font-weight:700;font-size:13.5px;cursor:pointer;margin-top:9px">Cerrar</button>
     </div>`;
     document.body.appendChild(o);
@@ -750,11 +751,11 @@
     const o = document.createElement('div');
     o.id = 'evPickOverlay';
     o.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.78);display:none;align-items:center;justify-content:center;padding:14px';
-    o.innerHTML = `<div style="width:min(560px,96vw);background:#0a100b;border:1px solid rgba(46,232,77,.4);border-radius:20px;padding:14px;display:flex;flex-direction:column;max-height:92vh">
+    o.innerHTML = `<div style="width:min(560px,96vw);background:#0a100b;border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:14px;display:flex;flex-direction:column;max-height:92vh">
       <b style="color:#fff;font-size:16px;margin-bottom:10px">Elegí el spot del evento</b>
       <input id="evPickSearch" placeholder="Buscar por nombre o ciudad..." style="height:44px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#fff;padding:0 13px;font-size:14px;outline:0;margin-bottom:10px">
       <div id="evPickMap" style="height:min(46vh,380px);border-radius:14px;overflow:hidden;background:#0c1014;flex-shrink:0"></div>
-      <div id="evPickCard" style="display:none;margin-top:10px;padding:11px 13px;border-radius:13px;border:1px solid rgba(46,232,77,.5);background:rgba(46,232,77,.08)"></div>
+      <div id="evPickCard" style="display:none;margin-top:10px;padding:11px 13px;border-radius:13px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.045)"></div>
       <div style="display:flex;gap:9px;margin-top:12px">
         <button id="evPickCancel" style="flex:1;height:48px;border-radius:13px;background:transparent;border:1px solid rgba(255,255,255,.18);color:#dce3dd;font-weight:700;cursor:pointer">Cancelar</button>
         <button id="evPickConfirm" disabled style="flex:2;height:48px;border-radius:13px;background:#2ee84d;border:0;color:#06130a;font-weight:800;cursor:pointer;opacity:.5">Confirmar spot</button>

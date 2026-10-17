@@ -1,4 +1,6 @@
-/* SPOTRA · Ayuda de SPOTRI (v1)
+/* SPOTRA · Ayuda de SPOTRI (v4)
+   - v4 (17/10/2026): rediseño — botón y panel con borde gris, sin brillo verde.
+   - v3: el botón va en la barra de arriba, al lado de la campana.
    - Botón flotante con la cara de SPOTRI en todas las pantallas (no en login/registro ni durante la guía).
      Se acomoda solo arriba del + , del botón de ubicación del mapa y de la barra inferior.
    - Burbuja "¿Necesitas ayuda?" solo la primera vez.
@@ -179,7 +181,7 @@
 
   /* ---------- estilos ---------- */
   const CSS = `
-#spotriHelpFab{position:fixed;right:22px;bottom:96px;z-index:75;width:52px;height:52px;border-radius:50%;padding:0;border:2px solid #74ff3a;background:#101612;box-shadow:0 8px 24px rgba(0,0,0,.45),0 0 18px rgba(116,255,58,.25);cursor:pointer;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .15s}
+#spotriHelpFab{position:fixed;right:22px;bottom:96px;z-index:75;width:52px;height:52px;border-radius:50%;padding:0;border:1.5px solid rgba(255,255,255,.2);background:#101612;box-shadow:0 6px 18px rgba(0,0,0,.4);cursor:pointer;display:none;overflow:hidden;-webkit-tap-highlight-color:transparent;transition:transform .15s}
 #spotriHelpFab.show{display:block}
 #spotriHelpFab:active{transform:scale(.94)}
 #spotriHelpFab:focus-visible{outline:2px solid #f5f7f4;outline-offset:3px}
@@ -192,7 +194,7 @@
 #spotriHelp *{box-sizing:border-box}
 .sh-back{position:absolute;inset:0;background:rgba(0,0,0,.6);animation:shFade .2s ease both}
 @keyframes shFade{from{opacity:0}to{opacity:1}}
-.sh-panel{position:absolute;left:0;right:0;bottom:0;max-height:88vh;max-height:88dvh;height:88vh;height:88dvh;display:flex;flex-direction:column;background:#070907;color:#f5f7f4;border-radius:24px 24px 0 0;border:1px solid rgba(116,255,58,.25);border-bottom:0;box-shadow:0 -20px 60px rgba(0,0,0,.5);animation:shUp .28s ease both;outline:none}
+.sh-panel{position:absolute;left:0;right:0;bottom:0;max-height:88vh;max-height:88dvh;height:88vh;height:88dvh;display:flex;flex-direction:column;background:#070907;color:#f5f7f4;border-radius:24px 24px 0 0;border:1px solid rgba(255,255,255,.12);border-bottom:0;box-shadow:0 -20px 60px rgba(0,0,0,.5);animation:shUp .28s ease both;outline:none}
 @keyframes shUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
 .sh-grab{width:42px;height:5px;border-radius:3px;background:#2a332b;margin:8px auto 0;flex-shrink:0}
 .sh-head{display:flex;align-items:center;gap:12px;padding:10px 16px 12px 18px;flex-shrink:0}
@@ -245,7 +247,7 @@ body.spotri-help-open{overflow:hidden}
 @keyframes shFlash{0%,100%{box-shadow:none}30%,70%{box-shadow:0 0 0 3px #74ff3a}}
 .sh-flash{animation:shFlash 1.6s ease 2;border-radius:14px}
 @media (min-width:768px){
-  .sh-panel{left:auto;top:0;right:0;bottom:0;width:420px;height:100%;max-height:none;border-radius:24px 0 0 24px;border:1px solid rgba(116,255,58,.25);border-right:0;animation:shSide .28s ease both}
+  .sh-panel{left:auto;top:0;right:0;bottom:0;width:420px;height:100%;max-height:none;border-radius:24px 0 0 24px;border:1px solid rgba(255,255,255,.12);border-right:0;animation:shSide .28s ease both}
   @keyframes shSide{from{transform:translateX(40px);opacity:0}to{transform:none;opacity:1}}
   .sh-grab{display:none}
   .sh-head{padding-top:18px}

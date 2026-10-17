@@ -1,3 +1,5 @@
+/* SPOTRA · mapa de Google (v24, 17/10/2026: rediseño — mapa claro propio, pines con color por categoría,
+   puntos de lejos, nombres de cerca, grupos con anillo de colores y pines que laten si hay gente) */
 (function(){
   const cfg = () => (window.SpotraBackend && window.SpotraBackend.config) || window.SPOTRA_CONFIG || {};
   let map;
@@ -37,7 +39,31 @@
   ];
   const isDark = () => document.documentElement.classList.contains('theme-dark');
   // 13/10/2026: el mapa se ve siempre claro (calles y parques reales); los menús encima siguen oscuros
-  const mapStyle = () => [].concat(HIDE);
+  // 17/10/2026: estilo "SPOTRA claro": mapa neutro y sin íconos de comercios, para que los pines resalten
+  const LIGHT = [
+    { elementType: 'geometry', stylers: [{ color: '#f1f2ef' }] },
+    { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#6a706c' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#f6f7f4' }, { weight: 3 }] },
+    { featureType: 'administrative.land_parcel', stylers: [{ visibility: 'off' }] },
+    { featureType: 'administrative.neighborhood', elementType: 'labels.text.fill', stylers: [{ color: '#a3a8a4' }] },
+    { featureType: 'administrative.locality', elementType: 'labels.text.fill', stylers: [{ color: '#3c423e' }] },
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+    { featureType: 'poi.park', stylers: [{ visibility: 'on' }] },
+    { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#dbe9d6' }] },
+    { featureType: 'poi.park', elementType: 'labels.text.fill', stylers: [{ color: '#7f9a80' }] },
+    { featureType: 'poi.park', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+    { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#e3e5e1' }] },
+    { featureType: 'road', elementType: 'labels.text.fill', stylers: [{ color: '#888e8a' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#e6e8e4' }] },
+    { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#d6d9d4' }] },
+    { featureType: 'road.local', elementType: 'labels', stylers: [{ visibility: 'simplified' }] },
+    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#cde0ea' }] },
+    { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#86a2b1' }] }
+  ];
+  const mapStyle = () => [].concat(LIGHT);
   window.addEventListener('spotra-theme', () => {
     if(map && !cfg().GOOGLE_MAP_ID) map.setOptions({ styles: mapStyle() });
   });
@@ -85,43 +111,83 @@
     return canvas;
   }
 
-  /* Pines redondos: círculo negro con borde blanco y el ícono del tipo.
-     skatepark = rampa (verde), spot = escaleras (blanco), tienda = local (gris), evento = calendario (lima).
-     El seleccionado se agranda y el borde pasa a verde. */
-  const PIN_COLORS = { skatepark: '#2ee84d', street_spot: '#ffffff', store: '#b9c4bb', event_venue: '#c8ff3c' };
-  const PIN_GLYPHS = {
-    skatepark: '<path d="M4 16h16M5 16c2-7 5-7 7-2 2 4 5 4 7-2"/>',
-    street_spot: '<path d="M4 19h4v-4h4v-4h4V7h4"/>',
-    store: '<path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9M9 19v-5h6v5"/>',
-    event_venue: '<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/>'
+  /* Pines (17/10/2026): gota con el color de la categoría, borde blanco e ícono blanco.
+     Íconos de librerías profesionales: Material Symbols (Google, Apache 2.0) y Tabler Icons (MIT).
+     skatepark = skateboarding · spot = escalera · tienda = bolsa · evento = calendario.
+     PIN_FILL = color fuerte (fondo del pin, ícono blanco) · PIN_COLORS = color claro (ícono sobre fondo oscuro). */
+  const PIN_FILL = { skatepark: '#6e56f0', street_spot: '#0a9cb0', store: '#e23d80', event_venue: '#2f6ff0' };
+  const PIN_COLORS = { skatepark: '#9d8cff', street_spot: '#2ed3e6', store: '#ff6fa8', event_venue: '#4d8dff' };
+  const PIN_ICONS = {
+    skatepark: { vb: '0 -960 960 960', d: 'M272.5-7.5Q265-15 265-25t7.5-17.5Q280-50 290-50t17.5 7.5Q315-35 315-25t-7.5 17.5Q300 0 290 0t-17.5-7.5Zm340 0Q605-15 605-25t7.5-17.5Q620-50 630-50t17.5 7.5Q655-35 655-25t-7.5 17.5Q640 0 630 0t-17.5-7.5ZM270-90q-42 0-82.5-19T124-163q-2-3.33-3-6t-1-6q0-8 5.26-14 5.27-6 14.48-6 5.26 0 9.76 2t6.5 6q13 22 38.5 35.5T246-132l132-160-60-170q-5-15-2.5-27t10.5-26l110-175H318l-58 93q-7 11-18 13.5t-22-4q-11-6.5-14-18.5t4-23l67-107q3.82-6.63 10.71-10.32Q294.59-750 303-750h205q23.32 0 37.57 12.91Q559.82-724.19 565-713l21 48q18 42 54 71.5t82 39.5q12 2 20 12t8 22q0 12-8.5 20.5T722-493q-57.24-8.68-104.12-42.84Q571-570 539-621l-85 136 163 112q6 5 9.5 11.21 3.5 6.2 3.5 13.79v218h30q31.57 0 58.78-15Q746-160 764-187q3.33-4 7-6t9-2q8 0 14 5.91 6 5.92 6 13.8 0 3.29-1 6.06-1 2.77-3 6.23-23 35-58.5 54T660-90H270Zm53-40h247v-190L399-439l45 141q2 8 1 15.5t-6 13.5L323-130Zm284.08-644q-30.08 0-51.58-21.42t-21.5-51.5q0-30.08 21.42-51.58t51.5-21.5q30.08 0 51.58 21.42t21.5 51.5q0 30.08-21.42 51.58t-51.5 21.5Z', stroke: false },
+    street_spot: { vb: '0 0 24 24', d: 'M22 5h-5v5h-5v5h-5v5h-5', stroke: true },
+    store: { vb: '0 -960 960 960', d: 'M180-80q-24 0-42-18t-18-42v-530q0-24 18-42t42-18h110q0-79 53-134.5T475-920q79 0 137 55.5T670-730h110q24 0 42 18t18 42v530q0 24-18 42t-42 18H180Zm170-650h260q0-55-37.5-92.5T480-860q-55 0-92.5 37.5T350-730Zm130 300q73 0 133-51.5T673-597q0-11-9-19.5t-22-8.5q-11 0-19.5 7.5T612-598q-10 47-47.5 77.5T480-490q-47 0-84.5-30.5T348-598q-2-12-11-19.5t-20-7.5q-12 0-21 8.5t-9 19.5q0 64 59.5 115.5T480-430Z', stroke: false },
+    event_venue: { vb: '0 -960 960 960', d: 'M528-248.18q-28-28.19-28-69Q500-358 528.18-386q28.19-28 69-28Q638-414 666-385.82q28 28.19 28 69Q694-276 665.82-248q-28.19 28-69 28Q556-220 528-248.18ZM180-80q-24 0-42-18t-18-42v-620q0-24 18-42t42-18h65v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q310-861.6 310-848v28h340v-28q0-13.6 9-22.8 9-9.2 23.02-9.2t23.5 9.2Q715-861.6 715-848v28h65q24 0 42 18t18 42v620q0 24-18 42t-42 18H180Zm0-60h600v-430H180v430Z', stroke: false }
   };
-
+  // ícono como <svg> anidado: sirve dentro del pin y en las listas
+  function iconSvg(type, x, y, size, color){
+    const ic = PIN_ICONS[type] || PIN_ICONS.street_spot;
+    return ic.stroke
+      ? `<svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="${ic.vb}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="${ic.d}"/></svg>`
+      : `<svg x="${x}" y="${y}" width="${size}" height="${size}" viewBox="${ic.vb}" fill="${color}"><path d="${ic.d}"/></svg>`;
+  }
   function pinGlyph(type){
     const color = PIN_COLORS[type] || '#ffffff';
-    const glyph = PIN_GLYPHS[type] || PIN_GLYPHS.street_spot;
-    return { color, glyph };
+    return { color, fill: PIN_FILL[type] || '#3a443d', glyph: iconSvg(type, 0, 0, 24, color) };
   }
 
   const ridersAt = id => (window.SpotraSessions && id ? window.SpotraSessions.ridersAt(id) : 0);
   const nowAt = id => (window.SpotraPresence && id ? window.SpotraPresence.countAt(id) : 0);
 
   // riders = anotados en sesiones (globito verde arriba) · now = andando ahora (globito naranja abajo)
+  const PIN_BODY = 'M32 57c-1.3 0-17-15.2-17-31a17 17 0 1 1 34 0c0 15.8-15.7 31-17 31z';
+  const ZOOM_PINS = 13;    // desde acá se ven pines; más lejos, puntos de color
+  const ZOOM_LABELS = 15;  // desde acá, el nombre debajo de cada pin
+  const zoomNow = () => (map && map.getZoom ? map.getZoom() : 14);
+  function svgUrl(svg){ return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`; }
+  function pulse(color){
+    return `<circle cx="32" cy="26" r="18" fill="none" stroke="${color}" stroke-width="3"><animate attributeName="r" values="18;30" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0" dur="1.8s" repeatCount="indefinite"/></circle>`;
+  }
   function markerIcon(type, selected, riders, now){
-    const { color, glyph } = pinGlyph(type);
+    const { fill } = pinGlyph(type);
     const live = riders > 0;
     const here = now > 0;
-    const border = here ? '#ff8a3d' : ((selected || live) ? '#2ee84d' : '#ffffff');
-    const bw = (selected || live || here) ? 4 : 3;
-    const halo = here ? '<circle cx="30" cy="30" r="28" fill="rgba(255,138,61,.32)"/>' : (live ? '<circle cx="30" cy="30" r="28" fill="rgba(46,232,77,.30)"/>' : '');
-    const nowBadge = here ? `<circle cx="13" cy="48" r="11" fill="#ff8a3d" stroke="#0b0f0c" stroke-width="2"/><text x="13" y="52.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#1a0b02">${now > 9 ? '9+' : now}</text>` : '';
-    const badge = live ? `<circle cx="47" cy="12" r="11" fill="#2ee84d" stroke="#0b0f0c" stroke-width="2"/><text x="47" y="16.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="13" font-weight="700" fill="#06130a">${riders > 9 ? '9+' : riders}</text>` : '';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60">${halo}<circle cx="30" cy="32" r="21" fill="rgba(0,0,0,.28)"/><circle cx="30" cy="30" r="21" fill="#0b0f0c" stroke="${border}" stroke-width="${bw}"/><g transform="translate(18,18)" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</g>${badge}${nowBadge}</svg>`;
-    const size = selected ? 64 : ((live || here) ? 58 : 48);
-    return {
-      url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-      scaledSize: new google.maps.Size(size, size),
-      anchor: new google.maps.Point(size / 2, size / 2)
-    };
+    const liveColor = here ? '#ff8a3d' : '#2ee84d';
+    // lejos: punto de color (el elegido y los que tienen gente siempre se ven como pin)
+    if(zoomNow() < ZOOM_PINS && !selected && !live && !here){
+      const dot = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5" fill="rgba(0,0,0,.18)"/><circle cx="12" cy="12" r="7" fill="${fill}" stroke="#ffffff" stroke-width="2.5"/></svg>`;
+      return { url: svgUrl(dot), scaledSize: new google.maps.Size(22, 22), anchor: new google.maps.Point(11, 11) };
+    }
+    const ring = (here || live) ? liveColor : '#ffffff';
+    const halo = (here || live) ? `<circle cx="32" cy="26" r="22" fill="${here ? 'rgba(255,138,61,.22)' : 'rgba(46,232,77,.22)'}"/>${pulse(liveColor)}` : '';
+    const outline = selected ? `<path d="${PIN_BODY}" fill="none" stroke="#0b0f0c" stroke-width="7" stroke-linejoin="round"/>` : '';
+    const nowBadge = here ? `<circle cx="17" cy="10" r="9.5" fill="#ff8a3d" stroke="#ffffff" stroke-width="2"/><text x="17" y="14.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="12" font-weight="700" fill="#1a0b02">${now > 9 ? '9+' : now}</text>` : '';
+    const badge = live ? `<circle cx="47" cy="10" r="9.5" fill="#2ee84d" stroke="#ffffff" stroke-width="2"/><text x="47" y="14.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="12" font-weight="700" fill="#06130a">${riders > 9 ? '9+' : riders}</text>` : '';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="68" viewBox="0 0 64 68">`
+      + `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".55" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`
+      + `<filter id="s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter></defs>`
+      + `${halo}<ellipse cx="32" cy="59.5" rx="7.5" ry="2.6" fill="rgba(0,0,0,.35)" filter="url(#s)"/>${outline}`
+      + `<path d="${PIN_BODY}" fill="${fill}"/><path d="${PIN_BODY}" fill="url(#g)"/>`
+      + `<path d="${PIN_BODY}" fill="none" stroke="${ring}" stroke-width="2.6" stroke-linejoin="round"/>`
+      + `${iconSvg(type, 21, 15, 22, '#ffffff')}${badge}${nowBadge}</svg>`;
+    const w = selected ? 74 : ((live || here) ? 64 : 54);
+    const h = Math.round(w * 68 / 64);
+    return { url: svgUrl(svg), scaledSize: new google.maps.Size(w, h), anchor: new google.maps.Point(w / 2, Math.round(h * 58 / 68)), labelOrigin: new google.maps.Point(w / 2, h + 7) };
+  }
+  // nombre debajo del pin: de cerca, o siempre en el elegido
+  function markerLabel(marker, selected){
+    const show = selected || zoomNow() >= ZOOM_LABELS;
+    if(!show) return null;
+    let t = String(marker.getTitle() || '');
+    if(t.length > 24) t = t.slice(0, 23).trim() + '…';
+    return { text: t, className: selected ? 'spotra-pin-label is-selected' : 'spotra-pin-label', color: '#141814', fontSize: selected ? '13px' : '12px', fontWeight: '700' };
+  }
+  function styleMarker(marker){
+    const sel = marker === selectedMarker;
+    const r = marker.__riders || 0, nw = marker.__now || 0;
+    marker.setIcon(markerIcon(marker.__spotraType, sel, r, nw));
+    marker.setLabel(markerLabel(marker, sel));
+    marker.setOptions({ optimized: !(r > 0 || nw > 0) });   // los que laten no pueden ir "optimizados"
+    marker.setZIndex(sel ? 999 : (nw > 0 ? 600 : (r > 0 ? 500 : 1)));
   }
 
   /* ---------- agrupado de pines (clusters) ---------- */
@@ -140,12 +206,27 @@
     return window.__spotraClusterLoading;
   }
 
-  function clusterIcon(count, live, here){
+  // grupo: anillo con los colores de lo que tiene adentro (proporcional) y el número al centro
+  function clusterIcon(count, live, here, ms){
     const txt = count > 999 ? '999+' : String(count);
-    const ring = here ? '#ff8a3d' : (live ? '#2ee84d' : '#ffffff');
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30" fill="rgba(46,232,77,.22)"/><circle cx="32" cy="33.5" r="23" fill="rgba(0,0,0,.25)"/><circle cx="32" cy="32" r="23" fill="#0b0f0c" stroke="${ring}" stroke-width="3.5"/><text x="32" y="37" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${txt.length > 3 ? 13 : 16}" font-weight="700" fill="#2ee84d">${txt}</text></svg>`;
-    const size = count > 99 ? 60 : 52;
-    return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, scaledSize: new google.maps.Size(size, size), anchor: new google.maps.Point(size / 2, size / 2) };
+    const byType = {};
+    (ms || []).forEach(m => { const t = m.__spotraType || 'street_spot'; byType[t] = (byType[t] || 0) + 1; });
+    const total = Object.values(byType).reduce((a, b) => a + b, 0) || 1;
+    const R = 21, C = 2 * Math.PI * R;
+    let off = 0, segs = '';
+    Object.keys(PIN_FILL).forEach(t => {
+      const n = byType[t]; if(!n) return;
+      const len = C * n / total;
+      segs += `<circle cx="32" cy="32" r="${R}" fill="none" stroke="${PIN_FILL[t]}" stroke-width="6" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 32 32)"/>`;
+      off += len;
+    });
+    const liveRing = (here || live) ? `<circle cx="32" cy="32" r="28.5" fill="none" stroke="${here ? '#ff8a3d' : '#2ee84d'}" stroke-width="3"/>` : '';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><defs><filter id="s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.8"/></filter></defs>`
+      + `<circle cx="32" cy="34" r="25" fill="rgba(0,0,0,.28)" filter="url(#s)"/><circle cx="32" cy="32" r="25" fill="#ffffff"/>${segs}`
+      + `<circle cx="32" cy="32" r="17.5" fill="#0b0f0c"/>${liveRing}`
+      + `<text x="32" y="37.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${txt.length > 3 ? 12 : 15}" font-weight="700" fill="#ffffff">${txt}</text></svg>`;
+    const size = count > 99 ? 60 : 54;
+    return { url: svgUrl(svg), scaledSize: new google.maps.Size(size, size), anchor: new google.maps.Point(size / 2, size / 2) };
   }
 
   async function ensureClusterer(){
@@ -158,7 +239,7 @@
       renderer: {
         render: ({ count, position, markers: ms }) => new google.maps.Marker({
           position,
-          icon: clusterIcon(count, (ms || []).some(m => m.__riders > 0), (ms || []).some(m => m.__now > 0)),
+          icon: clusterIcon(count, (ms || []).some(m => m.__riders > 0), (ms || []).some(m => m.__now > 0), ms),
           zIndex: 400 + count
         })
       }
@@ -172,8 +253,7 @@
       const nw = nowAt(e.place.id);
       e.marker.__riders = r;
       e.marker.__now = nw;
-      e.marker.setIcon(markerIcon(e.place.type, e.marker === selectedMarker, r, nw));
-      e.marker.setZIndex(e.marker === selectedMarker ? 999 : (nw > 0 ? 600 : (r > 0 ? 500 : 1)));
+      styleMarker(e.marker);
     });
     if(clusterer && clusterer.render) clusterer.render();
   }
@@ -246,7 +326,7 @@
       const sub = [label, p.meta || p.address || ''].filter(Boolean).join(' · ');
       const dist = r.d != null ? formatDistance(r.d).replace(/^a /, '') : '';
       return `<button type="button" class="map-list-item" data-list-idx="${r.i}">`
-        + `<span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span>`
+        + `<span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${glyph}</svg></span>`
         + `<span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span>`
         + (ridersAt(p.id) > 0 ? `<span class="list-live">${ridersAt(p.id)}</span>` : '')
         + (dist ? `<em>${esc(dist)}</em>` : '')
@@ -281,15 +361,10 @@
   }
 
   function selectMarker(marker){
-    if(selectedMarker && selectedMarker !== marker){
-      selectedMarker.setIcon(markerIcon(selectedMarker.__spotraType, false, selectedMarker.__riders || 0, selectedMarker.__now || 0));
-      selectedMarker.setZIndex(selectedMarker.__riders > 0 ? 500 : 1);
-    }
+    const prev = selectedMarker;
     selectedMarker = marker || null;
-    if(marker){
-      marker.setIcon(markerIcon(marker.__spotraType, true, marker.__riders || 0, marker.__now || 0));
-      marker.setZIndex(999);
-    }
+    if(prev && prev !== marker) styleMarker(prev);
+    if(marker) styleMarker(marker);
   }
 
 
@@ -340,7 +415,7 @@
     const shareBtn = document.getElementById('spotShareBtn');
     if(shareBtn) shareBtn.style.display = place && place.id && !place.isGoogleResult ? '' : 'none';
     const directions = document.getElementById('spotDirectionsBtn');
-    if(type) type.textContent = place.label || window.SpotraBackend.labelForType(place.type);
+    if(type){ type.textContent = place.label || window.SpotraBackend.labelForType(place.type); type.dataset.type = place.type || ''; }
     if(name) name.textContent = place.name;
     if(meta) meta.textContent = place.meta || place.address || '';
     if(cover){
@@ -421,6 +496,7 @@
       marker.__riders = riders;
       marker.__now = nowAt(place.id);
       marker.__placeId = place.id;
+      styleMarker(marker);
       marker.addListener('click', () => { selectMarker(marker); map.panTo(marker.getPosition()); updateDetail(place); openDetail(); });
       markers.push(marker);
       entries.push({ place, marker });
@@ -497,7 +573,7 @@
     local.forEach(p => {
       const { color, glyph } = pinGlyph(p.type);
       const sub = [p.city, p.countryCode || p.country_code].filter(Boolean).join(' · ');
-      html += `<button type="button" class="msr-item" data-search-place="${esc(p.id)}"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${glyph}</svg></span><span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span></button>`;
+      html += `<button type="button" class="msr-item" data-search-place="${esc(p.id)}"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true">${glyph}</svg></span><span class="tx"><b>${esc(p.name)}</b><small>${esc(sub)}</small></span></button>`;
     });
     if(geo === 'loading') html += `<div class="msr-note">${esc(tr('Buscando...'))}</div>`;
     else if(Array.isArray(geo)){
@@ -612,6 +688,13 @@
     canvas.closest('.map-stage')?.classList.add('google-live');
     initialized = true;
     map.addListener('click', () => { closeList(); if(isMobile()) closeDetail(); });
+    // al cruzar los niveles de zoom, los pines pasan de punto a pin y aparecen/desaparecen los nombres
+    let lastLevel = -1;
+    map.addListener('zoom_changed', () => {
+      const z = map.getZoom();
+      const level = z >= ZOOM_LABELS ? 2 : (z >= ZOOM_PINS ? 1 : 0);
+      if(level !== lastLevel){ lastLevel = level; applySessionIcons(); }
+    });
     setupSearch();
     addLocateControl();
     await refresh(activeType);
