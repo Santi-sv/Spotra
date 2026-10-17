@@ -892,6 +892,23 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
 .auth-feat{text-align:center}
 .auth-feat svg{width:24px;height:24px;color:var(--green-hot);margin:0 auto 8px;display:block}
 .auth-feat span{display:block;font-size:10px;letter-spacing:.1em;font-weight:800;color:var(--text);line-height:1.45;text-transform:uppercase}
+/* 16/10/2026: entrar con Face ID / huella (passkeys) — spotra-passkey.js muestra el bloque si el navegador lo permite */
+.pk-login-wrap[hidden],[data-passkey-add][hidden],#pkNote[hidden]{display:none!important}
+.pk-login{width:100%;height:58px;border-radius:16px;border:1.5px solid var(--green-hot);background:rgba(46,232,77,.09);color:var(--text);font-weight:700;font-size:16px;display:flex;align-items:center;justify-content:center;gap:12px;cursor:pointer}
+.pk-login svg{width:25px;height:25px;color:var(--green-hot);flex-shrink:0}
+.pk-login:hover{background:rgba(46,232,77,.15)}
+.pk-login[disabled]{opacity:.6;cursor:default}
+.pk-login-wrap .auth-div{margin:16px 0 4px}
+#signinForm + .pk-login-wrap,.panel .pk-login-wrap{margin-top:14px}
+.pk-list{display:grid;gap:8px;margin-top:14px}
+.pk-item{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)}
+.pk-item svg{width:24px;height:24px;color:var(--green-hot);flex-shrink:0}
+.pk-item .pk-tx{flex:1;min-width:0}
+.pk-item .pk-tx b{display:block;font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk-item .pk-tx span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.pk-item button{flex-shrink:0;min-height:40px;padding:0 12px;border-radius:12px;border:1px solid rgba(255,255,255,.12);background:none;color:var(--muted);font-size:13.5px;font-weight:600;cursor:pointer}
+.pk-item button:hover{color:#ff7a7a;border-color:rgba(255,122,122,.4)}
+.pk-empty{color:var(--muted);font-size:14px;line-height:1.5;padding:12px 2px 0}
 @media(max-width:560px){
   body.auth-mode{height:100svh;height:100dvh;overflow:hidden}
   .auth{height:100svh;height:100dvh;min-height:0;overflow:hidden}
@@ -949,6 +966,8 @@ body.auth-mode .main{padding:0;width:100%;max-width:none}
   .social-row{gap:9px}
   .social-btn{height:50px}
   .auth-create{height:52px;margin-top:11px}
+  .pk-login{height:52px;font-size:15px}
+  .pk-login-wrap .auth-div{margin:12px 0 2px}
 }
 @media(min-width:561px) and (max-height:820px){
   body.auth-mode{height:100vh;height:100dvh;overflow:hidden}
@@ -2241,6 +2260,10 @@ body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active
             <span class="logo-type"><span class="s">S</span>POTRA</span><span class="tm">TM</span>
           </div>
           <div class="auth-tag">ENCONTRÁ <span class="g">SPOTS.</span> CONECTÁ <span class="g">RIDERS.</span> COMPETÍ. <span class="g">CRECÉ.</span></div>
+          <div class="pk-login-wrap" hidden>
+            <button type="button" class="pk-login" data-passkey-login><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1M9.5 15.5c1.4 1.2 3.6 1.2 5 0"/></svg><span>Entrar con Face ID o huella</span></button>
+            <div class="auth-div">O CON TU EMAIL</div>
+          </div>
           <div id="loginForm">
             <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required placeholder="Email o usuario" autocomplete="username"></div>
             <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña" autocomplete="current-password" id="loginPass"><button class="icon-btn" data-eye="loginPass" style="width:36px;height:36px;border:0;background:none" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="color:var(--muted)"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
@@ -2448,6 +2471,10 @@ body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active
           <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña" autocomplete="current-password"></div>
         </div>
         <button class="primary-btn" style="width:100%;margin-top:18px;height:58px" data-validate="signinForm" data-route="home">Entrar</button>
+        <div class="pk-login-wrap" hidden>
+          <div class="auth-div">O SIN CONTRASEÑA</div>
+          <button type="button" class="pk-login" data-passkey-login><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1M9.5 15.5c1.4 1.2 3.6 1.2 5 0"/></svg><span>Entrar con Face ID o huella</span></button>
+        </div>
       </div>
     </section>
 
@@ -2757,8 +2784,15 @@ body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active
       <div class="settings-list">
         <button data-open-modal="editContact"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg>Contacto</span><b>›</b></button>
         <button data-open-modal="password"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>Cambiar contraseña</span><b>›</b></button>
+        <button data-open-modal="passkeys"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9v1.5M15 9v1.5M12 9v4h-1M9.5 15.5c1.4 1.2 3.6 1.2 5 0"/></svg>Face ID / huella</span><b>›</b></button>
       </div>
       <button type="button" class="account-delete-link" data-open-modal="deleteAccount">Eliminar mi cuenta</button>
+    </div>
+    <div class="modal-form" data-form="passkeys">
+      <p class="hint">Entrá a SPOTRA con tu cara o tu huella, sin escribir la contraseña. Tu cara o huella nunca sale de tu dispositivo.</p>
+      <div class="pk-list" id="pkList"></div>
+      <button type="button" class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-passkey-add hidden>Activar en este dispositivo</button>
+      <p class="theme-hint" id="pkNote" hidden></p>
     </div>
     <div class="modal-form" data-form="editProfile">
       <p class="hint">Tu nombre, usuario, disciplina, redes sociales y bio. Se ven en tu perfil.</p>
@@ -2809,8 +2843,8 @@ body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active
 <script src="assets/js/spotra-geo.js?v=1"></script>
 <script src="assets/js/spotra-backend.js?v=24"></script>
 <script src="assets/js/spotra-google-map.js?v=23"></script>
-<script src="assets/js/spotra-app.js?v=2"></script>
-<script src="assets/js/spotra-i18n.js?v=23"></script>
+<script src="assets/js/spotra-app.js?v=3"></script>
+<script src="assets/js/spotra-i18n.js?v=24"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=10"></script>
@@ -2834,6 +2868,7 @@ body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active
 <script src="assets/js/spotra-guide.js?v=3"></script>
 <script src="assets/js/spotra-help.js?v=2"></script>
 <script src="assets/js/spotra-inapp.js?v=1"></script>
-<script src="assets/js/spotra-install.js?v=2"></script>
+<script src="assets/js/spotra-install.js?v=3"></script>
+<script src="assets/js/spotra-passkey.js?v=1"></script>
 </body>
 </html>
