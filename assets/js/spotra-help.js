@@ -498,18 +498,29 @@ body.spotri-help-open{overflow:hidden}
   const SIZE = 52, GAP = 12;
   function place(){
     const vw = window.innerWidth, vh = window.innerHeight;
-    // computadora/tablet ancha: en la barra de arriba, a la izquierda de la campana (no tapa contenido)
-    const bell = vw >= 761 ? visible(document.querySelector('.notif-wrap')) : null;
-    if(bell && bell.top < 140){
-      const sz = 44;
+    /* 17/10/2026: en celular y en compu va en la barra de arriba, al lado de la campana (así no tapa nada).
+       Sin sesión no hay campana: ocupa ese mismo lugar. Si la barra no se ve, queda flotando abajo (como antes). */
+    const bar = visible(document.querySelector('header.topbar'));
+    const bell = visible(document.querySelector('.notif-wrap'));
+    if(bar && bar.top < 40 && bar.height < 150){
+      const sz = vw >= 761 ? 44 : 38;
+      let top, right;
+      if(bell && bell.top < 140){
+        top = Math.round(bell.top + (bell.height - sz) / 2);
+        right = Math.round(vw - bell.left + (vw >= 761 ? 10 : 8));
+      } else {
+        const actions = visible(document.querySelector('header.topbar .actions'));
+        top = Math.round((actions ? actions.top + (actions.height - sz) / 2 : bar.top + (bar.height - sz) / 2));
+        right = vw >= 761 ? 22 : 16;
+      }
       fab.style.width = fab.style.height = sz + 'px';
-      fab.style.top = Math.round(bell.top + (bell.height - sz) / 2) + 'px';
+      fab.style.top = top + 'px';
       fab.style.bottom = 'auto';
-      fab.style.right = Math.round(vw - bell.left + 10) + 'px';
+      fab.style.right = right + 'px';
       if(tip.classList.contains('show')){
-        tip.style.top = Math.round(bell.top + (bell.height - sz) / 2 + sz + 10) + 'px';
+        tip.style.top = (top + sz + 10) + 'px';
         tip.style.bottom = 'auto';
-        tip.style.right = Math.round(vw - bell.left + 10) + 'px';
+        tip.style.right = right + 'px';
         tip.style.borderRadius = '16px 4px 16px 16px';
       }
       return;
@@ -573,6 +584,8 @@ body.spotri-help-open{overflow:hidden}
     updateFab();
     setInterval(updateFab, 700);
     window.addEventListener('resize', updateFab);
+    // en la barra de arriba: acompaña el scroll de la barra sin saltos
+    window.addEventListener('scroll', () => { if(fab && fab.classList.contains('show')) place(); }, { passive: true, capture: true });
     window.addEventListener('hashchange', updateFab);
     window.addEventListener('spotra-lang', () => { updateFab(); if(st.open) renderShell(); });
     document.addEventListener('click', () => setTimeout(updateFab, 60));
