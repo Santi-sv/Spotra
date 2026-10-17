@@ -2197,8 +2197,8 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 .pf-menu button svg{width:18px;height:18px;flex-shrink:0}
 .pf-menu .danger{color:#ff8a8a}
 @media(max-width:760px){.pf-bleed{margin-left:-14px;margin-right:-14px}}
-/* en los perfiles, el botón de ayuda de SPOTRI no tapa el contenido (queda solo el +) */
-body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active[data-view="rider"]) #spotriHelpFab{display:none!important}
+/* 17/10/2026: celulares muy angostos: logo un poco más chico para que entre SPOTRI al lado de la campana */
+@media(max-width:360px){.topbar .brand-word{height:28px}}
 </style>
 <script src="assets/js/spotra-theme.js?v=1"></script>
 </head>
@@ -2866,7 +2866,7 @@ body:has(.view.active[data-view="profile"]) #spotriHelpFab,body:has(.view.active
 <script src="assets/js/spotra-spot-picker.js?v=7"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
 <script src="assets/js/spotra-guide.js?v=3"></script>
-<script src="assets/js/spotra-help.js?v=2"></script>
+<script src="assets/js/spotra-help.js?v=3"></script>
 <script src="assets/js/spotra-inapp.js?v=1"></script>
 <script src="assets/js/spotra-install.js?v=3"></script>
 <script src="assets/js/spotra-passkey.js?v=1"></script>
