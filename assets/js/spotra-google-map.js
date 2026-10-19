@@ -1,4 +1,4 @@
-/* SPOTRA · mapa de Google (v24, 17/10/2026: rediseño — mapa claro propio, pines con color por categoría,
+/* SPOTRA · mapa de Google (v25, 18/10/2026: más liviano — pines en caché, solo se redibuja lo que cambia, sin desenfoques; v24 17/10/2026: rediseño — mapa claro propio, pines con color por categoría,
    puntos de lejos, nombres de cerca, grupos con anillo de colores y pines que laten si hay gente) */
 (function(){
   const cfg = () => (window.SpotraBackend && window.SpotraBackend.config) || window.SPOTRA_CONFIG || {};
@@ -147,7 +147,17 @@
   function pulse(color){
     return `<circle cx="32" cy="26" r="18" fill="none" stroke="${color}" stroke-width="3"><animate attributeName="r" values="18;30" dur="1.8s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;0" dur="1.8s" repeatCount="indefinite"/></circle>`;
   }
+  const iconCache = new Map();
+  const levelNow = () => { const z = zoomNow(); return z >= ZOOM_LABELS ? 2 : (z >= ZOOM_PINS ? 1 : 0); };
   function markerIcon(type, selected, riders, now){
+    const ckey = [type, selected ? 1 : 0, Math.min(riders || 0, 10), Math.min(now || 0, 10), zoomNow() < ZOOM_PINS ? 0 : 1].join('|');
+    const hit = iconCache.get(ckey);
+    if(hit) return hit;
+    const icon = buildMarkerIcon(type, selected, riders, now);
+    iconCache.set(ckey, icon);
+    return icon;
+  }
+  function buildMarkerIcon(type, selected, riders, now){
     const { fill } = pinGlyph(type);
     const live = riders > 0;
     const here = now > 0;
@@ -164,8 +174,8 @@
     const badge = live ? `<circle cx="47" cy="10" r="9.5" fill="#2ee84d" stroke="#ffffff" stroke-width="2"/><text x="47" y="14.2" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="12" font-weight="700" fill="#06130a">${riders > 9 ? '9+' : riders}</text>` : '';
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="68" viewBox="0 0 64 68">`
       + `<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity=".22"/><stop offset=".55" stop-color="#ffffff" stop-opacity="0"/></linearGradient>`
-      + `<filter id="s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6"/></filter></defs>`
-      + `${halo}<ellipse cx="32" cy="59.5" rx="7.5" ry="2.6" fill="rgba(0,0,0,.35)" filter="url(#s)"/>${outline}`
+      + `</defs>`
+      + `${halo}<ellipse cx="32" cy="59.5" rx="7" ry="2.4" fill="rgba(0,0,0,.22)"/><ellipse cx="32" cy="59.5" rx="4.5" ry="1.6" fill="rgba(0,0,0,.18)"/>${outline}`
       + `<path d="${PIN_BODY}" fill="${fill}"/><path d="${PIN_BODY}" fill="url(#g)"/>`
       + `<path d="${PIN_BODY}" fill="none" stroke="${ring}" stroke-width="2.6" stroke-linejoin="round"/>`
       + `${iconSvg(type, 21, 15, 22, '#ffffff')}${badge}${nowBadge}</svg>`;
@@ -175,19 +185,29 @@
   }
   // nombre debajo del pin: de cerca, o siempre en el elegido
   function markerLabel(marker, selected){
-    const show = selected || zoomNow() >= ZOOM_LABELS;
+    // nombres solo en los pines que se ven en pantalla (máx. 40): con todos, el mapa se volvía lento
+    const show = selected || (zoomNow() >= ZOOM_LABELS && marker.__inView);
     if(!show) return null;
     let t = String(marker.getTitle() || '');
     if(t.length > 24) t = t.slice(0, 23).trim() + '…';
     return { text: t, className: selected ? 'spotra-pin-label is-selected' : 'spotra-pin-label', color: '#141814', fontSize: selected ? '13px' : '12px', fontWeight: '700' };
   }
+  // 18/10/2026: con ~1.900 lugares, cada pin se actualiza solo si cambió algo (antes se redibujaban todos)
   function styleMarker(marker){
     const sel = marker === selectedMarker;
     const r = marker.__riders || 0, nw = marker.__now || 0;
-    marker.setIcon(markerIcon(marker.__spotraType, sel, r, nw));
-    marker.setLabel(markerLabel(marker, sel));
-    marker.setOptions({ optimized: !(r > 0 || nw > 0) });   // los que laten no pueden ir "optimizados"
-    marker.setZIndex(sel ? 999 : (nw > 0 ? 600 : (r > 0 ? 500 : 1)));
+    const key = [marker.__spotraType, sel ? 1 : 0, Math.min(r, 10), Math.min(nw, 10), levelNow(), marker.__inView ? 1 : 0].join('|');
+    if(marker.__styleKey === key) return;
+    marker.__styleKey = key;
+    const icon = markerIcon(marker.__spotraType, sel, r, nw);
+    if(marker.__icon !== icon){ marker.__icon = icon; marker.setIcon(icon); }
+    const lab = markerLabel(marker, sel);
+    const labKey = lab ? lab.text + '|' + lab.className : '';
+    if(marker.__labKey !== labKey){ marker.__labKey = labKey; marker.setLabel(lab); }
+    const opt = !(r > 0 || nw > 0);   // los que laten no pueden ir "optimizados"
+    if((marker.__opt === undefined ? true : marker.__opt) !== opt){ marker.__opt = opt; marker.setOptions({ optimized: opt }); }
+    const z = sel ? 999 : (nw > 0 ? 600 : (r > 0 ? 500 : 1));
+    if(marker.__z !== z){ marker.__z = z; marker.setZIndex(z); }
   }
 
   /* ---------- agrupado de pines (clusters) ---------- */
@@ -221,8 +241,8 @@
       off += len;
     });
     const liveRing = (here || live) ? `<circle cx="32" cy="32" r="28.5" fill="none" stroke="${here ? '#ff8a3d' : '#2ee84d'}" stroke-width="3"/>` : '';
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><defs><filter id="s" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.8"/></filter></defs>`
-      + `<circle cx="32" cy="34" r="25" fill="rgba(0,0,0,.28)" filter="url(#s)"/><circle cx="32" cy="32" r="25" fill="#ffffff"/>${segs}`
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">`
+      + `<circle cx="32" cy="34" r="25.5" fill="rgba(0,0,0,.18)"/><circle cx="32" cy="32" r="25" fill="#ffffff"/>${segs}`
       + `<circle cx="32" cy="32" r="17.5" fill="#0b0f0c"/>${liveRing}`
       + `<text x="32" y="37.5" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="${txt.length > 3 ? 12 : 15}" font-weight="700" fill="#ffffff">${txt}</text></svg>`;
     const size = count > 99 ? 60 : 54;
@@ -247,7 +267,7 @@
     return clusterer;
   }
 
-  function applySessionIcons(){
+  function applySessionIcons(rerender){
     entries.forEach(e => {
       const r = ridersAt(e.place.id);
       const nw = nowAt(e.place.id);
@@ -255,7 +275,7 @@
       e.marker.__now = nw;
       styleMarker(e.marker);
     });
-    if(clusterer && clusterer.render) clusterer.render();
+    if(rerender !== false && clusterer && clusterer.render) clusterer.render();
   }
   window.addEventListener('spotra-presence', applySessionIcons);
   window.addEventListener('spotra-sessions', () => {
@@ -492,6 +512,9 @@
         icon: markerIcon(place.type, false, riders, nowAt(place.id)),
         zIndex: riders > 0 ? 500 : 1
       });
+      // ya nace con su ícono y su altura: se anotan para no volver a dibujarlo
+      marker.__icon = marker.getIcon();
+      marker.__z = riders > 0 ? 500 : 1;
       marker.__spotraType = place.type;
       marker.__riders = riders;
       marker.__now = nowAt(place.id);
@@ -690,10 +713,18 @@
     map.addListener('click', () => { closeList(); if(isMobile()) closeDetail(); });
     // al cruzar los niveles de zoom, los pines pasan de punto a pin y aparecen/desaparecen los nombres
     let lastLevel = -1;
-    map.addListener('zoom_changed', () => {
-      const z = map.getZoom();
-      const level = z >= ZOOM_LABELS ? 2 : (z >= ZOOM_PINS ? 1 : 0);
-      if(level !== lastLevel){ lastLevel = level; applySessionIcons(); }
+    map.addListener('idle', () => {
+      const level = levelNow();
+      let changed = level !== lastLevel;
+      lastLevel = level;
+      // de cerca: marcar qué pines están en pantalla para mostrarles el nombre
+      const bounds = level === 2 ? map.getBounds() : null;
+      let shown = 0;
+      entries.forEach(e => {
+        const inView = !!(bounds && shown < 40 && bounds.contains(e.marker.getPosition()) && ++shown);
+        if(e.marker.__inView !== inView){ e.marker.__inView = inView; changed = true; }
+      });
+      if(changed) applySessionIcons(false);
     });
     setupSearch();
     addLocateControl();

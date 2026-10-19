@@ -1,4 +1,5 @@
-/* SPOTRA · Ayuda de SPOTRI (v4)
+/* SPOTRA · Ayuda de SPOTRI (v5)
+   - v5 (18/10/2026): el acomodo del botón al hacer scroll va a lo sumo una vez por cuadro (más fluido).
    - v4 (17/10/2026): rediseño — botón y panel con borde gris, sin brillo verde.
    - v3: el botón va en la barra de arriba, al lado de la campana.
    - Botón flotante con la cara de SPOTRI en todas las pantallas (no en login/registro ni durante la guía).
@@ -587,7 +588,12 @@ body.spotri-help-open{overflow:hidden}
     setInterval(updateFab, 700);
     window.addEventListener('resize', updateFab);
     // en la barra de arriba: acompaña el scroll de la barra sin saltos
-    window.addEventListener('scroll', () => { if(fab && fab.classList.contains('show')) place(); }, { passive: true, capture: true });
+    let scrollQueued = false;   // como mucho una vez por cuadro (antes medía en cada evento de scroll)
+    window.addEventListener('scroll', () => {
+      if(scrollQueued || !fab || !fab.classList.contains('show')) return;
+      scrollQueued = true;
+      requestAnimationFrame(() => { scrollQueued = false; place(); });
+    }, { passive: true, capture: true });
     window.addEventListener('hashchange', updateFab);
     window.addEventListener('spotra-lang', () => { updateFab(); if(st.open) renderShell(); });
     document.addEventListener('click', () => setTimeout(updateFab, 60));
