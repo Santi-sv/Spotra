@@ -1,4 +1,4 @@
-/* SPOTRA · Idiomas (español, português, english)
+/* SPOTRA · Idiomas (español, português, english) — v25: textos de los formularios con título arriba
    La app está escrita en español. Este módulo traduce lo que aparece en pantalla
    (textos, placeholders y avisos) según el idioma elegido. Lo que no está en el
    diccionario queda en español. Clave compartida con la landing: spotra_lang. */
@@ -150,6 +150,40 @@
     'Tu WhatsApp':['Seu WhatsApp','Your WhatsApp'],'Usar mi ubicación (para "cerca de mí")':['Usar minha localização (para "perto de mim")','Use my location (for "near me")'],
     // ---- perfil y configuración
     'Configuración':['Configurações','Settings'],'Cuenta y seguridad':['Conta e segurança','Account & security'],'Tu contacto privado, tu contraseña y el acceso a tu cuenta.':['Seu contato privado, sua senha e o acesso à sua conta.','Your private contact, your password and access to your account.'],'Editar contacto':['Editar contato','Edit contact'],'Eliminar cuenta':['Excluir conta','Delete account'],'Privacidad, contacto, contraseña y seguridad de cuenta':['Privacidade, contato, senha e segurança da conta','Privacy, contact, password and account security'],
+    // ---- formularios con título arriba (fase 2 del rediseño, 17/10/2026)
+    'Nombre del spot':['Nome do spot','Spot name'],
+    'Ej. Ledges del Buen Pastor':['Ex. Ledges do Buen Pastor','E.g. Buen Pastor ledges'],
+    'Ciudad y país':['Cidade e país','City and country'],
+    'Ej. Córdoba, Argentina':['Ex. Florianópolis, Brasil','E.g. Córdoba, Argentina'],
+    'Descripción (opcional)':['Descrição (opcional)','Description (optional)'],
+    'Obstáculos, superficie, horarios':['Obstáculos, piso, horários','Obstacles, surface, hours'],
+    'Publicación':['Publicação','Post'],
+    'Spot (opcional)':['Spot (opcional)','Spot (optional)'],
+    'Buscá un spot para etiquetar':['Busque um spot para marcar','Search a spot to tag'],
+    'Tu nombre':['Seu nome','Your first name'],
+    'Tu apellido':['Seu sobrenome','Your last name'],
+    '@usuario':['@usuario','@username'],
+    'Skate, BMX, Roller, Scooter':['Skate, BMX, Patins, Patinete','Skate, BMX, Roller, Scooter'],
+    'Instagram':['Instagram','Instagram'],
+    'TikTok':['TikTok','TikTok'],
+    'Facebook':['Facebook','Facebook'],
+    'Usuario o link':['Usuário ou link','Username or link'],
+    'Bio':['Bio','Bio'],
+    'Contá quién sos como rider':['Conte quem você é como rider','Tell who you are as a rider'],
+    'Email':['E-mail','Email'],
+    'tu@email.com':['seu@email.com','you@email.com'],
+    'Tu contraseña actual':['Sua senha atual','Your current password'],
+    'Mínimo 10 caracteres':['Mínimo 10 caracteres','At least 10 characters'],
+    'Repetí la nueva contraseña':['Repita a nova senha','Repeat the new password'],
+    'La misma de arriba':['A mesma de cima','Same as above'],
+    'Para confirmar, escribí ELIMINAR':['Para confirmar, digite ELIMINAR','To confirm, type ELIMINAR'],
+    'Nota (opcional)':['Nota (opcional)','Note (optional)'],
+    'Ej. traigo cajón':['Ex. levo caixote','E.g. bringing a box'],
+    'Detalles (opcional)':['Detalhes (opcional)','Details (optional)'],
+    'Contanos más':['Conte mais','Tell us more'],
+    'Tipo de lugar':['Tipo de lugar','Place type'],
+    'Ubicación':['Localização','Location'],
+    'Foto':['Foto','Photo'],
     // ---- Face ID / huella (passkeys, 16/10/2026)
     'Entrar con Face ID o huella':['Entrar com Face ID ou digital','Log in with Face ID or fingerprint'],
     'O CON TU EMAIL':['OU COM SEU E-MAIL','OR WITH YOUR EMAIL'],
