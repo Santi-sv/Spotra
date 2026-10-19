@@ -2258,6 +2258,46 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 body:not(.is-authed) .fab{display:none!important}
 .fab{width:58px;height:58px;border-radius:18px}
 @media(max-width:760px){body.is-authed:not(.map-mode) .main{padding-bottom:calc(172px + env(safe-area-inset-bottom))}}
+/* fase 4 (19/10/2026): compu (≥900 px)
+   Un ancho común de 1200 px para la barra de arriba y todas las pantallas (mapa incluido). */
+@media(min-width:900px){
+  :root{--page-w:1200px}
+  .topbar{padding-left:max(clamp(18px,4vw,54px),calc((100% - var(--page-w))/2))!important;padding-right:max(clamp(18px,4vw,54px),calc((100% - var(--page-w))/2))!important}
+  body:not(.auth-mode) .main{width:100%;max-width:none;padding-left:max(clamp(18px,4vw,54px),calc((100% - var(--page-w))/2));padding-right:max(clamp(18px,4vw,54px),calc((100% - var(--page-w))/2))}
+  /* la página es la que se desplaza (no .main): así las columnas laterales quedan fijas al bajar y no se corren 96 px */
+  body:not(.map-mode):not(.auth-mode) .main{overflow-x:clip}
+  .fab{right:max(26px,calc((100vw - var(--page-w))/2 - 82px))!important}
+
+  /* Eventos: filtros en una sola línea, destacado más alto, el resto en grilla de 3 tarjetas */
+  #eventsWhen,#eventsDisc{display:inline-flex;vertical-align:top;margin-top:16px!important}
+  #eventsDisc{margin-left:14px!important;padding-left:16px!important;border-left:1px solid var(--line-soft)}
+  .evx-feat{grid-template-columns:1.4fr 1fr!important;margin-top:22px!important}
+  .evx-cover{min-height:320px!important}
+  .evx-fbody{padding:28px 30px!important}
+  .evx-fbody h3{font-size:28px!important;line-height:1.15}
+  .evx-fbody .evx-meta{font-size:14px;margin-top:8px}
+  .evx-fbtns{margin-top:22px!important}
+  .evx-sub{margin:34px 0 14px!important;font-size:20px!important}
+  .evx-list{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:20px!important}
+  .evx-row{position:relative;flex-direction:column;align-items:stretch!important;gap:0!important;padding:0!important;border-radius:18px!important;overflow:hidden;border-color:var(--line-soft)!important;transition:border-color .15s}
+  .evx-row:hover{border-color:var(--line-strong)!important}
+  .evx-thumb{width:100%!important;height:auto!important;aspect-ratio:16/9;border-radius:0!important}
+  .evx-thumb .evx-date,.evx-row>.evx-date{position:absolute;left:12px;top:12px;transform:none!important}
+  .evx-row:not(:has(.evx-thumb))::before{content:"";display:block;aspect-ratio:16/9;background:radial-gradient(120% 90% at 85% 10%,rgba(77,141,255,.38),transparent 60%),linear-gradient(160deg,#16213a,#0f1420)}
+  .evx-rbody{padding:14px 16px 16px}
+  .evx-rbody b{font-size:16px!important}
+  .evx-heart{position:absolute;right:12px;top:12px;background:rgba(0,0,0,.45)!important;border-color:rgba(255,255,255,.25)!important;color:#fff!important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+
+  /* Foro: columna de 600 px + panel de 320 px alineado con las pestañas */
+  .ig-wrap{grid-template-columns:minmax(0,600px) 320px!important;gap:48px!important}
+  .ig-side{top:96px!important}
+  .ig-media img{max-height:750px!important;object-fit:cover!important}
+  .ig-follow,.ig-follow-link{color:var(--green-hot)!important}
+
+  /* Market: dentro del ancho común; la ubicación una sola vez (en la columna izquierda) */
+  .mk{grid-template-columns:250px minmax(0,1fr)!important;gap:32px!important}
+  .mk-loc-mini{display:none!important}
+}
 /* nombres debajo de los pines del mapa */
 .spotra-pin-label{font-family:var(--body,'General Sans',sans-serif)!important;white-space:nowrap;letter-spacing:.01em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff,0 1px 1px #fff}
 .spotra-pin-label.is-selected{background:#0b0f0c;color:#fff!important;padding:4px 10px;border-radius:999px;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
