@@ -2242,6 +2242,14 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 /* íconos dentro de los campos y en las filas de la ficha: gris (el verde queda para la acción) */
 .field svg,.spot-info-row svg{color:var(--muted)!important}
 .field:focus-within svg{color:var(--text)!important}
+/* fase 2 (17/10/2026): formularios con el título arriba y sin ícono adentro del campo */
+.modal .f-label,.modal .ses-label{display:block;color:var(--muted);font-size:12.5px;font-weight:600;letter-spacing:.01em;text-transform:none;margin:14px 0 6px}
+.modal .form-grid{gap:0!important;row-gap:0!important}
+.modal .form-grid > .field,.modal .f-label + .field,.modal .f-label + div > .field,.modal .ses-label + .field{margin-top:0!important}
+.modal .field input,.modal .field select,.modal .field textarea{font-size:16px}
+.price-row > .field{grid-column:auto!important;margin-top:0!important}
+.modal input[type=number]::-webkit-inner-spin-button,.modal input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.modal input[type=number]{-moz-appearance:textfield}
 /* nombres debajo de los pines del mapa */
 .spotra-pin-label{font-family:var(--body,'General Sans',sans-serif)!important;white-space:nowrap;letter-spacing:.01em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff,0 1px 1px #fff}
 .spotra-pin-label.is-selected{background:#0b0f0c;color:#fff!important;padding:4px 10px;border-radius:999px;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
@@ -2598,13 +2606,18 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
     <!-- SPOT -->
     <div class="modal-form" data-form="spot">
       <p class="hint">Queda <b style="color:#ffd24a">pendiente de aprobación</b> antes de aparecer en el mapa.</p>
+      <span class="f-label" style="margin-top:4px">Tipo de lugar</span>
       <div class="seg" data-seg="spotType"><button class="active" data-v="Street spot">Street</button><button data-v="Skatepark">Skatepark</button><button data-v="Tienda">Tienda</button></div>
       <div class="form-grid" id="spotForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Nombre del spot (ej. Ledges del Buen Pastor)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><input required placeholder="Ciudad y país (ej. Córdoba, Argentina)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input placeholder="Descripción corta (obstáculos, superficie, horarios)"></div>
+        <span class="f-label">Nombre del spot</span>
+        <div class="field full"><input required placeholder="Ej. Ledges del Buen Pastor"></div>
+        <span class="f-label">Ciudad y país</span>
+        <div class="field full"><input required placeholder="Ej. Córdoba, Argentina"></div>
+        <span class="f-label">Descripción (opcional)</span>
+        <div class="field full"><input placeholder="Obstáculos, superficie, horarios"></div>
       </div>
-      <div style="margin-top:14px">
+      <div>
+        <span class="f-label">Ubicación</span>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px">
           <span id="spotPickStatus" class="spot-pick-status">Tocá el mapa para marcar el lugar</span>
           <button type="button" id="spotUseLoc" style="background:rgba(255,255,255,.06);color:var(--text);border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:9px 14px;font-weight:700;font-size:13px;white-space:nowrap">Usar mi ubicación</button>
@@ -2613,9 +2626,10 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
         <div id="spotPickMap" class="spot-pick-map" style="height:240px;border-radius:16px;overflow:hidden;background:#0c1014"></div>
         <input type="hidden" id="spotLat"><input type="hidden" id="spotLng">
       </div>
+      <span class="f-label">Foto</span>
       <label class="dropzone" id="dzSpot">
         <input type="file" accept="image/*">
-        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Subí una foto del spot<br><b style="color:var(--green-hot)">Tocá o arrastrá la imagen</b></div>
+        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Subí una foto del spot<br><b style="color:var(--text)">Tocá o arrastrá la imagen</b></div>
         <div class="dz-preview"></div><span class="dz-badge">Foto lista</span>
       </label>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="spot">Enviar a aprobación</button>
@@ -2623,18 +2637,21 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 
     <!-- POST -->
     <div class="modal-form" data-form="post">
-      <p class="hint">Se publica <b style="color:var(--green-hot)">al instante</b>. Compartí una sesión, una pregunta o un hallazgo. Respetá a la comunidad: el admin puede eliminar publicaciones.</p>
+      <p class="hint">Se publica <b style="color:var(--text)">al instante</b>. Compartí una sesión, una pregunta o un hallazgo. Respetá a la comunidad: el admin puede eliminar publicaciones.</p>
       <div class="form-grid" id="postForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5h16v11H9l-4 4V5Z"/></svg><input required placeholder="¿Qué querés compartir?"></div>
+        <span class="f-label">Publicación</span>
+        <div class="field full"><input required placeholder="¿Qué querés compartir?"></div>
       </div>
       <div class="fx-spotpick">
         <div id="postSpotChosen" class="fx-chosen"></div>
-        <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><input id="postSpotSearch" placeholder="Etiquetar un spot (opcional)" autocomplete="off"></div>
+        <span class="f-label">Spot (opcional)</span>
+        <div class="field"><input id="postSpotSearch" placeholder="Buscá un spot para etiquetar" autocomplete="off"></div>
         <div id="postSpotResults" class="fx-spotres"></div>
       </div>
+      <span class="f-label">Foto (opcional)</span>
       <label class="dropzone" id="dzPost">
         <input type="file" accept="image/*">
-        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Foto (opcional)<br><b style="color:var(--green-hot)">Tocá o arrastrá la imagen</b></div>
+        <div class="dz-prompt"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg>Foto (opcional)<br><b style="color:var(--text)">Tocá o arrastrá la imagen</b></div>
         <div class="dz-preview"></div><span class="dz-badge">Archivo listo</span>
       </label>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="post">Publicar en foro</button>
@@ -2647,31 +2664,31 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
         <span class="f-label">Imagen de portada (opcional)</span>
         <label class="evx-coverpick"><input type="file" id="eventCover" accept="image/*" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-8 8"/></svg><span id="eventCoverName">Elegir imagen de portada</span></label>
         <span class="f-label">Nombre del evento</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input required id="eventTitle" placeholder="Best Trick Sábado"></div>
+        <div class="field full"><input required id="eventTitle" placeholder="Best Trick Sábado"></div>
         <span class="f-label">Spot donde se hace</span>
         <input type="hidden" id="eventPlaceId">
         <button type="button" id="eventPlacePick" class="field full" style="width:100%;text-align:left;cursor:pointer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><span id="eventPlaceLabel" style="color:var(--muted)">Elegir spot en el mapa</span></button>
         <span class="f-label">Disciplina</span>
         <div class="seg" data-seg="eventDiscipline" style="grid-template-columns:repeat(4,1fr);margin-top:0"><button type="button" class="active" data-v="todas">Todas</button><button type="button" data-v="skate">Skate</button><button type="button" data-v="bmx">BMX</button><button type="button" data-v="rollers">Rollers</button></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><span class="f-label">Fecha</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input required id="eventDate" type="date"></div></div>
-          <div><span class="f-label">Hora</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><input required id="eventTime" type="time" value="16:00"></div></div>
+          <div><span class="f-label">Fecha</span><div class="field full"><input required id="eventDate" type="date"></div></div>
+          <div><span class="f-label">Hora</span><div class="field full"><input required id="eventTime" type="time" step="60" value="16:00"></div></div>
         </div>
         <span class="f-label">Info del evento (opcional)</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg><input id="eventDesc" placeholder="Reglas, protecciones, qué hay en el spot..."></div>
+        <div class="field full"><input id="eventDesc" placeholder="Reglas, protecciones, qué hay en el spot..."></div>
         <div class="kicker" style="font-size:10px;margin-top:18px">Para competencias <span style="color:var(--muted);letter-spacing:0;text-transform:none">(todo opcional)</span></div>
         <span class="f-label">Categorías (separadas por coma)</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12l8-8 8 8-8 8-8-8Z"/></svg><input id="eventCategories" placeholder="Amateur, Pro, Femenino, Sub-16"></div>
+        <div class="field full"><input id="eventCategories" placeholder="Amateur, Pro, Femenino, Sub-16"></div>
         <span class="f-label">Inscripción</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 8h16v8H4z"/><path d="M4 12h16"/></svg><input id="eventRegInfo" placeholder="Gratis / $200 en puerta"></div>
+        <div class="field full"><input id="eventRegInfo" placeholder="Gratis / $200 en puerta"></div>
         <span class="f-label">Premios</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 4h12v3a6 6 0 0 1-12 0V4Z"/><path d="M9 14v3M15 14v3M8 20h8"/></svg><input id="eventPrizes" placeholder="$5.000 + productos de tiendas"></div>
+        <div class="field full"><input id="eventPrizes" placeholder="$5.000 + productos de tiendas"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div><span class="f-label">Cupo máximo</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3"/><path d="M3 20a6 6 0 0 1 12 0"/><circle cx="17" cy="9" r="2.4"/></svg><input id="eventCapacity" type="number" min="1" placeholder="Sin cupo"></div></div>
-          <div><span class="f-label">Inscripción hasta</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input id="eventCloses" type="date"></div></div>
+          <div><span class="f-label">Cupo máximo</span><div class="field full"><input id="eventCapacity" type="number" min="1" placeholder="Sin cupo"></div></div>
+          <div><span class="f-label">Inscripción hasta</span><div class="field full"><input id="eventCloses" type="date"></div></div>
         </div>
         <span class="f-label">WhatsApp del organizador</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input id="eventContact" type="tel" placeholder="+598 99 123 456"></div>
+        <div class="field full"><input id="eventContact" type="tel" placeholder="+598 99 123 456"></div>
         <label style="display:flex;align-items:center;gap:10px;margin-top:14px;cursor:pointer;font-size:14px"><input type="checkbox" id="eventRain" style="width:19px;height:19px;accent-color:var(--green-hot)">Si llueve se reprograma</label>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-submit="event">Enviar a aprobación</button>
@@ -2684,25 +2701,25 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
       <div id="productForm">
         <span class="f-label">Fotos (hasta 6)</span>
         <div id="mlPhotoRow" style="display:flex;gap:8px;flex-wrap:wrap">
-          <label style="width:72px;height:62px;border-radius:13px;border:1.5px dashed rgba(46,232,77,.5);display:grid;place-items:center;color:var(--green-hot);cursor:pointer"><input type="file" id="mlPhotos" accept="image/*" multiple hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg></label>
+          <label style="width:72px;height:62px;border-radius:13px;border:1.5px dashed rgba(255,255,255,.22);display:grid;place-items:center;color:var(--muted);cursor:pointer"><input type="file" id="mlPhotos" accept="image/*" multiple hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:22px;height:22px"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-7 8"/></svg></label>
           <span id="mlPhotoPreview" style="display:flex;gap:8px;flex-wrap:wrap"></span>
         </div>
         <span class="f-label">Título</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14l-1 12H6L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg><input required id="mlTitle" placeholder="Tabla 8.0 casi nueva"></div>
+        <div class="field full"><input required id="mlTitle" placeholder="Tabla 8.0 casi nueva"></div>
         <span class="f-label">Precio</span>
-        <div style="display:grid;grid-template-columns:96px 1fr;gap:8px">
+        <div class="price-row" style="display:grid;grid-template-columns:104px 1fr;gap:8px">
           <div class="field full" style="padding-right:6px"><select required id="mlCurrency" style="min-width:0"><option value="UYU">$U</option><option value="USD">US$</option><option value="ARS">AR$</option><option value="BRL">R$</option></select></div>
-          <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M16.5 6.5C15.6 5.3 14 4.5 12 4.5c-2.6 0-4.3 1.3-4.3 3.2 0 4.6 9 2.3 9 7.2 0 2-1.8 3.6-4.7 3.6-2.3 0-4-.9-5-2.3"/></svg><input required id="mlPrice" type="number" min="1" inputmode="numeric" placeholder="3500"></div>
+          <div class="field full"><input required id="mlPrice" type="number" min="1" inputmode="numeric" placeholder="3500"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
           <div><span class="f-label">Categoría</span><div class="field full"><select required id="mlCategory"><option value="tablas">Tablas</option><option value="trucks">Trucks</option><option value="ruedas">Ruedas y rulemanes</option><option value="zapatillas">Zapatillas</option><option value="ropa">Ropa</option><option value="protecciones">Protecciones</option><option value="bicis">BMX</option><option value="rollers">Rollers</option><option value="scooters">Scooters</option><option value="otros" selected>Otros</option></select></div></div>
           <div><span class="f-label">Estado</span><div class="field full"><select required id="mlCondition"><option value="nuevo">Nuevo</option><option value="como-nuevo">Usado — como nuevo</option><option value="bueno" selected>Usado — bueno</option><option value="con-detalles">Usado — con detalles</option></select></div></div>
         </div>
         <span class="f-label">Descripción</span>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l11-11a2.8 2.8 0 0 0-4-4L4 16v4Z"/><path d="M13.5 6.5l4 4"/></svg><input id="mlDesc" placeholder="Detalles, uso, qué incluye, dónde entregás..."></div>
+        <div class="field full"><input id="mlDesc" placeholder="Detalles, uso, qué incluye, dónde entregás..."></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div><span class="f-label">Ciudad</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required id="mlCity" placeholder="Canelones"></div></div>
-          <div><span class="f-label">Tu WhatsApp</span><div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-2.5 1.5a12 12 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input required id="mlWhatsapp" type="tel" placeholder="+598 99 123 456"></div></div>
+          <div><span class="f-label">Ciudad</span><div class="field full"><input required id="mlCity" placeholder="Canelones"></div></div>
+          <div><span class="f-label">Tu WhatsApp</span><div class="field full"><input required id="mlWhatsapp" type="tel" placeholder="+598 99 123 456"></div></div>
         </div>
         <input type="hidden" id="mlLat"><input type="hidden" id="mlLng">
         <button type="button" class="ghost-btn" id="mlLocBtn" style="width:100%;min-height:46px;margin-top:14px">Usar mi ubicación (para "cerca de mí")</button>
@@ -2714,7 +2731,7 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
     <!-- PERFIL / CONFIG -->
     <div class="modal-form" data-form="presence">
       <div class="pr-hero"><span class="pr-dot"></span></div>
-      <p class="hint">SPOTRA puede usar tu ubicación <b style="color:var(--green-hot)">mientras la app está abierta</b> para mostrar cuándo estás andando en un spot o skatepark.</p>
+      <p class="hint">SPOTRA puede usar tu ubicación <b style="color:var(--text)">mientras la app está abierta</b> para mostrar cuándo estás andando en un spot o skatepark.</p>
       <ul class="pr-list">
         <li>Los demás riders ven <b>cuántos</b> están andando en cada spot.</li>
         <li>Solo <b>quienes te siguen</b> ven tu nombre y tu foto.</li>
@@ -2735,7 +2752,8 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
       <p class="hint" id="reportWhat">—</p>
       <div class="ses-label">¿Qué pasa?</div>
       <div class="rep-reasons" id="reportReasons"></div>
-      <div class="field" style="margin-top:10px"><input id="reportDetails" maxlength="500" placeholder="Contanos más (opcional)"></div>
+      <span class="f-label">Detalles (opcional)</span>
+        <div class="field" style="margin-top:10px"><input id="reportDetails" maxlength="500" placeholder="Contanos más"></div>
       <label class="rep-block" id="reportBlockRow"><input type="checkbox" id="reportBlock"> <span>Bloquear también a <b id="reportBlockName"></b></span></label>
       <p class="ses-error" id="reportError"></p>
       <button type="button" class="primary-btn" id="reportSend" style="width:100%;margin-top:12px;height:52px">Enviar reporte</button>
@@ -2769,26 +2787,27 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
       <div id="blockedList"></div>
     </div>
     <div class="modal-form" data-form="birth">
-      <p class="hint">Para cuidar a los riders menores de edad, necesitamos tu fecha de nacimiento. <b style="color:var(--green-hot)">No se muestra en tu perfil</b> y no se puede cambiar después.</p>
+      <p class="hint">Para cuidar a los riders menores de edad, necesitamos tu fecha de nacimiento. <b style="color:var(--text)">No se muestra en tu perfil</b> y no se puede cambiar después.</p>
       <div class="ses-label">Fecha de nacimiento</div>
       <div class="field"><input type="date" id="birthDate" aria-label="Fecha de nacimiento"></div>
       <p class="ses-error" id="birthError"></p>
       <button type="button" class="primary-btn" id="birthSave" style="width:100%;margin-top:14px;height:52px">Guardar</button>
     </div>
     <div class="modal-form" data-form="session">
-      <p class="hint">Se publica <b style="color:var(--green-hot)">al instante</b> y se ve en el mapa hasta que termina.</p>
+      <p class="hint">Se publica <b style="color:var(--text)">al instante</b> y se ve en el mapa hasta que termina.</p>
       <div class="ses-place"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><b id="sesPlaceName">Spot</b></div>
       <input type="hidden" id="sesPlaceId">
       <div class="ses-label">Día</div>
       <div class="seg" id="sesDay"><button class="active" data-v="0">Hoy</button><button data-v="1">Mañana</button><button data-v="other">Otro día</button></div>
       <div class="field" id="sesDateWrap" style="display:none;margin-top:8px"><input type="date" id="sesDate" aria-label="Fecha"></div>
       <div class="ses-times">
-        <div><div class="ses-label">Desde</div><div class="field"><input type="time" id="sesFrom" aria-label="Desde"></div></div>
-        <div><div class="ses-label">Hasta</div><div class="field"><input type="time" id="sesTo" aria-label="Hasta"></div></div>
+        <div><div class="ses-label">Desde</div><div class="field"><input type="time" step="60" id="sesFrom" aria-label="Desde"></div></div>
+        <div><div class="ses-label">Hasta</div><div class="field"><input type="time" step="60" id="sesTo" aria-label="Hasta"></div></div>
       </div>
       <div class="ses-label">Disciplina</div>
       <div class="seg seg-4" id="sesDisc"><button class="active" data-v="skate">Skate</button><button data-v="bmx">BMX</button><button data-v="rollers">Rollers</button><button data-v="todas">Todas</button></div>
-      <div class="field" style="margin-top:10px"><input id="sesNote" maxlength="140" placeholder="Nota (opcional): traigo cajón"></div>
+      <span class="f-label">Nota (opcional)</span>
+        <div class="field" style="margin-top:10px"><input id="sesNote" maxlength="140" placeholder="Ej. traigo cajón"></div>
       <p class="ses-error" id="sesError"></p>
       <button type="button" class="primary-btn" id="sesSubmit" style="width:100%;margin-top:10px;height:52px">Publicar sesión</button>
     </div>
@@ -2843,38 +2862,52 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
     <div class="modal-form" data-form="editProfile">
       <p class="hint">Tu nombre, usuario, disciplina, redes sociales y bio. Se ven en tu perfil.</p>
       <div class="form-grid" id="editProfileForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="pfNombre" required value="Santiago" placeholder="Nombre"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input id="pfApellido" value="Varela" placeholder="Apellido"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 15s1.5 2 4 2 4-2 4-2"/></svg><input id="pfUsername" placeholder="Usuario (@)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13c2-1 16-5 18-4s-1 3-3 4-13 4-15 3-1-2 0-3Z"/><circle cx="7" cy="17" r="1.6"/><circle cx="16" cy="14.5" r="1.6"/></svg><input id="pfDiscipline" placeholder="Disciplina (Skate, BMX, Roller, Scooter)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="5" width="14" height="14" rx="4"/><circle cx="12" cy="12" r="3.4"/></svg><input id="pfInstagram" placeholder="Instagram (usuario o link)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 4c.4 2 1.6 3.2 3.6 3.4M9 13a3.5 3.5 0 1 0 3.5 3.5V4"/></svg><input id="pfTiktok" placeholder="TikTok (usuario o link)"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 8h2V5h-2c-2 0-3 1.2-3 3v2H9v3h2v6h3v-6h2l.4-3H14V8.4c0-.3.2-.4.5-.4Z"/></svg><input id="pfFacebook" placeholder="Facebook (usuario o link)"></div>
-        <div class="field full" style="align-items:flex-start;min-height:96px"><textarea id="pfBio" rows="3" placeholder="Bio: contá quién sos como rider" style="width:100%;background:transparent;border:0;color:var(--text);resize:none;font:inherit;outline:none"></textarea></div>
+        <span class="f-label">Nombre</span>
+        <div class="field full"><input id="pfNombre" required value="Santiago" placeholder="Tu nombre"></div>
+        <span class="f-label">Apellido</span>
+        <div class="field full"><input id="pfApellido" value="Varela" placeholder="Tu apellido"></div>
+        <span class="f-label">Usuario</span>
+        <div class="field full"><input id="pfUsername" placeholder="@usuario"></div>
+        <span class="f-label">Disciplina</span>
+        <div class="field full"><input id="pfDiscipline" placeholder="Skate, BMX, Roller, Scooter"></div>
+        <span class="f-label">Instagram</span>
+        <div class="field full"><input id="pfInstagram" placeholder="Usuario o link"></div>
+        <span class="f-label">TikTok</span>
+        <div class="field full"><input id="pfTiktok" placeholder="Usuario o link"></div>
+        <span class="f-label">Facebook</span>
+        <div class="field full"><input id="pfFacebook" placeholder="Usuario o link"></div>
+        <span class="f-label">Bio</span>
+        <div class="field full" style="align-items:flex-start;min-height:96px"><textarea id="pfBio" rows="3" placeholder="Contá quién sos como rider" style="width:100%;background:transparent;border:0;color:var(--text);resize:none;font:inherit;outline:none"></textarea></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar cambios</button>
     </div>
     <div class="modal-form" data-form="editContact">
       <p class="hint">Tu contacto privado solo se comparte con acciones aprobadas por vos.</p>
       <div class="form-grid" id="editContactForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input id="pfEmail" type="email" value="santiagovarela29011999@gmail.com" placeholder="Email"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input id="pfPhone" type="tel" placeholder="Celular"></div>
+        <span class="f-label">Email</span>
+        <div class="field full"><input id="pfEmail" type="email" value="santiagovarela29011999@gmail.com" placeholder="tu@email.com"></div>
+        <span class="f-label">Celular</span>
+        <div class="field full"><input id="pfPhone" type="tel" placeholder="+598 99 123 456"></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-save-settings>Guardar contacto</button>
     </div>
     <div class="modal-form" data-form="password">
       <p class="hint">Confirmá que sos vos y escribí dos veces la nueva contraseña.</p>
       <div class="form-grid" id="passwordForm" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="currentPassword" required type="password" placeholder="Contraseña actual" autocomplete="current-password"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input id="newPassword" required type="password" minlength="10" placeholder="Nueva contraseña (mín. 10)" autocomplete="new-password"></div>
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l8 4v6c0 5-3.4 7.8-8 9-4.6-1.2-8-4-8-9V7l8-4Z"/><path d="m9 12 2 2 4-5"/></svg><input id="repeatPassword" required type="password" minlength="10" placeholder="Reingresar nueva contraseña" autocomplete="new-password"></div>
+        <span class="f-label">Contraseña actual</span>
+        <div class="field full"><input id="currentPassword" required type="password" placeholder="Tu contraseña actual" autocomplete="current-password"></div>
+        <span class="f-label">Nueva contraseña</span>
+        <div class="field full"><input id="newPassword" required type="password" minlength="10" placeholder="Mínimo 10 caracteres" autocomplete="new-password"></div>
+        <span class="f-label">Repetí la nueva contraseña</span>
+        <div class="field full"><input id="repeatPassword" required type="password" minlength="10" placeholder="La misma de arriba" autocomplete="new-password"></div>
       </div>
       <button class="primary-btn" style="width:100%;margin-top:18px;height:56px" data-change-password>Cambiar contraseña</button>
     </div>
     <div class="modal-form" data-form="deleteAccount">
       <p class="hint">Se borra tu cuenta y tu perfil para siempre: publicaciones, comentarios, productos e inscripciones. Los spots y fotos que aportaste quedan en el mapa sin tu nombre. No se puede deshacer.</p>
       <div class="form-grid" style="grid-template-columns:1fr">
-        <div class="field full"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16"/><path d="M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3"/></svg><input id="deleteConfirm" autocomplete="off" autocapitalize="characters" placeholder="Escribí ELIMINAR para confirmar"></div>
+        <span class="f-label">Para confirmar, escribí ELIMINAR</span>
+        <div class="field full"><input id="deleteConfirm" autocomplete="off" autocapitalize="characters" placeholder="ELIMINAR"></div>
       </div>
       <button class="primary-btn danger-action" style="width:100%;margin-top:18px;height:56px" data-delete-account>Eliminar mi cuenta</button>
     </div>
@@ -2890,7 +2923,7 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 <script src="assets/js/spotra-backend.js?v=24"></script>
 <script src="assets/js/spotra-google-map.js?v=24"></script>
 <script src="assets/js/spotra-app.js?v=3"></script>
-<script src="assets/js/spotra-i18n.js?v=24"></script>
+<script src="assets/js/spotra-i18n.js?v=25"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=10"></script>
