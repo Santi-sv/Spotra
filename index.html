@@ -1577,7 +1577,7 @@ body.lb-open{overflow:hidden}
 .mk{display:block}
 .mk-side{display:flex;flex-direction:column;gap:10px}
 .mk-side>*{flex-shrink:0}
-body:has([data-view="market"].active) .fab{display:none!important}
+body:has([data-view="market"].active) .fab{display:grid}
 .mk-title{display:flex;align-items:center;justify-content:space-between}
 .mk-title h1{font-family:var(--display);font-size:30px;line-height:1}
 .mk-pub-mini{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:#2ee84d;color:#06130a;border:0}
@@ -1758,7 +1758,7 @@ html.theme-light body:not(.auth-mode) .evx-cap{background:rgba(0,0,0,.08)}
 #feed .fx-post,html.theme-light body:not(.auth-mode) #feed .fx-post{margin:0;padding:0!important;border:0!important;background:none!important;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 #feed .fx-post::before,#feed .fx-post::after{display:none!important}
 .fx-who .follow-btn{height:24px;min-height:24px;padding:0 9px;font-size:11px;vertical-align:1px}
-body:has([data-view="community"].active) .fab{display:none!important}
+body:has([data-view="community"].active) .fab{display:grid}
 .fx-img{position:relative;border-radius:24px;overflow:hidden;background:#0b1a0f;cursor:pointer;-webkit-user-select:none;user-select:none}
 .fx-img img{display:block;width:100%;height:auto;max-height:78vh;object-fit:cover;min-height:260px}
 .fx-grain{position:absolute;inset:0;pointer-events:none;opacity:.12;mix-blend-mode:overlay;background-image:repeating-radial-gradient(circle at 0 0,#fff 0 1px,transparent 1px 3px)}
@@ -2034,7 +2034,7 @@ html.theme-light body:not(.auth-mode) .fl-av,html.theme-light body:not(.auth-mod
   .ig-act-row,.ig-textpost{margin-left:0;margin-right:0}
 }
 @media(max-width:899px){
-  body:has([data-view="community"].active) .fab{display:none!important}
+  body:has([data-view="community"].active) .fab{display:grid}
   .tb-new{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:12px;border:0;background:transparent;color:#f3f5f2;place-items:center}
   .tb-new svg{width:26px;height:26px}
   body:has([data-view="community"].active) .tb-new{display:grid}
@@ -2250,6 +2250,14 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 .price-row > .field{grid-column:auto!important;margin-top:0!important}
 .modal input[type=number]::-webkit-inner-spin-button,.modal input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .modal input[type=number]{-moz-appearance:textfield}
+/* fase 3 (18/10/2026): un solo botón + por pantalla, mismo lugar y estilo; sin sesión no aparece */
+.tb-new,.ig-story.me{display:none!important}
+.ig-stories:not(:has(.ig-story:not(.me))){display:none}
+@media(max-width:899px){.mk-pub-mini{display:none!important}}
+@media(min-width:900px){body:has([data-view="community"].active) .fab,body:has([data-view="market"].active) .fab{display:none!important}}
+body:not(.is-authed) .fab{display:none!important}
+.fab{width:58px;height:58px;border-radius:18px}
+@media(max-width:760px){body.is-authed:not(.map-mode) .main{padding-bottom:calc(172px + env(safe-area-inset-bottom))}}
 /* nombres debajo de los pines del mapa */
 .spotra-pin-label{font-family:var(--body,'General Sans',sans-serif)!important;white-space:nowrap;letter-spacing:.01em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff,0 1px 1px #fff}
 .spotra-pin-label.is-selected{background:#0b0f0c;color:#fff!important;padding:4px 10px;border-radius:999px;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
@@ -2922,7 +2930,7 @@ html.theme-light body:not(.auth-mode) .spot-pick-search input{background:#fff}
 <script src="assets/js/spotra-geo.js?v=1"></script>
 <script src="assets/js/spotra-backend.js?v=24"></script>
 <script src="assets/js/spotra-google-map.js?v=25"></script>
-<script src="assets/js/spotra-app.js?v=3"></script>
+<script src="assets/js/spotra-app.js?v=4"></script>
 <script src="assets/js/spotra-i18n.js?v=25"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
