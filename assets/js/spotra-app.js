@@ -302,9 +302,14 @@ document.addEventListener('click', e => {
     let type = open.dataset.openModal;
     const activeView = document.querySelector('.view.active')?.dataset.view;
     if(type === 'menu'){
-      if(activeView === 'community' || activeView === 'profile') type = 'post';
-      else if(activeView === 'market') type = 'product';
-      else if(activeView === 'map') type = 'spot';
+      /* 18/10/2026: el + crea lo de cada pantalla (en Perfil abre el menú con todo).
+         Pasa por el botón del menú para que se apliquen los mismos controles (menores, responsable). */
+      const target = { map: 'spot', events: 'event', community: 'post', market: 'product' }[activeView];
+      if(target){
+        const opt = document.querySelector('.create-opt[data-open-modal="' + target + '"]');
+        if(opt){ opt.click(); return; }
+        type = target;
+      }
     }
     openModal(type);
     return;
