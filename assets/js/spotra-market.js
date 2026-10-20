@@ -1,4 +1,5 @@
-/* SPOTRA · Market C2C (v3, estilo Facebook Marketplace)
+/* SPOTRA · Market C2C (v7, estilo Facebook Marketplace)
+   - v7 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Publicar producto, Ver todo, Explorar el Market).
    - v6 (15/10/2026): sin sesión no se ve el WhatsApp del vendedor; el botón invita a iniciar sesión.
    - Buscador, ubicación + radio, categorías de riders con íconos, filtros (precio, estado, orden).
    - Tarjetas con precio grande, "Recién publicado", distancia y ♥ Guardar.
@@ -36,11 +37,17 @@
     flag: I('<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>'),
     user: I('<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'),
     clock: I('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    search: I('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>'),
     folder: I('<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/>'),
     down: I('<path d="M12 5v14M6 13l6 6 6-6"/>'),
     wa: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.9c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>',
     filter: I('<path d="M4 6h16M7 12h10M10 18h4"/>')
   };
+  /* 19/10/2026: pantalla vacía común (ícono + título + texto + botón) */
+  function emptyHTML(icon, title, text, btn){
+    return `<div class="empty-state"><span class="es-ic">${icon}</span><b>${esc(t(title))}</b>${text ? `<p>${esc(t(text))}</p>` : ''}${btn ? `<div class="es-actions"><button type="button" class="${btn.primary ? 'primary-btn' : 'ghost-btn'}" ${btn.attrs}>${esc(t(btn.label))}</button></div>` : ''}</div>`;
+  }
+  const NEW_LISTING = { label: 'Publicar producto', attrs: 'data-open-modal="product"', primary: true };
 
   let tab = 'explore';          // explore | saved | mine
   let cat = 'all';
@@ -204,7 +211,9 @@
     main.innerHTML = `<div class="mk-head"><h2>${esc(title)}</h2>${userLoc ? `<button type="button" class="mk-loc-mini" data-mk-radius>${ICON.pin}<span>${esc(placeName || t('Tu ubicación'))}${radius ? ' · ' + radius + ' km' : ''}</span></button>` : ''}</div>
       ${filterBarHTML()}
       ${list.length ? `<div class="mk-grid">${list.map(cardHTML).join('')}</div>`
-        : `<div class="empty-state">${ICON.store}<b>${esc(t(busy ? 'No encontramos productos con esos filtros' : 'Todavía no hay publicaciones acá'))}</b>${esc(t(busy ? 'Probá con otra búsqueda o ampliá la distancia.' : 'Publicá lo que ya no uses y dale una segunda vida.'))}</div>`}`;
+        : (busy && cache.length
+          ? emptyHTML(ICON.search, 'No encontramos productos con esos filtros', 'Probá con otra búsqueda o ampliá la distancia.', { label: 'Ver todo', attrs: 'data-mk-showall' })
+          : emptyHTML(ICON.store, 'Todavía no hay publicaciones acá', 'Publicá lo que ya no uses y dale una segunda vida.', NEW_LISTING))}`;
   }
 
   async function loadExplore(){
@@ -241,7 +250,7 @@
     const list = [...saved].map(id => byId.get(id)).filter(Boolean);
     main.innerHTML = `<div class="mk-head"><h2>${esc(t('Guardados'))}</h2></div>` + (list.length
       ? `<div class="mk-grid">${list.map(cardHTML).join('')}</div>`
-      : `<div class="empty-state">${ICON.heart}<b>${esc(t('Todavía no guardaste nada'))}</b>${esc(t('Tocá el corazón de un producto para verlo acá después.'))}</div>`);
+      : emptyHTML(ICON.heart, 'Todavía no guardaste nada', 'Tocá el corazón de un producto para verlo acá después.', { label: 'Explorar el Market', attrs: 'data-mk-tab="explore"' }));
   }
 
   async function toggleSave(id){
@@ -312,7 +321,7 @@
     const list = ids.map(id => byId.get(id)).filter(Boolean);
     main.innerHTML = `<button type="button" class="mk-back" data-mk-tab="you">${ICON.back}<span>${esc(t('Tú'))}</span></button>
       <div class="mk-head"><h2>${esc(title)}</h2>${which !== 'recent' ? `<button type="button" class="mk-link" data-mk-delcol="${esc(which)}">${esc(t('Eliminar colección'))}</button>` : `<button type="button" class="mk-link" data-mk-clearrecent>${esc(t('Borrar historial'))}</button>`}</div>
-      ${list.length ? `<div class="mk-grid">${list.map(cardHTML).join('')}</div>` : `<div class="empty-state">${ICON.folder}<b>${esc(t('Todavía no hay nada acá'))}</b></div>`}`;
+      ${list.length ? `<div class="mk-grid">${list.map(cardHTML).join('')}</div>` : emptyHTML(ICON.folder, 'Todavía no hay nada acá', 'Guardá productos en esta colección desde su corazón.')}`;
   }
 
   async function setCollection(listingId, value){
@@ -348,7 +357,7 @@
     const mine = await B().listMyListings();
     mine.forEach(l => byId.set(l.id, l));
     if(!mine.length){
-      main.innerHTML = head + `<div class="empty-state">${ICON.tag}<b>${esc(t('Todavía no publicaste nada'))}</b>${esc(t('Tocá "Publicar" y vendé lo que ya no uses.'))}</div>`;
+      main.innerHTML = head + emptyHTML(ICON.tag, 'Todavía no publicaste nada', 'Vendé lo que ya no uses: tablas, trucks, ruedas, zapatillas.', NEW_LISTING);
       return;
     }
     main.innerHTML = head + '<div class="mk-mine">' + mine.map(l => {
@@ -604,6 +613,11 @@
     if((b = el.closest('[data-mk-sort]'))){ filters.sort = b.dataset.mkSort; renderExplore(); return; }
     if((b = el.closest('[data-mk-cond]'))){ filters.cond = b.dataset.mkCond; document.querySelectorAll('[data-mk-cond]').forEach(x => x.classList.toggle('active', x === b)); return; }
     if(el.closest('[data-mk-apply]')){ filters.min = ($('mkMin') || {}).value || ''; filters.max = ($('mkMax') || {}).value || ''; showFilters = false; renderExplore(); return; }
+    if(el.closest('[data-mk-showall]')){
+      query = ''; cat = 'all'; radius = 0; filters = { min: '', max: '', cond: 'all', sort: filters.sort }; showFilters = false;
+      const sb = $('mkSearch'); if(sb) sb.value = '';
+      renderSide(); renderExplore(); return;
+    }
     if(el.closest('[data-mk-clear]')){ filters = { min: '', max: '', cond: 'all', sort: filters.sort }; showFilters = false; renderExplore(); return; }
     if(el.closest('[data-mk-share]') && current){
       const text = ({ es: `${current.title} · ${fmtPrice(current)} en el Market de SPOTRA`, pt: `${current.title} · ${fmtPrice(current)} no Market do SPOTRA`, en: `${current.title} · ${fmtPrice(current)} on the SPOTRA Market` })[lang()];

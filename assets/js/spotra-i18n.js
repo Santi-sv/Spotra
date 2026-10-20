@@ -1,4 +1,4 @@
-/* SPOTRA · Idiomas (español, português, english) — v25: textos de los formularios con título arriba
+/* SPOTRA · Idiomas (español, português, english) — v26: pantallas vacías; v25: textos de los formularios con título arriba
    La app está escrita en español. Este módulo traduce lo que aparece en pantalla
    (textos, placeholders y avisos) según el idioma elegido. Lo que no está en el
    diccionario queda en español. Clave compartida con la landing: spotra_lang. */
@@ -564,7 +564,21 @@
     'Compartir':['Compartilhar','Share'],'Link copiado. Pegalo donde quieras.':['Link copiado. Cole onde quiser.','Link copied. Paste it anywhere.'],
     'Buscando...':['Buscando...','Searching...'],'No encontramos ese lugar.':['Não encontramos esse lugar.','We could not find that place.'],
     'Buscar ciudad o dirección':['Buscar cidade ou endereço','Search city or address'],
-    'El mapa cambia de idioma al reabrir la app.':['O mapa muda de idioma ao reabrir o app.','The map changes language when you reopen the app.']
+    'El mapa cambia de idioma al reabrir la app.':['O mapa muda de idioma ao reabrir o app.','The map changes language when you reopen the app.'],
+    // ---- v26 (19/10/2026): pantallas vacías
+    'Ver todos los eventos':['Ver todos os eventos','See all events'],'Organizá una juntada o una competencia y aparecé acá.':['Organize um rolê ou uma competição e apareça aqui.','Organize a meetup or a contest and show up here.'],
+    'Crear evento':['Criar evento','Create event'],'Todavía no tenés eventos':['Você ainda não tem eventos','No events yet'],
+    'Acá aparecen los eventos a los que te inscribís, los que te interesan y los que organizás.':['Aqui aparecem os eventos em que você se inscreve, os que te interessam e os que você organiza.','Events you sign up for, save or organize show up here.'],
+    'Ver próximos':['Ver próximos','See upcoming'],'Todavía no hay puntos en':['Ainda não há pontos em','No points yet in'],
+    'Los podios de los eventos SPOTRA suman acá: 1º 100 pts · 2º 60 · 3º 30.':['Os pódios dos eventos SPOTRA somam aqui: 1º 100 pts · 2º 60 · 3º 30.','SPOTRA event podiums add up here: 1st 100 pts · 2nd 60 · 3rd 30.'],
+    'Ver Para vos':['Ver Para você','See For you'],'Ver todo':['Ver tudo','See all'],'Explorar el Market':['Explorar o Market','Explore the Market'],'Publicar producto':['Publicar produto','List an item'],
+    'Guardá productos en esta colección desde su corazón.':['Salve produtos nesta coleção pelo coração.','Save items to this collection with the heart.'],
+    'Vendé lo que ya no uses: tablas, trucks, ruedas, zapatillas.':['Venda o que você não usa mais: shapes, trucks, rodas, tênis.','Sell what you no longer use: decks, trucks, wheels, shoes.'],
+    'Compartí tu primera sesión, un truco o un spot con la comunidad.':['Compartilhe sua primeira sessão, uma manobra ou um spot com a comunidade.','Share your first session, a trick or a spot with the community.'],
+    'Todavía no publicó nada':['Ainda não publicou nada','No posts yet'],'No tenés sesiones activas':['Você não tem sessões ativas','No active sessions'],
+    'Armá una sesión en un spot del mapa y avisale a los riders de tu zona.':['Crie uma sessão em um spot do mapa e avise os riders da sua região.','Set up a session at a spot on the map and let riders nearby know.'],
+    'Ir al mapa':['Ir ao mapa','Go to the map'],'No tiene sesiones activas ahora':['Não tem sessões ativas agora','No active sessions right now'],
+    'No tenés productos publicados':['Você não tem produtos publicados','You have no listings'],'No tiene productos a la venta':['Não tem produtos à venda','No items for sale']
   };
 
   // textos con partes variables

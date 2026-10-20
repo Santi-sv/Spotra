@@ -1,4 +1,6 @@
-/* SPOTRA · Perfiles de riders + visor de fotos (v4, 13/10/2026: rediseño)
+/* SPOTRA · Perfiles de riders + visor de fotos (v5)
+   - v5 (19/10/2026): pestañas vacías con ícono, título, texto y botón (Crear publicación, Ir al mapa, Publicar producto).
+   - v4 (13/10/2026): rediseño.
    - Mi perfil y el perfil de otros riders comparten el mismo diseño (.pf).
    - Pestañas: Publicaciones (grilla), Sesiones (activas y próximas) y Market (sus productos).
    - Perfil ajeno: Seguir, menú ··· (compartir / reportar o bloquear) y "Andando ahora · spot"
@@ -108,6 +110,16 @@
     return data || [];
   }
 
+  /* 19/10/2026: pantalla vacía común (ícono + título + texto + botón) */
+  const EMPTY_IC = {
+    posts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-5-5L5 21"/></svg>',
+    sessions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5M16 2v4M8 2v4M3 10h5"/><circle cx="16" cy="16" r="6"/><path d="M16 14v2l1 1"/></svg>',
+    market: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z"/><circle cx="8" cy="8" r="1.5"/></svg>'
+  };
+  function emptyHTML(kind, title, text, btn){
+    return `<div class="empty-state pf-es"><span class="es-ic">${EMPTY_IC[kind]}</span><b>${esc(t(title))}</b>${text ? `<p>${esc(t(text))}</p>` : ''}${btn ? `<div class="es-actions"><button type="button" class="primary-btn" ${btn.attrs}>${esc(t(btn.label))}</button></div>` : ''}</div>`;
+  }
+
   /* ---------- pestañas ---------- */
   function tabsHTML(){
     const tab = (k, label, on) => `<button type="button" role="tab" aria-selected="${on ? 'true' : 'false'}" data-pf-tab="${k}">${esc(t(label))}</button>`;
@@ -117,7 +129,9 @@
   let gridCache = new Map();
   function gridHTML(posts, mine){
     if(!posts.length){
-      return `<div class="pf-empty">${esc(t(mine ? 'Todavía no publicaste nada. Compartí tu primera sesión en el Foro.' : 'Todavía no publicó nada.'))}</div>`;
+      return mine
+        ? emptyHTML('posts', 'Todavía no publicaste nada', 'Compartí tu primera sesión, un truco o un spot con la comunidad.', { label: 'Crear publicación', attrs: 'data-open-modal="post"' })
+        : emptyHTML('posts', 'Todavía no publicó nada');
     }
     posts.forEach(p => gridCache.set(p.id, p));
     return '<div class="pf-grid pf-bleed">' + posts.map(p => p.image_url
@@ -128,7 +142,9 @@
   const DISC = { todas: 'Todas', skate: 'Skate', bmx: 'BMX', rollers: 'Rollers', roller: 'Roller', scooter: 'Scooter' };
   function sessionsHTML(list, viewer, mine){
     if(!list.length){
-      return `<div class="pf-empty">${esc(t(mine ? 'No tenés sesiones activas. Creá una desde un spot con el +.' : 'No tiene sesiones activas ahora.'))}</div>`;
+      return mine
+        ? emptyHTML('sessions', 'No tenés sesiones activas', 'Armá una sesión en un spot del mapa y avisale a los riders de tu zona.', { label: 'Ir al mapa', attrs: 'data-route="map"' })
+        : emptyHTML('sessions', 'No tiene sesiones activas ahora');
     }
     const loc = locale();
     const hm = d => d.toLocaleTimeString(loc, { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -162,7 +178,9 @@
   }
   function marketHTML(list, mine){
     if(!list.length){
-      return `<div class="pf-empty">${esc(t(mine ? 'No tenés productos publicados.' : 'No tiene productos a la venta.'))}</div>`;
+      return mine
+        ? emptyHTML('market', 'No tenés productos publicados', 'Vendé lo que ya no uses: tablas, trucks, ruedas, zapatillas.', { label: 'Publicar producto', attrs: 'data-open-modal="product"' })
+        : emptyHTML('market', 'No tiene productos a la venta');
     }
     return '<div class="pf-mk">' + list.map(l => {
       const photo = (l.photos || [])[0];

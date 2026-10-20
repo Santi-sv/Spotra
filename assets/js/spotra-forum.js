@@ -1,4 +1,5 @@
-/* SPOTRA · Foro (v1)
+/* SPOTRA · Foro (v9)
+   - v9 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Crear publicación, Ver Para vos, Usar mi ubicación).
    - Posts reales con foto opcional, publicados al instante.
    - Likes y comentarios reales. El autor (o el admin) puede eliminar posts y comentarios.
    - La preview de Inicio muestra los últimos posts reales. */
@@ -43,6 +44,7 @@
     tack: FI('<path d="M9 4h6l-1 6 3 3H7l3-3-1-6ZM12 13v8"/>'),
     flag: FI('<path d="M5 21V4M5 4h12l-2 4 2 4H5"/>'),
     plus: FI('<path d="M12 5v14M5 12h14"/>'),
+    users: FI('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6 6 0 0 1 3.5 6"/>'),
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
   };
   const TT = s => (window.SpotraI18n ? window.SpotraI18n.t(s) : s);
@@ -200,21 +202,23 @@
     const tiles = document.getElementById('fxTiles'); if(tiles) tiles.innerHTML = tilesHTML();
     const side = document.getElementById('igSide'); if(side) side.innerHTML = sideHTML();
     let list = cache.slice();
-    const empty = (t, s) => `<div class="empty-state ig-empty">${F_ICON.cmt}<b>${esc(TT(t))}</b>${esc(TT(s))}</div>`;
+    /* 19/10/2026: pantalla vacía común (ícono + título + texto + botón) */
+    const empty = (t, s, icon, btn) => `<div class="empty-state ig-empty"><span class="es-ic">${icon || F_ICON.cmt}</span><b>${esc(TT(t))}</b><p>${esc(TT(s))}</p>${btn ? `<div class="es-actions"><button type="button" class="${btn.primary ? 'primary-btn' : 'ghost-btn'}" ${btn.attrs}>${esc(TT(btn.label))}</button></div>` : ''}</div>`;
+    const NEW_POST = { label: 'Crear publicación', attrs: 'data-open-modal="post"', primary: true };
     if(feedTab === 'following'){
       list = list.filter(p => followingIds && followingIds.has(p.authorId));
-      feed.innerHTML = list.length ? list.map(postHTML).join('') : empty('Todavía no hay publicaciones de quienes seguís', 'Seguí riders desde el foro o sus perfiles para ver lo suyo acá.');
+      feed.innerHTML = list.length ? list.map(postHTML).join('') : empty('Todavía no hay publicaciones de quienes seguís', 'Seguí riders desde el foro o sus perfiles para ver lo suyo acá.', F_ICON.users, { label: 'Ver Para vos', attrs: 'data-fx-tab="foryou"' });
       return;
     }
     if(feedTab === 'near'){
-      if(!feedLoc){ feed.innerHTML = empty('Activá tu ubicación', 'Mostramos publicaciones etiquetadas en spots cerca tuyo.'); return; }
+      if(!feedLoc){ feed.innerHTML = empty('Activá tu ubicación', 'Mostramos publicaciones etiquetadas en spots cerca tuyo.', F_ICON.pin, { label: 'Usar mi ubicación', attrs: 'data-fx-tab="near"', primary: true }); return; }
       list = list.filter(p => { const d = kmTo(p); return d != null && d <= 60; }).sort((a, b) => kmTo(a) - kmTo(b));
-      feed.innerHTML = list.length ? list.map(postHTML).join('') : empty('No hay publicaciones cerca tuyo', 'Publicá algo y etiquetá el spot donde estás.');
+      feed.innerHTML = list.length ? list.map(postHTML).join('') : empty('No hay publicaciones cerca tuyo', 'Publicá algo y etiquetá el spot donde estás.', F_ICON.pin, NEW_POST);
       return;
     }
     list.sort((a, b) => (b.pinned - a.pinned) || ((b.createdAt || 0) - (a.createdAt || 0)));
     const tickets = activity.filter(a => a.kind !== 'live' || a.n >= 2).slice(0, 10);
-    if(!list.length && !tickets.length){ feed.innerHTML = empty('Todavía no hay publicaciones', 'Sé el primero: contá dónde patinás hoy.'); return; }
+    if(!list.length && !tickets.length){ feed.innerHTML = empty('Todavía no hay publicaciones', 'Sé el primero: contá dónde patinás hoy.', F_ICON.cmt, NEW_POST); return; }
     const out = [];
     let t = 0;
     list.forEach((p, i) => {

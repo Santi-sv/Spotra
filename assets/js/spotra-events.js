@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v7)
+/* SPOTRA · Eventos (v8)
+   - v8 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Crear evento, Ver próximos, Ver todos los eventos).
    - v7 (17/10/2026): rediseño — hojas con borde gris, títulos chicos en gris, botón secundario gris.
    - v6: el organizador puede eliminar su evento (botón "Eliminar evento" en el detalle, en cualquier estado).
    - v4: resultados por categoría (organizador) + ranking por disciplina.
@@ -83,8 +84,14 @@
     cal: EI('<rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4M12 13v5M9.5 15.5h5"/>'),
     map: EI('<path d="M9 4 3 6.5v13.5l6-2.5 6 2.5 6-2.5V4l-6 2.5L9 4Z"/><path d="M9 4v13.5M15 6.5V20"/>'),
     sun: EI('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/>'),
-    rain: EI('<path d="M7 16a4 4 0 1 1 .6-7.95A5 5 0 0 1 17 9a3.5 3.5 0 0 1 0 7"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/>')
+    rain: EI('<path d="M7 16a4 4 0 1 1 .6-7.95A5 5 0 0 1 17 9a3.5 3.5 0 0 1 0 7"/><path d="M9 19l-1 2M13 19l-1 2M17 19l-1 2"/>'),
+    trophy: EI('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4ZM17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>')
   };
+  /* 19/10/2026: pantalla vacía común (ícono + título + texto + botones) */
+  function emptyHTML(icon, title, text, btns){
+    const b = (btns || []).map(x => `<button type="button" class="${x.primary ? 'primary-btn' : 'ghost-btn'}" ${x.attrs}>${esc(T(x.label))}</button>`).join('');
+    return `<div class="empty-state"><span class="es-ic">${icon}</span><b>${esc(T(title))}</b>${text ? `<p>${esc(T(text))}</p>` : ''}${b ? `<div class="es-actions">${b}</div>` : ''}</div>`;
+  }
   let activeWhen = 'all';
   let interests = new Set();
   let interestCount = {};
@@ -281,7 +288,9 @@
       .sort((x, y) => (x.startsAt || 0) - (y.startsAt || 0));
     if(!list.length){
       const any = activeDisc !== 'all' || activeWhen !== 'all';
-      wrap.innerHTML = `<div class="empty-state">${EV_ICON.cal}<b>${esc(T(any ? 'No hay eventos con esos filtros' : 'No hay eventos próximos'))}</b>${esc(T(any ? 'Probá con otra fecha o disciplina.' : 'Creá el primero desde el botón +.'))}</div>`;
+      wrap.innerHTML = any
+        ? emptyHTML(EV_ICON.cal, 'No hay eventos con esos filtros', 'Probá con otra fecha o disciplina.', [{ label: 'Ver todos los eventos', attrs: 'data-ev-reset' }])
+        : emptyHTML(EV_ICON.cal, 'No hay eventos próximos', 'Organizá una juntada o una competencia y aparecé acá.', [{ label: 'Crear evento', attrs: 'data-open-modal="event"', primary: true }]);
       return;
     }
     const [feat, ...rest] = list;
@@ -313,7 +322,7 @@
       parts.push(`<div class="kicker" style="font-size:10px;margin-top:16px">${esc(T('Me interesa'))}</div>`);
       intOnly.forEach(ev => parts.push(rowHTML(ev)));
     }
-    wrap.innerHTML = parts.length ? parts.join('') : '<div class="meta" style="margin-top:14px">Todavía no tenés eventos: inscribite a uno o creá el tuyo desde el +.</div>';
+    wrap.innerHTML = parts.length ? parts.join('') : emptyHTML(EV_ICON.cal, 'Todavía no tenés eventos', 'Acá aparecen los eventos a los que te inscribís, los que te interesan y los que organizás.', [{ label: 'Ver próximos', attrs: 'data-ev-goto="upcoming"' }, { label: 'Crear evento', attrs: 'data-open-modal="event"', primary: true }]);
   }
 
   function showList(){
@@ -340,7 +349,7 @@
     const rows = await B().listRanking(rankDisc);
     const seg = wrap.querySelector('.filter-row').outerHTML;
     if(!rows.length){
-      wrap.innerHTML = seg + '<div class="meta" style="margin-top:14px">Todavía no hay puntos en ' + DISC_LABEL[rankDisc] + '. Los podios de los eventos SPOTRA suman acá: 1º 100 pts · 2º 60 · 3º 30.</div>';
+      wrap.innerHTML = seg + emptyHTML(EV_ICON.trophy, T('Todavía no hay puntos en') + ' ' + DISC_LABEL[rankDisc], 'Los podios de los eventos SPOTRA suman acá: 1º 100 pts · 2º 60 · 3º 30.');
       return;
     }
     wrap.innerHTML = seg + rows.map((r, i) =>
@@ -1009,6 +1018,15 @@
       setTimeout(go, 600);
       return;
     }
+    if(e.target.closest('[data-ev-reset]')){
+      activeWhen = 'all'; activeDisc = 'all';
+      document.querySelectorAll('#eventsWhen button').forEach(b => b.classList.toggle('active', b.dataset.evWhen === 'all'));
+      document.querySelectorAll('#eventsDisc button').forEach(b => b.classList.toggle('active', b.dataset.evDisc === 'all'));
+      renderUpcoming(true);
+      return;
+    }
+    const go = e.target.closest('[data-ev-goto]');
+    if(go){ const real = document.querySelector('#eventsTabs [data-ev-tab="' + go.dataset.evGoto + '"]'); if(real) real.click(); return; }
     const tab = e.target.closest('[data-ev-tab]');
     if(tab){
       activeTab = tab.dataset.evTab;
