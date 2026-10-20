@@ -2298,6 +2298,19 @@ body:not(.is-authed) .fab{display:none!important}
   .mk{grid-template-columns:250px minmax(0,1fr)!important;gap:32px!important}
   .mk-loc-mini{display:none!important}
 }
+/* fase 5 (19/10/2026): pantallas vacías — ícono en recuadro gris, título, texto y botón que lleva a la acción. Antes .empty-state quedaba oculta (display:none sin .show) */
+.empty-state{display:flex!important;flex-direction:column;align-items:center;text-align:center;padding:34px 22px 30px;margin:16px 0;border:1px solid var(--line-soft)!important;border-radius:20px;background:rgba(255,255,255,.025);color:var(--muted);font-size:14px;line-height:1.5;animation:none}
+.empty-state .es-ic{width:56px;height:56px;flex-shrink:0;border-radius:18px;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid var(--line-soft);color:#f5f7f4;margin-bottom:16px}
+.empty-state .es-ic svg{width:26px!important;height:26px!important;margin:0!important;opacity:1!important;color:currentColor!important}
+.empty-state>b{display:block;font-family:var(--display);font-size:19px;line-height:1.25;color:var(--text);margin:0 0 6px}
+.empty-state>p{margin:0;max-width:330px}
+.empty-state .es-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:20px;width:100%;max-width:400px}
+.empty-state .es-actions button{flex:1 1 0;min-width:0;min-height:46px;height:auto;padding:0 18px;border-radius:14px;font-size:14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.empty-state .es-actions button:only-child{flex:0 1 auto;min-width:200px}
+.pf-es{margin:18px 0 8px}
+/* Market: la ubicación se muestra una sola vez (arriba, en la barra de filtros) */
+.mk-loc-mini{display:none!important}
+@media(min-width:900px){.empty-state{padding:52px 32px 46px}.empty-state>b{font-size:21px}}
 /* nombres debajo de los pines del mapa */
 .spotra-pin-label{font-family:var(--body,'General Sans',sans-serif)!important;white-space:nowrap;letter-spacing:.01em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff,0 1px 1px #fff}
 .spotra-pin-label.is-selected{background:#0b0f0c;color:#fff!important;padding:4px 10px;border-radius:999px;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
@@ -2971,23 +2984,23 @@ body:not(.is-authed) .fab{display:none!important}
 <script src="assets/js/spotra-backend.js?v=24"></script>
 <script src="assets/js/spotra-google-map.js?v=25"></script>
 <script src="assets/js/spotra-app.js?v=4"></script>
-<script src="assets/js/spotra-i18n.js?v=25"></script>
+<script src="assets/js/spotra-i18n.js?v=26"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
 <script src="assets/js/spotra-auth.js?v=10"></script>
 <script src="assets/js/spotra-admin.js?v=15"></script>
 <script src="assets/js/spotra-admin-security.js?v=2"></script>
-<script src="assets/js/spotra-events.js?v=7"></script>
+<script src="assets/js/spotra-events.js?v=8"></script>
 <script src="assets/js/spotra-safety.js?v=3"></script>
 <script src="assets/js/spotra-avatar.js?v=3"></script>
-<script src="assets/js/spotra-riders.js?v=4"></script>
+<script src="assets/js/spotra-riders.js?v=5"></script>
 <script src="assets/js/spotra-notifs.js?v=2"></script>
 <script src="assets/js/spotra-guardian.js?v=2"></script>
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
 <script src="assets/js/spotra-sessions.js?v=7"></script>
-<script src="assets/js/spotra-market.js?v=6"></script>
-<script src="assets/js/spotra-forum.js?v=8"></script>
+<script src="assets/js/spotra-market.js?v=7"></script>
+<script src="assets/js/spotra-forum.js?v=9"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
 <script src="assets/js/spotra-profile.js?v=7"></script>
 <script src="assets/js/spotra-spot-picker.js?v=7"></script>
