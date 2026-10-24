@@ -1,4 +1,5 @@
-/* SPOTRA · Guía de bienvenida con SPOTRI (v3)
+/* SPOTRA · Guía de bienvenida con SPOTRI (v4)
+   - v4 (20/10/2026): saluda según la disciplina del rider ("¡Hola, rider de BMX!"), resalta su disciplina y la sesión de ejemplo es de lo suyo.
    - v3: en el iPhone instalado el botón seguía estirado: estilo con prioridad máxima + control que lo corrige al dibujar.
    - v2: botones con alto fijo (en el iPhone instalado se estiraban), contenido centrado en pantallas altas, logo sin tapar a SPOTRI.
    - La ven una sola vez las cuentas nuevas y las que ya existían (después de esta actualización).
@@ -123,7 +124,14 @@
     const l = window.SpotraI18n && window.SpotraI18n.lang ? window.SpotraI18n.lang() : 'es';
     return TX[l] ? l : 'es';
   }
-  function T(){ return TX[lang()]; }
+  function T(){
+    const l = lang(), base = TX[l];
+    const d = window.SpotraDiscipline && window.SpotraDiscipline.get();
+    if(!d) return base;
+    const lab = window.SpotraDiscipline.label(d);
+    const hello = ({ es: '¡Hola, rider de ' + lab + '!', pt: 'Fala, rider de ' + lab + '!', en: 'Hi, ' + lab + ' rider!' })[l] || base.hello;
+    return Object.assign({}, base, { hello, cardDisc: lab, myDisc: ({ skate: 0, bmx: 1, roller: 2, scooter: 3 })[d] });
+  }
 
   /* ---------- entorno ---------- */
   const ua = navigator.userAgent || '';
@@ -194,6 +202,7 @@ body.spotri-open .geo-help{z-index:9200}
 .sg-list li svg{width:18px;height:18px;flex-shrink:0;margin-top:2px;color:#74ff3a}
 .sg-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
 .sg-chips span{border:1px solid #2a332b;border-radius:999px;padding:7px 12px;font:600 12px var(--body,'General Sans',sans-serif);letter-spacing:.1em}
+.sg-chips span.on{border-color:#74ff3a;background:#74ff3a;color:#061006}
 .sg-phone{position:absolute;top:0;left:6px;height:96%;aspect-ratio:184/372;border-radius:28px;border:6px solid #1a201b;overflow:hidden;background:#0d110e}
 .sg-phone img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
 .sg-pill{position:absolute;top:10%;right:0;z-index:2;background:#74ff3a;color:#051006;font:600 12px var(--body,'General Sans',sans-serif);letter-spacing:.05em;padding:8px 10px;border-radius:12px}
@@ -302,7 +311,7 @@ body.spotri-open .geo-help{z-index:9200}
         <p class="sg-kick">${t.whatKick}</p>
         <h2 class="sg-h" id="sgTitle">${t.whatTitle}</h2>
         <p class="sg-p">${t.whatText}</p>
-        <div class="sg-chips">${t.disc.map(d => `<span>${d}</span>`).join('')}</div>
+        <div class="sg-chips">${t.disc.map((d, i) => `<span${i === t.myDisc ? ' class="on"' : ''}>${d}</span>`).join('')}</div>
       </div>` },
     { id: 'map', num: true, html: (t, n) => `
       <div class="sg-art">

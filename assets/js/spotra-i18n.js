@@ -1,4 +1,4 @@
-/* SPOTRA · Idiomas (español, português, english) — v26: pantallas vacías; v25: textos de los formularios con título arriba
+/* SPOTRA · Idiomas (español, português, english) — v28: disciplina del rider; v27: registro en 2 pasos; v26: pantallas vacías; v25: textos de los formularios con título arriba
    La app está escrita en español. Este módulo traduce lo que aparece en pantalla
    (textos, placeholders y avisos) según el idioma elegido. Lo que no está en el
    diccionario queda en español. Clave compartida con la landing: spotra_lang. */
@@ -578,7 +578,24 @@
     'Todavía no publicó nada':['Ainda não publicou nada','No posts yet'],'No tenés sesiones activas':['Você não tem sessões ativas','No active sessions'],
     'Armá una sesión en un spot del mapa y avisale a los riders de tu zona.':['Crie uma sessão em um spot do mapa e avise os riders da sua região.','Set up a session at a spot on the map and let riders nearby know.'],
     'Ir al mapa':['Ir ao mapa','Go to the map'],'No tiene sesiones activas ahora':['Não tem sessões ativas agora','No active sessions right now'],
-    'No tenés productos publicados':['Você não tem produtos publicados','You have no listings'],'No tiene productos a la venta':['Não tem produtos à venda','No items for sale']
+    'No tenés productos publicados':['Você não tem produtos publicados','You have no listings'],'No tiene productos a la venta':['Não tem produtos à venda','No items for sale'],
+    // ---- v27 (20/10/2026): registro en 2 pasos
+    'País':['País','Country'],'Ocultar contraseña':['Ocultar senha','Hide password'],'Ej. Montevideo':['Ex. Montevidéu','E.g. Montevideo'],
+    'Como te conocen los riders':['Como os riders te conhecem','How riders know you'],
+    'Paso 1 de 2 · Tus datos':['Passo 1 de 2 · Seus dados','Step 1 of 2 · Your details'],'Paso 2 de 2 · Sobre vos':['Passo 2 de 2 · Sobre você','Step 2 of 2 · About you'],
+    'Ya casi':['Quase','Almost'],'estás':['lá','there'],
+    'Un minuto y estás rodando. Gratis.':['Um minuto e você já está andando. Grátis.','One minute and you are rolling. Free.'],
+    'Con esto te mostramos spots, sesiones y eventos cerca tuyo.':['Com isso mostramos spots, sessões e eventos perto de você.','This lets us show you spots, sessions and events near you.'],
+    '10+ caracteres':['10+ caracteres','10+ characters'],'Mayúscula y minúscula':['Maiúscula e minúscula','Upper and lower case'],'Número':['Número','Number'],'Símbolo ! ? #':['Símbolo ! ? #','Symbol ! ? #'],
+    '¿Ya tenés cuenta?':['Já tem conta?','Already have an account?'],'¿Qué rodás?':['O que você anda?','What do you ride?'],'Crear mi cuenta':['Criar minha conta','Create my account'],'Continuar':['Continuar','Continue'],
+    '¡Bienvenido, rider!':['Bem-vindo, rider!','Welcome, rider!'],'Tu spot te':['Seu spot','Your spot is'],'espera.':['te espera.','waiting.'],
+    'La app de los riders de Latinoamérica: skate, BMX, rollers y scooter.':['O app dos riders da América Latina: skate, BMX, patins e patinete.','The app for Latin American riders: skate, BMX, rollers and scooter.'],
+    '+1.800 spots y skateparks':['+1.800 spots e skateparks','1,800+ spots and skateparks'],'· Uruguay, Argentina y Brasil':['· Uruguai, Argentina e Brasil','· Uruguay, Argentina and Brazil'],
+    'Riders andando ahora':['Riders andando agora','Riders rolling now'],'· mirá quién está en cada spot':['· veja quem está em cada spot','· see who is at each spot'],
+    'Sesiones, eventos y Market':['Sessões, eventos e Market','Sessions, events and Market'],'· armá juntadas y vendé tu equipo':['· marque rolês e venda seu equipamento','· set up meetups and sell your gear'],
+    'SPOTRI saludando con su skate':['SPOTRI acenando com o skate','SPOTRI waving with his skateboard'],
+    // ---- v28 (20/10/2026): disciplina del rider
+    'La app te muestra primero lo de tu disciplina: eventos, ranking y Market.':['O app mostra primeiro o que é da sua disciplina: eventos, ranking e Market.','The app shows your discipline first: events, ranking and Market.']
   };
 
   // textos con partes variables

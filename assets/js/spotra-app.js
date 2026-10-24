@@ -472,3 +472,32 @@ async function handleCreate(type){
 
 window.addEventListener('popstate', () => setRoute(location.hash.replace('#',''), false));
 setRoute(location.hash.replace('#','') || 'login', false);
+
+/* 20/10/2026: disciplina del rider (skate, bmx, roller, scooter). La app la usa para mostrar primero lo suyo
+   (filtros de Eventos y Ranking, categorías del Market, disciplina por defecto al crear sesión o evento).
+   Se guarda en el teléfono para que esté lista al abrir; la lee y actualiza spotra-profile.js. */
+(function(){
+  const KEY = 'spotra_disc';
+  const WORDS = [['bmx', /bmx|bici/], ['roller', /roll|patin(?!ete)/], ['scooter', /scoot|monopat|patinete/], ['skate', /skate/]];
+  function norm(v){
+    v = String(v || '').toLowerCase();
+    let best = null, at = Infinity;
+    WORDS.forEach(([k, re]) => { const m = v.search(re); if(m >= 0 && m < at){ at = m; best = k; } });
+    return best;
+  }
+  let cur = null;
+  try { cur = norm(localStorage.getItem(KEY)); } catch(e){}
+  window.SpotraDiscipline = {
+    norm,
+    get: () => cur,
+    label: d => ({ skate: 'Skate', bmx: 'BMX', roller: 'Roller', scooter: 'Scooter' })[d === undefined ? cur : d] || '',
+    set(v){
+      const n = norm(v);
+      try { if(n) localStorage.setItem(KEY, n); else localStorage.removeItem(KEY); } catch(e){}
+      if(n === cur) return;
+      cur = n;
+      try { window.dispatchEvent(new CustomEvent('spotra-discipline', { detail: n })); } catch(e){}
+    }
+  };
+})();
+

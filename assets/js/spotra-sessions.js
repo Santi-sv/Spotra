@@ -148,7 +148,9 @@
     setDay('0');
     $('sesNote').value = '';
     $('sesError').textContent = '';
-    document.querySelectorAll('#sesDisc button').forEach((b, i) => b.classList.toggle('active', i === 0));
+    // 20/10/2026: viene marcada la disciplina del rider (scooter: Todas; sin disciplina: la primera, como antes)
+    const myD = ({ skate: 'skate', bmx: 'bmx', roller: 'rollers', scooter: 'todas' })[window.SpotraDiscipline && window.SpotraDiscipline.get()];
+    document.querySelectorAll('#sesDisc button').forEach((b, i) => b.classList.toggle('active', myD ? b.dataset.v === myD : i === 0));
     if(window.openModal) window.openModal('session');
   }
 

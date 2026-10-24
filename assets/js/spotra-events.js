@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v8)
+/* SPOTRA · Eventos (v9)
+   - v9 (20/10/2026): Eventos y Ranking arrancan en la disciplina del rider; Crear evento la trae marcada.
    - v8 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Crear evento, Ver próximos, Ver todos los eventos).
    - v7 (17/10/2026): rediseño — hojas con borde gris, títulos chicos en gris, botón secundario gris.
    - v6: el organizador puede eliminar su evento (botón "Eliminar evento" en el detalle, en cualquier estado).
@@ -20,6 +21,29 @@
   let upcomingCache = [];
   let activeTab = 'upcoming';
   let activeDisc = 'all';
+  /* 20/10/2026: la disciplina del rider elige el filtro inicial (hasta que toque otro) */
+  const MY_DISC = { skate: 'skate', bmx: 'bmx', roller: 'rollers' };
+  let discTouched = false, rankTouched = false;
+  function myDisc(){ return MY_DISC[window.SpotraDiscipline && window.SpotraDiscipline.get()] || ''; }
+  /* Crear evento: la disciplina del rider viene marcada (scooter o sin disciplina: Todas) */
+  function setFormDisc(){
+    const v = myDisc() || 'todas';
+    document.querySelectorAll('[data-seg="eventDiscipline"] button').forEach(b => b.classList.toggle('active', b.dataset.v === v));
+  }
+  document.addEventListener('click', e => {
+    if(e.target.closest && e.target.closest('[data-open-modal="event"]')) setTimeout(() => { if(!editingId) setFormDisc(); }, 0);
+  }, true);
+  window.addEventListener('spotra-discipline', () => {
+    const v = document.querySelector('[data-view="events"].active');
+    if(!v || !listEl()) return;
+    if(activeTab === 'upcoming' && !discTouched) renderUpcoming(true);
+    else if(activeTab === 'ranking' && !rankTouched) renderRanking();
+  });
+  function applyMyDisc(){
+    if(discTouched) return;
+    activeDisc = myDisc() || 'all';
+    document.querySelectorAll('#eventsDisc button').forEach(b => b.classList.toggle('active', b.dataset.evDisc === activeDisc));
+  }
   let currentEvent = null;
   let pickedPlace = null;
   let editingId = null;
@@ -278,6 +302,7 @@
   async function renderUpcoming(cached){
     const wrap = listEl();
     if(!wrap || !B()) return;
+    applyMyDisc();
     if(!cached || !upcomingCache.length){
       wrap.innerHTML = `<div class="meta" style="margin-top:14px">${esc(T('Cargando eventos...'))}</div>`;
       upcomingCache = await B().listEvents({ limit: 50 });
@@ -342,6 +367,7 @@
   async function renderRanking(){
     const wrap = listEl();
     if(!wrap || !B()) return;
+    if(!rankTouched && myDisc()) rankDisc = myDisc();
     const segs = ['skate', 'bmx', 'rollers'];
     const segHtml = `<div class="filter-row" style="margin-top:12px">${segs.map(s =>
       `<button class="${s === rankDisc ? 'active' : ''}" data-rank-disc="${s}">${DISC_LABEL[s]}</button>`).join('')}</div>`;
@@ -938,7 +964,7 @@
     const idInput = document.getElementById('eventPlaceId'); if(idInput) idInput.value = '';
     const label = document.getElementById('eventPlaceLabel'); if(label){ label.textContent = 'Elegir spot en el mapa'; label.style.color = 'var(--muted)'; }
     const rain = document.getElementById('eventRain'); if(rain) rain.checked = false;
-    document.querySelectorAll('[data-seg="eventDiscipline"] button').forEach((b, i) => b.classList.toggle('active', i === 0));
+    setFormDisc();
     pickedPlace = null;
     if(typeof window.closeModal === 'function') window.closeModal();
     toast(isEdit ? 'Cambios guardados.' : 'Evento enviado. Queda pendiente de aprobación.');
@@ -1019,7 +1045,7 @@
       return;
     }
     if(e.target.closest('[data-ev-reset]')){
-      activeWhen = 'all'; activeDisc = 'all';
+      activeWhen = 'all'; activeDisc = 'all'; discTouched = true;
       document.querySelectorAll('#eventsWhen button').forEach(b => b.classList.toggle('active', b.dataset.evWhen === 'all'));
       document.querySelectorAll('#eventsDisc button').forEach(b => b.classList.toggle('active', b.dataset.evDisc === 'all'));
       renderUpcoming(true);
@@ -1036,7 +1062,7 @@
     }
     const disc = e.target.closest('[data-ev-disc]');
     if(disc){
-      activeDisc = disc.dataset.evDisc;
+      activeDisc = disc.dataset.evDisc; discTouched = true;
       document.querySelectorAll('#eventsDisc button').forEach(b => b.classList.toggle('active', b === disc));
       renderUpcoming();
       return;
@@ -1048,7 +1074,7 @@
     const att = e.target.closest('[data-ev-attendlist]');
     if(att && currentEvent){ openAttendList(currentEvent); return; }
     const rk = e.target.closest('[data-rank-disc]');
-    if(rk){ rankDisc = rk.dataset.rankDisc; renderRanking(); return; }
+    if(rk){ rankDisc = rk.dataset.rankDisc; rankTouched = true; renderRanking(); return; }
     const res = e.target.closest('[data-ev-results]');
     if(res && currentEvent){ openResults(currentEvent); return; }
     const edt = e.target.closest('[data-ev-edit]');

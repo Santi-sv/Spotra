@@ -1,4 +1,6 @@
-/* SPOTRA · Autenticación real con Supabase Auth
+/* SPOTRA · Autenticación real con Supabase Auth (v11)
+   - v11 (20/10/2026): registro en 2 pasos (Tus datos / Sobre vos), chequeo de contraseña en vivo,
+     prefijo del celular según el país; los campos se leen por id (ya no por orden).
    - Registro (signUp) + creación del perfil en la tabla "profiles"
    - Inicio de sesión (signIn) con persistencia de sesión
    - Estado de UI: oculta "Crear cuenta" / "Iniciar sesión" si hay sesión y saluda por nombre
@@ -134,18 +136,21 @@
   window.SpotraBirthPicker = { scan: bpScan };
 
   /* ---------- lectura del formulario de registro ---------- */
+  const PHONE_PREFIX = { 'uruguay': '+598', 'argentina': '+54', 'brasil': '+55' };
+  function val(id){ const el = document.getElementById(id); return el ? String(el.value || '') : ''; }
   function readSignup(){
-    const ins = document.querySelectorAll('#signupForm input');
     const typeLabel = (document.querySelector('.type-grid .type-card.active .card-label') || {}).textContent || 'Rider';
     const discipline = (document.querySelector('.discipline-grid .discipline-card.active .card-label') || {}).textContent || '';
     const countrySel = document.getElementById('signupCountry');
     const countryName = countrySel ? countrySel.value : 'Uruguay';
+    let phone = val('suPhone').trim();
+    if(phone && phone.charAt(0) !== '+') phone = (PHONE_PREFIX[countryName.trim().toLowerCase()] || '') + ' ' + phone;
     return {
-      fullName: (ins[0] && ins[0].value || '').trim(),
-      email:    (ins[1] && ins[1].value || '').trim(),
-      phone:    (ins[2] && ins[2].value || '').trim(),
-      password: (ins[3] && ins[3].value) || '',
-      city:     (ins[4] && ins[4].value || '').trim(),
+      fullName: val('suName').trim(),
+      email:    val('suEmail').trim(),
+      phone:    phone.trim(),
+      password: val('suPass'),
+      city:     val('suCity').trim(),
       accountType: TYPE_TO_ACCOUNT[typeLabel.trim().toLowerCase()] || 'rider',
       countryCode: COUNTRY_TO_CODE[countryName.trim().toLowerCase()] || 'UY',
       discipline: discipline.trim().toLowerCase(),
@@ -344,7 +349,8 @@
     const client = await db();
     if(!client){ notify('No hay conexión con el backend.'); return; }
 
-    try { localStorage.setItem('spotraPendingProfile', JSON.stringify(f)); } catch {}
+    // 20/10/2026: la contraseña nunca se guarda en el navegador (antes quedaba en spotraPendingProfile)
+    try { const keep = Object.assign({}, f); delete keep.password; localStorage.setItem('spotraPendingProfile', JSON.stringify(keep)); } catch {}
 
     try {
       const { data, error } = await client.auth.signUp({
@@ -366,6 +372,7 @@
         await applyAuthUI();
         if(window.setRole) window.setRole(roleHome(f.accountType, false));
       } else {
+        suGo(1);
         notify('Te enviamos un email para confirmar tu cuenta. Confirmalo y luego iniciá sesión.');
         setTimeout(() => {
           if(typeof window.setRoute === 'function') window.setRoute('login'); else location.hash = 'login';
@@ -538,6 +545,70 @@
       if(btn){ btn.disabled = false; btn.textContent = 'Guardar contraseña'; }
     }
   }
+
+  /* ---------- registro en 2 pasos (20/10/2026) ---------- */
+  const TT = s => (window.SpotraI18n ? window.SpotraI18n.t(s) : s);
+  let suStep = 1;
+  function suGo(n){
+    suStep = n;
+    document.querySelectorAll('[data-su-step]').forEach(el => { el.hidden = el.dataset.suStep !== String(n); });
+    document.querySelectorAll('[data-su-show]').forEach(el => { el.hidden = el.dataset.suShow !== String(n); });
+    document.querySelectorAll('.su-steps span').forEach((el, i) => el.classList.toggle('on', i < n));
+    const txt = document.getElementById('suStepTxt');
+    if(txt) txt.textContent = n === 1 ? TT('Paso 1 de 2 · Tus datos') : TT('Paso 2 de 2 · Sobre vos');
+    const back = document.getElementById('suBack');
+    if(back){ if(n === 1) back.setAttribute('data-route', 'login'); else back.removeAttribute('data-route'); }
+    const panel = document.querySelector('.su-panel');
+    if(panel && panel.scrollIntoView) try { window.scrollTo(0, 0); } catch(e){}
+    if(n === 2){ const b = document.querySelector('[data-su-step="2"] select, [data-su-step="2"] input:not([type="date"])'); if(b && window.matchMedia && matchMedia('(pointer:fine)').matches) b.focus(); }
+  }
+  function suRules(){
+    const pw = val('suPass');
+    const ok = { len: pw.length >= 10, case: /[a-z]/.test(pw) && /[A-Z]/.test(pw), num: /[0-9]/.test(pw), sym: PW_SYMBOL.test(pw) };
+    document.querySelectorAll('#suRules [data-rule]').forEach(el => el.classList.toggle('ok', !!ok[el.dataset.rule]));
+  }
+  function suNext(){
+    const step = document.querySelector('[data-su-step="1"]');
+    if(!step) return;
+    let bad = 0, pwOnly = true;
+    step.querySelectorAll('input,select').forEach(inp => {
+      let invalid = !inp.checkValidity();
+      if(inp.id === 'suPass' && passwordProblem(inp.value)) invalid = true;
+      const field = inp.closest('.field');
+      if(field) field.classList.toggle('error', invalid);
+      if(invalid){ bad++; if(inp.id !== 'suPass') pwOnly = false; }
+    });
+    if(bad){
+      notify(bad === 1 && pwOnly ? PW_MSG : 'Revisá los campos marcados en rojo.');
+      const first = step.querySelector('.field.error input'); if(first) first.focus();
+      return;
+    }
+    suGo(2);
+  }
+  function suPrefix(){
+    const sel = document.getElementById('signupCountry'), pre = document.getElementById('suPrefix');
+    if(sel && pre) pre.textContent = PHONE_PREFIX[String(sel.value).toLowerCase()] || '';
+  }
+  document.addEventListener('input', e => { if(e.target && e.target.id === 'suPass') suRules(); });
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Enter' && e.target && e.target.closest && e.target.closest('[data-su-step="1"]') && e.target.tagName === 'INPUT'){ e.preventDefault(); suNext(); }
+  });
+  document.addEventListener('click', function(e){
+    if(!e.target.closest) return;
+    if(e.target.closest('#suNext')){ e.preventDefault(); suNext(); return; }
+    if(e.target.closest('#suBack') && suStep === 2){ e.preventDefault(); e.stopImmediatePropagation(); suGo(1); return; }
+    const eye = e.target.closest('#suEye');
+    if(eye){
+      const pw = document.getElementById('suPass'); if(!pw) return;
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      eye.setAttribute('aria-label', TT(show ? 'Ocultar contraseña' : 'Mostrar contraseña'));
+      eye.classList.toggle('on', show);
+      return;
+    }
+    if(e.target.closest('.su .country-chip')) setTimeout(suPrefix, 0);
+    if(e.target.closest('[data-route="signup"]')) suGo(1);
+  }, true);
 
   /* ---------- intercepta los botones de auth ANTES del handler general ---------- */
   document.addEventListener('click', function(e){

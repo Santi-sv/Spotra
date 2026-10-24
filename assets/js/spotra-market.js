@@ -1,4 +1,5 @@
-/* SPOTRA · Market C2C (v7, estilo Facebook Marketplace)
+/* SPOTRA · Market C2C (v8, estilo Facebook Marketplace)
+   - v8 (20/10/2026): las categorías de la disciplina del rider van primero; Publicar producto la trae elegida.
    - v7 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Publicar producto, Ver todo, Explorar el Market).
    - v6 (15/10/2026): sin sesión no se ve el WhatsApp del vendedor; el botón invita a iniciar sesión.
    - Buscador, ubicación + radio, categorías de riders con íconos, filtros (precio, estado, orden).
@@ -23,6 +24,14 @@
     ['otros', 'Otros', I('<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>')]
   ];
   const CAT_LABEL = Object.fromEntries(CATS.map(c => [c[0], c[1]]));
+  /* 20/10/2026: primero las categorías de la disciplina del rider (no se oculta ninguna) */
+  const DISC_CATS = { skate: ['tablas', 'trucks', 'ruedas'], bmx: ['bicis'], roller: ['rollers'], scooter: ['scooters'] };
+  function myCats(){ return DISC_CATS[window.SpotraDiscipline && window.SpotraDiscipline.get()] || []; }
+  function catsOrdered(){
+    const mine = myCats();
+    if(!mine.length) return CATS;
+    return [CATS[0]].concat(mine.map(k => CATS.find(c => c[0] === k)).filter(Boolean), CATS.slice(1).filter(c => !mine.includes(c[0])));
+  }
   const COND_LABEL = { 'nuevo': 'Nuevo', 'como-nuevo': 'Usado — como nuevo', 'bueno': 'Usado — bueno', 'con-detalles': 'Usado — con detalles' };
   const STATUS_LABEL = { pending: 'Pendiente', approved: 'Publicado', rejected: 'Rechazado', archived: 'Retirado' };
   const ICON = {
@@ -136,7 +145,7 @@
       <div class="mk-label mk-hide-m">${esc(t('Ubicación'))}</div>
       ${loc}
       <div class="mk-label mk-hide-m">${esc(t('Categorías'))}</div>
-      <div class="mk-cats">${CATS.map(([k, label, ic]) => `<button type="button" data-mk-cat="${k}" class="${cat === k ? 'active' : ''}"><span class="ic">${ic}</span><span>${esc(t(label))}</span></button>`).join('')}</div>`;
+      <div class="mk-cats">${catsOrdered().map(([k, label, ic]) => `<button type="button" data-mk-cat="${k}" class="${cat === k ? 'active' : ''}"><span class="ic">${ic}</span><span>${esc(t(label))}</span></button>`).join('')}</div>`;
   }
 
   function renderSide(){
@@ -684,6 +693,12 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', watchView);
   else watchView();
   window.addEventListener('spotra-lang', () => { const v = view(); if(v && v.classList.contains('active')) render(); });
+  window.addEventListener('spotra-discipline', () => { if(shell()) renderSide(); });
+  // Publicar producto: la categoría de la disciplina del rider viene elegida
+  document.addEventListener('click', e => {
+    if(!(e.target.closest && e.target.closest('[data-open-modal="product"]'))) return;
+    setTimeout(() => { const sel = $('mlCategory'), first = myCats()[0]; if(sel && first && [...sel.options].some(o => o.value === first)) sel.value = first; }, 0);
+  }, true);
   window.addEventListener('spotra-user', () => { loadSaved(); });
 
   // abrir un producto desde otro lado (por ejemplo, la pestaña Market de un perfil)

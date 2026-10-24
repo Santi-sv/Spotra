@@ -1,4 +1,6 @@
-/* SPOTRA · Perfil editable real (lee y guarda en la tabla profiles) */
+/* SPOTRA · Perfil editable real (lee y guarda en la tabla profiles)
+   - v8 (20/10/2026): Disciplina con 4 botones (Skate, BMX, Roller, Scooter); al abrir la app se lee la disciplina
+     del rider y se avisa al resto (window.SpotraDiscipline) para mostrar primero lo suyo. */
 (function(){
   function notify(m){ (window.toast || function(x){ console.log('[SPOTRA]', x); })(m); }
   async function db(){ if(window.SpotraBackend && window.SpotraBackend.getClient) return await window.SpotraBackend.getClient(); return null; }
@@ -76,6 +78,8 @@
     setVal('pfApellido', parts.join(' '));
     setVal('pfUsername', p.username || '');
     setVal('pfDiscipline', p.discipline || '');
+    paintDisc();
+    if(window.SpotraDiscipline) window.SpotraDiscipline.set(p.discipline);
     setVal('pfInstagram', p.instagram || '');
     setVal('pfTiktok', p.tiktok || '');
     setVal('pfFacebook', p.facebook || '');
@@ -93,7 +97,7 @@
     const patch = {
       full_name,
       username: val('pfUsername').trim() || null,
-      discipline: val('pfDiscipline').trim().toLowerCase() || null,
+      discipline: (window.SpotraDiscipline ? window.SpotraDiscipline.norm(val('pfDiscipline')) : val('pfDiscipline').trim().toLowerCase()) || null,
       instagram: val('pfInstagram').trim() || null,
       tiktok: val('pfTiktok').trim() || null,
       facebook: val('pfFacebook').trim() || null,
@@ -107,6 +111,7 @@
       return;
     }
     notify('Perfil actualizado.');
+    if(window.SpotraDiscipline) window.SpotraDiscipline.set(patch.discipline);
     closeModal();
     loadProfile();
   }
@@ -197,5 +202,27 @@
   else watch();
 
   window.addEventListener('spotra-user', function(){ const v = document.querySelector('[data-view="profile"]'); if(v && v.classList.contains('active')) loadProfile(); });
+  /* disciplina: botones en Editar perfil + lectura al abrir la app */
+  function paintDisc(){
+    const d = window.SpotraDiscipline ? window.SpotraDiscipline.norm(val('pfDiscipline')) : '';
+    document.querySelectorAll('#pfDiscSeg button').forEach(b => b.classList.toggle('active', b.dataset.v === d));
+  }
+  document.addEventListener('click', function(e){
+    const b = e.target.closest && e.target.closest('#pfDiscSeg button');
+    if(!b) return;
+    setVal('pfDiscipline', b.dataset.v);
+    setTimeout(paintDisc, 0);
+  });
+  async function loadDiscipline(){
+    if(!window.SpotraDiscipline) return;
+    const c = await db(); if(!c) return;
+    let user = null;
+    try { const { data } = await c.auth.getSession(); user = data && data.session && data.session.user; } catch(e){}
+    if(!user){ window.SpotraDiscipline.set(null); return; }
+    const { data: p } = await c.from('profiles').select('discipline').eq('id', user.id).maybeSingle();
+    if(p) window.SpotraDiscipline.set(p.discipline);
+  }
+  window.addEventListener('spotra-user', function(){ loadDiscipline().catch(function(){}); });
+
   window.SpotraProfile = { loadProfile };
 })();
