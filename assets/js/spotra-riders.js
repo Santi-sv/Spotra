@@ -1,4 +1,5 @@
-/* SPOTRA · Perfiles de riders + visor de fotos (v5)
+/* SPOTRA · Perfiles de riders + visor de fotos (v6)
+   - v6 (24/10/2026): aviso "Cuenta protegida" en el perfil de un menor que todavía no te aceptó.
    - v5 (19/10/2026): pestañas vacías con ícono, título, texto y botón (Crear publicación, Ir al mapa, Publicar producto).
    - v4 (13/10/2026): rediseño.
    - Mi perfil y el perfil de otros riders comparten el mismo diseño (.pf).
@@ -304,6 +305,7 @@
         <h1 class="pf-name"><span>${esc(name)}</span>${r.verified ? ICON.verified : ''}</h1>
         <div class="pf-meta">${r.discipline ? `<span class="pf-chip">${esc(t(DISC[r.discipline] || r.discipline))}</span>` : ''}${loc ? `<span class="pf-loc">${ICON.pin}<span>${esc(loc)}</span></span>` : ''}</div>
         ${r.bio ? `<p class="pf-bio">${esc(r.bio)}</p>` : ''}
+        ${r.protected && r.follow_state !== 'following' ? `<p class="pf-bio" style="color:var(--muted);font-size:13px">${esc(({ es: 'Cuenta protegida. Si acepta tu solicitud, vas a ver más de su perfil y sus sesiones.', pt: 'Conta protegida. Se aceitar sua solicitação, você verá mais do perfil e as sessões.', en: 'Protected account. If they accept your request, you’ll see more of their profile and sessions.' })[window.SpotraI18n && window.SpotraI18n.lang ? window.SpotraI18n.lang() : 'es'] || '')}</p>` : ''}
         <div class="pf-actions other"><button type="button" class="pf-follow" data-follow="${esc(r.id)}" data-follow-name="${esc(user)}">${esc(t('Seguir'))}</button></div>
         ${socials ? `<div class="pf-social">${socials}</div>` : ''}
       </div>

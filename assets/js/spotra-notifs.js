@@ -1,6 +1,8 @@
 /* SPOTRA · Notificaciones de la campana
    Avisos que crea el servidor: alguien te siguió, le dio me gusta o comentó tu publicación, se sumó a tu sesión.
-   Punto rojo con la cantidad sin leer; al abrir la campana se marcan como leídas. */
+   Punto rojo con la cantidad sin leer; al abrir la campana se marcan como leídas.
+   24/10/2026 (v3): solicitudes para seguir a un menor (Aceptar / Rechazar en la misma campana)
+   y aviso "aceptó tu solicitud". */
 (function(){
   const B = () => window.SpotraBackend;
   let uid = null;
@@ -22,6 +24,8 @@
   function text(n){
     const who = `<b>@${esc(n.actor_name || 'rider')}</b>`, L = lang();
     const snippet = n.ref_text ? ` <span class="nt-q">"${esc(String(n.ref_text).slice(0, 50))}"</span>` : '';
+    if(n.kind === 'follow_request') return ({ es: `${who} quiere seguirte`, pt: `${who} quer te seguir`, en: `${who} wants to follow you` })[L];
+    if(n.kind === 'follow_accept') return ({ es: `${who} aceptó tu solicitud para seguirlo`, pt: `${who} aceitou sua solicitação`, en: `${who} accepted your follow request` })[L];
     if(n.kind === 'follow') return ({ es: `${who} empezó a seguirte`, pt: `${who} começou a te seguir`, en: `${who} started following you` })[L];
     if(n.kind === 'like') return ({ es: `${who} le dio me gusta a tu publicación`, pt: `${who} curtiu seu post`, en: `${who} liked your post` })[L] + snippet;
     if(n.kind === 'comment') return ({ es: `${who} comentó:`, pt: `${who} comentou:`, en: `${who} commented:` })[L] + snippet;
@@ -31,6 +35,8 @@
   }
   const ICON = {
     follow: '<path d="M15 19a6 6 0 0 0-12 0M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/>',
+    follow_request: '<path d="M15 19a6 6 0 0 0-12 0M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM19 8v6M16 11h6"/>',
+    follow_accept: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
     like: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
     comment: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>',
     spot_approved: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
@@ -55,8 +61,15 @@
     box.innerHTML = items.map(n => {
       const av = n.actor_avatar ? `style="background-image:url('${esc(n.actor_avatar)}')"` : '';
       if(n.kind === 'spot_approved') n.actor_name = 'SPOTRA';
+      const avHTML = `<span class="nt-av${n.actor_avatar ? ' has-img' : ''}" ${av}>${n.actor_avatar ? '' : esc(String(n.actor_name || 'R').charAt(0).toUpperCase())}<i class="nt-k nt-${esc(n.kind)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICON[n.kind] || ''}</svg></i></span>`;
+      if(n.kind === 'follow_request' && n.actor_id){
+        const L = lang();
+        return `<div class="nt-item nt-reqrow${n.read_at ? '' : ' unread'}">
+          <button type="button" class="nt-reqwho" data-nt="${esc(n.id)}">${avHTML}<span class="nt-tx">${text(n)}<small>${esc(ago(n.created_at))}</small></span></button>
+          <span class="nt-reqbtns"><button type="button" class="fl-btn main" data-freq-accept="${esc(n.actor_id)}">${esc(({ es: 'Aceptar', pt: 'Aceitar', en: 'Accept' })[L])}</button><button type="button" class="fl-btn ghost" data-freq-reject="${esc(n.actor_id)}">${esc(({ es: 'Rechazar', pt: 'Recusar', en: 'Decline' })[L])}</button></span></div>`;
+      }
       return `<button type="button" class="nt-item${n.read_at ? '' : ' unread'}" data-nt="${esc(n.id)}">
-        <span class="nt-av${n.actor_avatar ? ' has-img' : ''}" ${av}>${n.actor_avatar ? '' : esc(String(n.actor_name || 'R').charAt(0).toUpperCase())}<i class="nt-k nt-${esc(n.kind)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${ICON[n.kind] || ''}</svg></i></span>
+        ${avHTML}
         <span class="nt-tx">${text(n)}<small>${esc(ago(n.created_at))}</small></span></button>`;
     }).join('');
   }
@@ -99,7 +112,7 @@
     const n = items.find(x => x.id === it.dataset.nt);
     if(!n) return;
     closePanel();
-    if(n.kind === 'follow' && n.actor_id && window.SpotraRiders){ window.SpotraRiders.open(n.actor_id); return; }
+    if((n.kind === 'follow' || n.kind === 'follow_request' || n.kind === 'follow_accept') && n.actor_id && window.SpotraRiders){ window.SpotraRiders.open(n.actor_id); return; }
     if((n.kind === 'like' || n.kind === 'comment') && n.ref_id){
       if(window.setRoute) window.setRoute('community');
       setTimeout(() => { if(window.SpotraForum && window.SpotraForum.openPostById) window.SpotraForum.openPostById(n.ref_id); }, 900);
@@ -107,6 +120,19 @@
     }
     if((n.kind === 'session_join' || n.kind === 'spot_approved') && window.setRoute) window.setRoute('map');
   });
+
+  // estilos de la fila de solicitud (van acá para no tocar index.html)
+  (function css(){
+    if(document.getElementById('spotraNotifsCss')) return;
+    const st = document.createElement('style');
+    st.id = 'spotraNotifsCss';
+    st.textContent = '.nt-reqrow{flex-wrap:wrap}'
+      + '.nt-reqwho{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;color:inherit;text-align:left;cursor:pointer}'
+      + '.nt-reqbtns{display:flex;gap:6px;width:100%;padding-left:56px}'
+      + '.nt-reqbtns .fl-btn{flex:1}'
+      + '.nt-follow_request{background:#5aa9ff}.nt-follow_accept{background:#2ee84d;color:#06130a}';
+    document.head.appendChild(st);
+  })();
 
   window.addEventListener('spotra-user', load);
   setTimeout(load, 2200);
