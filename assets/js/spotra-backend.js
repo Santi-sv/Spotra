@@ -1,4 +1,4 @@
-/* SPOTRA · Backend (v25 · 24/10/2026: cantidad de inscriptos con reg_count; las inscripciones son privadas) */
+/* SPOTRA · Backend (v26 · 24/10/2026: teléfono del organizador con event_contact, solo con cuenta. v25: cantidad de inscriptos con reg_count) */
 (function(){
   const cfg = Object.assign({
     SUPABASE_URL: '',
@@ -406,7 +406,7 @@
       categories: Array.isArray(row.categories) ? row.categories : [],
       capacity: row.capacity || null,
       closesAt: row.closes_at ? new Date(row.closes_at) : null,
-      contactPhone: row.contact_phone || '',
+      contactPhone: row.event_contact || row.contact_phone || '',   // 24/10/2026: el teléfono viene de event_contact (solo con cuenta)
       rainReschedule: !!row.rain_reschedule,
       organizerId: row.organizer_id || null,
       status: row.status || 'approved',
@@ -420,7 +420,7 @@
     if(!db) return [];
     let query = db
       .from('events')
-      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, places(name, city, address, latitude, longitude), reg_count')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, event_contact, rain_reschedule, organizer_id, places(name, city, address, latitude, longitude), reg_count')
       .eq('status', 'approved')
       .gte('starts_at', new Date(Date.now() - 3 * 3600 * 1000).toISOString())
       .order('starts_at', { ascending: true })
@@ -462,7 +462,7 @@
     if(!db) return [];
     const { data, error } = await db
       .from('events')
-      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, places(name, city, address, latitude, longitude), reg_count')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, event_contact, rain_reschedule, organizer_id, places(name, city, address, latitude, longitude), reg_count')
       .eq('status', 'pending')
       .order('created_at', { ascending: false })
       .limit(100);
@@ -526,7 +526,7 @@
     if(!authData?.user?.id) return [];
     const { data, error } = await db
       .from('event_registrations')
-      .select('event_id, categories, events(id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, status, places(name, city, address, latitude, longitude), reg_count)')
+      .select('event_id, categories, events(id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, event_contact, rain_reschedule, organizer_id, status, places(name, city, address, latitude, longitude), reg_count)')
       .eq('profile_id', authData.user.id);
     if(error){ console.warn('[SPOTRA] listMyRegistrations:', error.message); return []; }
     return (data || [])
@@ -541,7 +541,7 @@
     if(!authData?.user?.id) return [];
     const { data, error } = await db
       .from('events')
-      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, contact_phone, rain_reschedule, organizer_id, status, places(name, city, address, latitude, longitude), reg_count')
+      .select('id, place_id, title, description, starts_at, image_url, created_at, discipline, registration_info, prizes, categories, capacity, closes_at, event_contact, rain_reschedule, organizer_id, status, places(name, city, address, latitude, longitude), reg_count')
       .eq('organizer_id', authData.user.id)
       .order('starts_at', { ascending: true })
       .limit(50);
