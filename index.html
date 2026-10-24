@@ -2311,6 +2311,86 @@ body:not(.is-authed) .fab{display:none!important}
 /* Market: la ubicación se muestra una sola vez (arriba, en la barra de filtros) */
 .mk-loc-mini{display:none!important}
 @media(min-width:900px){.empty-state{padding:52px 32px 46px}.empty-state>b{font-size:21px}}
+/* fase 5b (20/10/2026): registro en 2 pasos — títulos arriba, bordes grises, un solo botón verde por paso */
+.su .su-panel{background:none!important;border:0!important;box-shadow:none!important;padding:0!important;border-radius:0!important}
+.su .su-top{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;min-height:48px}
+.su .su-back{margin:0!important;color:var(--text)!important;border-color:var(--line-strong)!important;background:transparent!important}
+.su .su-mlogo{justify-self:center;height:30px;width:auto}
+.su .su-enter{background:none;border:0;color:var(--green-hot);font-weight:700;font-size:14px;padding:10px 2px;min-width:44px;text-align:right}
+.su .su-steps{display:flex;gap:6px;margin:18px 0 0}
+.su .su-steps span{flex:1;height:4px;border-radius:4px;background:rgba(255,255,255,.12);transition:background .25s}
+.su .su-steps span.on{background:var(--green-hot)}
+.su .su-head{margin-top:18px}
+.su .su-head .kicker{font-size:11px;margin:0}
+.su .su-title{font-family:var(--display);font-size:30px;line-height:1.05;margin:8px 0 0;letter-spacing:.01em}
+.su .su-lead{margin:8px 0 0;color:var(--muted);font-size:15px;line-height:1.45}
+.su .su-form{display:block!important;margin-top:8px!important}
+.su .su-step[hidden],.su [data-su-show][hidden]{display:none!important}
+.su .f-label{display:block;color:#c9cfca;font-size:13px;font-weight:600;margin:16px 0 7px}
+.su .field{display:flex;align-items:center;gap:10px;height:52px;padding:0 16px;border-radius:14px;border:1px solid var(--line-soft);background:rgba(255,255,255,.035)}
+.su .field:focus-within{border-color:var(--green-hot)}
+.su .field.error{border-color:var(--danger,#ff5a5f);box-shadow:none}
+.su .field input,.su .field select{font-size:16px;font-weight:500}
+.su .su-pass{padding-right:4px}
+.su .su-eye{width:44px;height:44px;flex-shrink:0;border:0;background:none;color:var(--muted);display:grid;place-items:center;border-radius:12px}
+.su .su-eye svg{width:20px;height:20px}
+.su .su-eye.on{color:var(--text)}
+.su .su-rules{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.su .su-rules span{display:inline-flex;align-items:center;gap:5px;height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--line-soft);color:var(--muted);font-size:12.5px;font-weight:600;transition:all .2s}
+.su .su-rules span.ok{border-color:transparent;background:rgba(46,232,77,.12);color:var(--green-hot)}
+.su .su-rules span.ok::before{content:"";width:10px;height:6px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:translateY(-2px) rotate(-45deg)}
+.su .su-countries{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important}
+.su .su-countries .country-chip{min-height:52px!important;height:52px;padding:0 6px!important;border-radius:14px!important;border:1px solid var(--line-soft)!important;background:rgba(255,255,255,.035)!important;color:#c9cfca!important;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:6px!important;font-size:14px!important;font-weight:600!important;text-align:center!important}
+.su .su-countries .country-chip.active{border-color:var(--green-hot)!important;background:rgba(46,232,77,.10)!important;color:var(--text)!important}
+.su .su-flag{width:22px;height:15px;flex-shrink:0;border-radius:3px;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.su .su-countries .card-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0!important}
+.su .su-tel{gap:12px}
+.su .country-field{display:none!important}
+.su .signup-birth{height:auto!important;min-height:0!important;padding:0!important;border:0!important;background:none!important}
+.su .signup-birth .bp select{height:52px!important;border-radius:14px!important;border:1px solid var(--line-soft)!important;background-color:rgba(255,255,255,.035)!important;font-size:16px!important;font-weight:500;color:var(--text)}
+.su .signup-birth .bp select:invalid{color:var(--muted)}
+.su .signup-birth .bp select:focus{border-color:var(--green-hot)!important}
+.su .signup-birth.error .bp select:invalid{border-color:var(--danger,#ff5a5f)!important}
+.su .su-prefix{font-size:16px;font-weight:600;color:var(--muted);padding-right:12px;border-right:1px solid var(--line-soft);line-height:22px}
+.su .su-hint{margin:8px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
+.su .su-disc{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important}
+.su .su-disc .discipline-card{min-height:52px!important;height:52px;padding:0 4px!important;border-radius:14px!important;border:1px solid var(--line-soft)!important;background:rgba(255,255,255,.035)!important;color:var(--text)!important;display:flex!important;align-items:center!important;justify-content:center!important;font-family:var(--display);font-size:13px!important;letter-spacing:.05em;text-transform:uppercase}
+.su .su-disc .discipline-card::before,.su .su-disc .discipline-card::after{display:none!important}
+.su .su-disc .discipline-card .card-label{margin:0!important;position:static!important}
+.su .su-disc .discipline-card.active{background:var(--green-hot)!important;border-color:var(--green-hot)!important;color:#061006!important}
+.su .su-next,.su .signup-cta{width:100%;height:56px!important;margin-top:24px!important;border-radius:16px!important;font-family:var(--display);font-size:16px!important;letter-spacing:.05em;box-shadow:none!important}
+.su .su-have{margin:18px 0 0;text-align:center;color:#c9cfca;font-size:15px}
+.su .su-have button{background:none;border:0;padding:6px 2px;color:var(--green-hot);font-weight:700;font-size:15px}
+.su .su-terms{margin:14px 0 0;text-align:center;color:var(--muted);font-size:13px;line-height:1.5}
+.su .su-terms a{color:var(--green-hot)}
+@media(max-width:360px){
+  .su .su-countries .country-chip{flex-direction:column!important;height:62px;min-height:62px!important;gap:5px!important;font-size:12.5px!important}
+  .su .su-disc .discipline-card{font-size:11px!important;letter-spacing:0}
+  .su .su-title{font-size:27px}
+}
+@media(max-width:899px){
+  .su{padding:12px 18px calc(28px + env(safe-area-inset-bottom))!important;display:block!important;max-width:560px}
+  .su .su-visual{display:none!important}
+}
+@media(min-width:900px){
+  .su{width:min(1200px,100%)!important;grid-template-columns:minmax(0,480px) minmax(0,1fr)!important;gap:0!important;padding:0 32px!important;align-items:start!important}
+  .su .su-visual{display:flex!important;flex-direction:column;gap:26px;background:none!important;border:0!important;border-right:1px solid var(--line-soft)!important;border-radius:0!important;box-shadow:none!important;padding:40px 48px 40px 0!important;overflow:visible!important}
+  .su .su-visual::before{display:none!important}
+  .su .su-vlogo{height:38px;width:auto;align-self:flex-start}
+  .su .su-hero{position:relative;height:300px;display:flex;align-items:center;justify-content:center}
+  .su .su-ring{position:absolute;width:280px;height:280px;border-radius:50%;border:1px solid var(--line-soft)}
+  .su .su-hero img{position:relative;height:290px;width:auto}
+  .su .su-bubble{position:absolute;top:26px;left:4px;background:#f5f7f4;color:#070907;font-family:var(--display);font-size:14px;letter-spacing:.03em;text-transform:uppercase;padding:10px 14px;border-radius:14px}
+  .su .su-vh{font-family:var(--display);font-size:40px;line-height:1;margin:8px 0 0}
+  .su .su-vlead{margin:10px 0 0;color:var(--muted);font-size:16px;line-height:1.5}
+  .su .su-feats{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+  .su .su-feats li{display:flex;align-items:center;gap:12px;font-size:14.5px;color:var(--muted)}
+  .su .su-feats li b{color:var(--text);font-weight:700}
+  .su .su-feats svg{width:22px;height:22px;flex-shrink:0;color:var(--text)}
+  .su .su-panel{padding:40px 0 48px 64px!important;max-width:620px;width:100%}
+  .su .su-mlogo{visibility:hidden}
+  .su .su-title{font-size:40px}
+}
 /* nombres debajo de los pines del mapa */
 .spotra-pin-label{font-family:var(--body,'General Sans',sans-serif)!important;white-space:nowrap;letter-spacing:.01em;text-shadow:0 0 2px #fff,0 0 3px #fff,0 0 4px #fff,0 1px 1px #fff}
 .spotra-pin-label.is-selected{background:#0b0f0c;color:#fff!important;padding:4px 10px;border-radius:999px;text-shadow:none;box-shadow:0 4px 14px rgba(0,0,0,.28)}
@@ -2513,66 +2593,80 @@ body:not(.is-authed) .fab{display:none!important}
     </section>
 
     <section class="view" data-view="signup">
-      <div class="signup-layout">
-        <aside class="signup-visual">
-          <div class="signup-mark">
-            <img src="assets/logo/logo-principal.webp" alt="SPOTRA">
-            <div><b>SPOTRA</b><div class="meta">Rider identity</div></div>
+      <!-- 20/10/2026 (fase 5b): registro en 2 pasos — 1) tus datos, 2) sobre vos. Lógica en spotra-auth.js -->
+      <div class="signup-layout su">
+        <aside class="signup-visual su-visual">
+          <img class="su-vlogo" src="assets/logo/spotra-brush.webp" alt="SPOTRA">
+          <div class="su-hero">
+            <span class="su-ring" aria-hidden="true"></span>
+            <img src="assets/Spotri/spotri-hola.webp" alt="SPOTRI saludando con su skate">
+            <span class="su-bubble">¡Bienvenido, rider!</span>
           </div>
-          <div>
+          <div class="su-vtext">
             <div class="kicker">SPOTRA</div>
-            <h1 class="h1">Tu spot te espera</h1>
-            <p class="lead">La app de los riders de Latinoamérica: skate, BMX, rollers y scooter.</p>
-            <div class="signup-feats">
-              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/></svg><div><b>+1.800 spots y skateparks</b><span>Uruguay, Argentina y Brasil</span></div></div>
-              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.2"/><path d="M3 20a6 6 0 0 1 12 0M14.5 20a4 4 0 0 1 6.5-3"/></svg><div><b>Riders andando ahora</b><span>Mirá quién está en cada spot</span></div></div>
-              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><div><b>Sesiones y eventos</b><span>Armá juntadas y competí</span></div></div>
-              <div class="signup-feat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 10h16l-1-5H5l-1 5Z"/><path d="M6 10v9h12v-9"/></svg><div><b>Market de riders</b><span>Comprá y vendé tu equipo</span></div></div>
-            </div>
+            <h1 class="su-vh">Tu spot te <span class="green">espera.</span></h1>
+            <p class="su-vlead">La app de los riders de Latinoamérica: skate, BMX, rollers y scooter.</p>
           </div>
+          <ul class="su-feats">
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s7-7.6 7-13a7 7 0 0 0-14 0c0 5.4 7 13 7 13Z"/><circle cx="12" cy="9" r="2.5"/></svg><span><b>+1.800 spots y skateparks</b> · Uruguay, Argentina y Brasil</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/></svg><span><b>Riders andando ahora</b> · mirá quién está en cada spot</span></li>
+            <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><span><b>Sesiones, eventos y Market</b> · armá juntadas y vendé tu equipo</span></li>
+          </ul>
         </aside>
-        <div class="panel signup-panel">
-          <button class="auth-back" data-route="login" aria-label="Volver a iniciar sesión">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>
-          </button>
-          <div class="signup-logo-line"><img src="assets/logo/spotra-brush.webp" alt="SPOTRA"></div>
-          <div class="signup-header">
-            <div>
-              <div class="kicker">Crear cuenta</div>
-              <h2 class="id-title"><span class="green">Creá</span> tu cuenta</h2>
-              <p class="lead">Elegí el tipo de cuenta que mejor te representa y armá tu acceso al ecosistema SPOTRA.</p>
+        <div class="panel signup-panel su-panel">
+          <div class="su-top">
+            <button type="button" class="auth-back su-back" id="suBack" data-route="login" aria-label="Volver"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <img class="su-mlogo" src="assets/logo/spotra-brush.webp" alt="SPOTRA">
+            <button type="button" class="su-enter" data-route="login">Entrar</button>
+          </div>
+          <div class="su-steps" aria-hidden="true"><span class="on"></span><span></span></div>
+          <div class="su-head">
+            <div class="kicker" id="suStepTxt">Paso 1 de 2 · Tus datos</div>
+            <h2 class="su-title" data-su-show="1"><span class="green">Creá</span> tu cuenta</h2>
+            <h2 class="su-title" data-su-show="2" hidden><span class="green">Ya casi</span> estás</h2>
+            <p class="su-lead" data-su-show="1">Un minuto y estás rodando. Gratis.</p>
+            <p class="su-lead" data-su-show="2" hidden>Con esto te mostramos spots, sesiones y eventos cerca tuyo.</p>
+          </div>
+          <div class="form-grid su-form" id="signupForm">
+            <div class="su-step" data-su-step="1">
+              <label class="f-label" for="suName">Nombre completo</label>
+              <div class="field"><input required id="suName" placeholder="Como te conocen los riders" autocomplete="name"></div>
+              <label class="f-label" for="suEmail">Email</label>
+              <div class="field"><input required type="email" id="suEmail" placeholder="tu@email.com" autocomplete="email" inputmode="email" autocapitalize="off"></div>
+              <label class="f-label" for="suPass">Contraseña</label>
+              <div class="field su-pass"><input required type="password" id="suPass" placeholder="Mínimo 10 caracteres" minlength="10" autocomplete="new-password"><button type="button" class="su-eye" id="suEye" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+              <div class="su-rules" id="suRules">
+                <span data-rule="len">10+ caracteres</span><span data-rule="case">Mayúscula y minúscula</span><span data-rule="num">Número</span><span data-rule="sym">Símbolo ! ? #</span>
+              </div>
+              <span class="f-label">País</span>
+              <div class="field country-field" hidden><select required id="signupCountry" aria-label="País"><option>Uruguay</option><option>Argentina</option><option>Brasil</option></select></div>
+              <div class="country-picker su-countries" aria-label="País">
+                <button type="button" class="country-chip active" data-country="Uruguay"><svg class="su-flag" viewBox="0 0 27 18" aria-hidden="true"><rect width="27" height="18" fill="#fff"/><path d="M9 3h18M9 7h18M0 11h27M0 15h27" stroke="#0038a8" stroke-width="2"/><circle cx="4.5" cy="5" r="2.4" fill="#fcd116"/></svg><span class="card-label">Uruguay</span></button>
+                <button type="button" class="country-chip" data-country="Argentina"><svg class="su-flag" viewBox="0 0 27 18" aria-hidden="true"><rect width="27" height="18" fill="#74acdf"/><rect y="6" width="27" height="6" fill="#fff"/><circle cx="13.5" cy="9" r="1.9" fill="#f6b40e"/></svg><span class="card-label">Argentina</span></button>
+                <button type="button" class="country-chip" data-country="Brasil"><svg class="su-flag" viewBox="0 0 27 18" aria-hidden="true"><rect width="27" height="18" fill="#009b3a"/><path d="M13.5 2.2 24.8 9 13.5 15.8 2.2 9Z" fill="#fedf00"/><circle cx="13.5" cy="9" r="3.7" fill="#002776"/></svg><span class="card-label">Brasil</span></button>
+              </div>
+              <label class="f-label" for="suPhone">Celular</label>
+              <div class="field su-tel"><span class="su-prefix" id="suPrefix">+598</span><input required type="tel" id="suPhone" placeholder="99 123 456" autocomplete="tel-national" inputmode="tel"></div>
+              <button type="button" class="primary-btn su-next" id="suNext">Continuar</button>
+              <p class="su-have">¿Ya tenés cuenta? <button type="button" data-route="login">Iniciar sesión</button></p>
             </div>
-            <span class="signup-chip">SPOTRA ID</span>
-          </div>
-          <div class="type-grid" style="grid-template-columns:1fr">
-            <button class="type-card active"><span class="card-photo"><img src="assets/eventos/skater-2.webp" alt=""></span><span class="card-label">Rider</span></button>
-          </div>
-          <div class="form-grid" id="signupForm">
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><input required placeholder="Nombre completo" autocomplete="name"></div>
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><input required type="email" placeholder="Email" autocomplete="email"></div>
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/></svg><input required type="tel" placeholder="Celular" autocomplete="tel"></div>
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input required type="password" placeholder="Contraseña (mín. 10)" minlength="10" autocomplete="new-password"></div>
-            <div class="field country-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18 14 14 0 0 1 0-18Z"/></svg><select required id="signupCountry"><option>Uruguay</option><option>Argentina</option><option>Brasil</option></select></div>
-            <div class="field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/></svg><input required placeholder="Ciudad"></div>
-            <div class="signup-birth-label full">Fecha de nacimiento</div>
-            <div class="field full signup-birth"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M4 9h16M8 3v4M16 3v4"/></svg><input required type="date" id="signupBirth" aria-label="Fecha de nacimiento"></div>
-            <p class="signup-birth-hint full">Mínimo 13 años. Si tenés entre 13 y 17, tu cuenta se vincula a tu madre, padre o tutor. No se muestra en tu perfil.</p>
-            <p class="signup-birth-hint full">Contraseña: 10 caracteres o más, con mayúscula, minúscula, número y símbolo (por ejemplo ! ? # .).</p>
-            <div class="country-picker" aria-label="País de inicio">
-              <button type="button" class="country-chip active" data-country="Uruguay"><span class="flag-img uy-real" aria-hidden="true"></span><span class="card-label">Uruguay</span></button>
-              <button type="button" class="country-chip" data-country="Argentina"><span class="flag-img ar-real" aria-hidden="true"></span><span class="card-label">Argentina</span></button>
-              <button type="button" class="country-chip" data-country="Brasil"><span class="flag-img br-real" aria-hidden="true"></span><span class="card-label">Brasil</span></button>
+            <div class="su-step" data-su-step="2" hidden>
+              <span class="f-label">Fecha de nacimiento</span>
+              <div class="field full signup-birth"><input required type="date" id="signupBirth" aria-label="Fecha de nacimiento"></div>
+              <p class="su-hint">Mínimo 13 años. Si tenés entre 13 y 17, tu cuenta se vincula a tu madre, padre o tutor. No se muestra en tu perfil.</p>
+              <label class="f-label" for="suCity">Ciudad</label>
+              <div class="field"><input required id="suCity" placeholder="Ej. Montevideo" autocomplete="address-level2"></div>
+              <span class="f-label">¿Qué rodás?</span>
+              <div class="discipline-grid su-disc">
+                <button type="button" class="discipline-card active"><span class="card-label">Skate</span></button>
+                <button type="button" class="discipline-card"><span class="card-label">BMX</span></button>
+                <button type="button" class="discipline-card"><span class="card-label">Roller</span></button>
+                <button type="button" class="discipline-card"><span class="card-label">Scooter</span></button>
+              </div>
+              <button type="button" class="primary-btn signup-cta" data-validate="signupForm" data-route="home">Crear mi cuenta</button>
+              <p class="su-terms">Al crear tu cuenta aceptás los <a href="terminos.html" target="_blank" rel="noopener">Términos</a> y la <a href="privacidad.html" target="_blank" rel="noopener">Política de Privacidad</a>.</p>
             </div>
           </div>
-          <div class="signup-section-title">Disciplina</div>
-          <div class="discipline-grid">
-            <button type="button" class="discipline-card active"><span class="card-photo"><img src="assets/marketplace/skate-completo.webp" alt=""></span><span class="card-label">Skate</span></button>
-            <button type="button" class="discipline-card"><span class="card-photo"><img src="assets/marketplace/bmx-usada.webp" alt=""></span><span class="card-label">BMX</span></button>
-            <button type="button" class="discipline-card"><span class="card-photo"><img src="assets/tiendas/championes-vans-negros.webp" alt=""></span><span class="card-label">Roller</span></button>
-            <button type="button" class="discipline-card"><span class="card-photo"><img src="assets/spots/spot-10.webp" alt=""></span><span class="card-label">Scooter</span></button>
-          </div>
-          <button class="primary-btn signup-cta" data-validate="signupForm" data-route="home">Crear mi SPOTRA ID</button>
-          <p style="margin-top:14px;text-align:center;font-size:12.5px;line-height:1.5;color:var(--muted)">Al crear tu cuenta aceptás los <a href="terminos.html" target="_blank" rel="noopener" style="color:var(--green-hot)">Términos</a> y la <a href="privacidad.html" target="_blank" rel="noopener" style="color:var(--green-hot)">Política de Privacidad</a>.</p>
         </div>
       </div>
     </section>
@@ -2930,7 +3024,9 @@ body:not(.is-authed) .fab{display:none!important}
         <span class="f-label">Usuario</span>
         <div class="field full"><input id="pfUsername" placeholder="@usuario"></div>
         <span class="f-label">Disciplina</span>
-        <div class="field full"><input id="pfDiscipline" placeholder="Skate, BMX, Roller, Scooter"></div>
+        <div class="seg seg-4" id="pfDiscSeg"><button type="button" data-v="skate">Skate</button><button type="button" data-v="bmx">BMX</button><button type="button" data-v="roller">Roller</button><button type="button" data-v="scooter">Scooter</button></div>
+        <div class="field" style="display:none"><input type="hidden" id="pfDiscipline"></div>
+        <p class="hint" style="margin:6px 0 0;font-size:12.5px;color:var(--muted)">La app te muestra primero lo de tu disciplina: eventos, ranking y Market.</p>
         <span class="f-label">Instagram</span>
         <div class="field full"><input id="pfInstagram" placeholder="Usuario o link"></div>
         <span class="f-label">TikTok</span>
@@ -2983,14 +3079,14 @@ body:not(.is-authed) .fab{display:none!important}
 <script src="assets/js/spotra-geo.js?v=1"></script>
 <script src="assets/js/spotra-backend.js?v=24"></script>
 <script src="assets/js/spotra-google-map.js?v=25"></script>
-<script src="assets/js/spotra-app.js?v=4"></script>
-<script src="assets/js/spotra-i18n.js?v=26"></script>
+<script src="assets/js/spotra-app.js?v=5"></script>
+<script src="assets/js/spotra-i18n.js?v=28"></script>
 <script src="assets/js/spotra-follow.js?v=3"></script>
 <script src="assets/js/spotra-location.js?v=2"></script>
-<script src="assets/js/spotra-auth.js?v=10"></script>
+<script src="assets/js/spotra-auth.js?v=11"></script>
 <script src="assets/js/spotra-admin.js?v=15"></script>
 <script src="assets/js/spotra-admin-security.js?v=2"></script>
-<script src="assets/js/spotra-events.js?v=8"></script>
+<script src="assets/js/spotra-events.js?v=9"></script>
 <script src="assets/js/spotra-safety.js?v=3"></script>
 <script src="assets/js/spotra-avatar.js?v=3"></script>
 <script src="assets/js/spotra-riders.js?v=5"></script>
@@ -2998,14 +3094,14 @@ body:not(.is-authed) .fab{display:none!important}
 <script src="assets/js/spotra-guardian.js?v=2"></script>
 <script src="assets/js/spotra-presence.js?v=1"></script>
 <script src="assets/js/spotra-conditions.js?v=1"></script>
-<script src="assets/js/spotra-sessions.js?v=7"></script>
-<script src="assets/js/spotra-market.js?v=7"></script>
+<script src="assets/js/spotra-sessions.js?v=8"></script>
+<script src="assets/js/spotra-market.js?v=8"></script>
 <script src="assets/js/spotra-forum.js?v=9"></script>
 <script src="assets/js/spotra-push.js?v=3"></script>
-<script src="assets/js/spotra-profile.js?v=7"></script>
+<script src="assets/js/spotra-profile.js?v=8"></script>
 <script src="assets/js/spotra-spot-picker.js?v=7"></script>
 <script src="assets/js/spotra-waitlist.js?v=2"></script>
-<script src="assets/js/spotra-guide.js?v=3"></script>
+<script src="assets/js/spotra-guide.js?v=4"></script>
 <script src="assets/js/spotra-help.js?v=5"></script>
 <script src="assets/js/spotra-inapp.js?v=1"></script>
 <script src="assets/js/spotra-install.js?v=3"></script>
