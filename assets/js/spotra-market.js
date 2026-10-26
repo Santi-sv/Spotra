@@ -489,13 +489,16 @@
     return new Promise(resolve => {
       const img = new Image();
       img.onload = () => {
-        const max = 1280;
+        const max = 1080; // 25/10/2026: fotos más livianas (antes 1280 px, solo JPEG)
         const scale = Math.min(1, max / Math.max(img.width, img.height));
         const c = document.createElement('canvas');
         c.width = Math.round(img.width * scale);
         c.height = Math.round(img.height * scale);
         c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
-        c.toBlob(b => resolve(b), 'image/jpeg', 0.82);
+        c.toBlob(b => {
+          if(b && b.type === 'image/webp') resolve(b);
+          else c.toBlob(b2 => resolve(b2), 'image/jpeg', 0.8);
+        }, 'image/webp', 0.78);
       };
       img.onerror = () => resolve(null);
       img.src = URL.createObjectURL(file);
@@ -521,7 +524,7 @@
     for(const f of photoFiles){
       const blob = await compress(f);
       if(!blob) continue;
-      const up = await B().uploadListingImage(blob, 'jpg');
+      const up = await B().uploadListingImage(blob, blob.type === 'image/webp' ? 'webp' : 'jpg');
       if(up.ok) photos.push(up.url);
     }
     if(!photos.length){

@@ -210,24 +210,63 @@
     return item;
   }
 
+  // 25/10/2026 (sesión 6): la lista completa de spots se guarda en el teléfono y solo se vuelve
+  // a bajar si cambió la "huella" (RPC places_version). Ahorra ~136 KB por apertura.
+  const PLACES_CACHE_KEY = 'spotra_places_v1';
+  const PLACES_COLS = 'id, google_place_id, type, source, name, description, city, country_code, address, latitude, longitude, image_url, rating, contact_phone, website, instagram';
+
+  function readPlacesCache(){
+    try {
+      const c = JSON.parse(localStorage.getItem(PLACES_CACHE_KEY) || 'null');
+      if(c && typeof c.v === 'string' && Array.isArray(c.rows)) return c;
+    } catch {}
+    return null;
+  }
+
+  function writePlacesCache(v, rows){
+    try { localStorage.setItem(PLACES_CACHE_KEY, JSON.stringify({ v, rows, t: Date.now() })); }
+    catch { try { localStorage.removeItem(PLACES_CACHE_KEY); } catch {} }
+  }
+
+  // Trae todos los lugares aprobados en tandas de 1000 (Supabase devuelve hasta 1000 por pedido).
+  async function fetchApprovedPlaces(db, type){
+    const rows = [];
+    for(let from = 0; from < 10000; from += 1000){
+      let query = db.from('places').select(PLACES_COLS).eq('status', 'approved').order('id', { ascending: true }).range(from, from + 999);
+      if(type !== 'all') query = query.eq('type', type);
+      const { data, error } = await query;
+      if(error) return { ok: false, error };
+      rows.push(...(data || []));
+      if(!data || data.length < 1000) break;
+    }
+    return { ok: true, rows };
+  }
+
   async function listPlaces(options = {}){
     const type = normalizeType(options.type || 'all');
     const db = await client();
     if(db){
-      // Trae todos los lugares aprobados en tandas de 1000 (Supabase devuelve hasta 1000 por pedido).
-      const cols = 'id, google_place_id, type, source, name, description, city, country_code, address, latitude, longitude, image_url, rating, contact_phone, website, instagram';
-      const rows = [];
-      let failed = null;
-      for(let from = 0; from < 10000; from += 1000){
-        let query = db.from('places').select(cols).eq('status', 'approved').order('id', { ascending: true }).range(from, from + 999);
-        if(type !== 'all') query = query.eq('type', type);
-        const { data, error } = await query;
-        if(error){ failed = error; break; }
-        rows.push(...(data || []));
-        if(!data || data.length < 1000) break;
+      if(type === 'all'){
+        const cache = readPlacesCache();
+        let version = null;
+        try {
+          const { data, error } = await db.rpc('places_version');
+          if(!error && typeof data === 'string') version = data;
+        } catch {}
+        if(cache && version && cache.v === version) return cache.rows.map(normalizePlace);
+        const res = await fetchApprovedPlaces(db, 'all');
+        if(res.ok){
+          if(version) writePlacesCache(version, res.rows);
+          return res.rows.map(normalizePlace);
+        }
+        // Sin conexión o error: mejor la última lista real que los spots de ejemplo.
+        if(cache) return cache.rows.map(normalizePlace);
+        console.warn('[SPOTRA] Supabase places fallback:', res.error);
+      } else {
+        const res = await fetchApprovedPlaces(db, type);
+        if(res.ok) return res.rows.map(normalizePlace);
+        console.warn('[SPOTRA] Supabase places fallback:', res.error);
       }
-      if(!failed) return rows.map(normalizePlace);
-      console.warn('[SPOTRA] Supabase places fallback:', failed);
     }
     return seedPlaces.filter(place => type === 'all' || place.type === type).map(normalizePlace);
   }

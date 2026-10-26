@@ -837,14 +837,14 @@
       img.onload = () => {
         URL.revokeObjectURL(url);
         let w = img.width, h = img.height;
-        const max = 1600;
+        const max = 1280; // 25/10/2026: fotos más livianas (antes 1600 px)
         if(w > max || h > max){ const s = max / Math.max(w, h); w = Math.round(w * s); h = Math.round(h * s); }
         const canvas = document.createElement('canvas');
         canvas.width = w; canvas.height = h;
         canvas.getContext('2d').drawImage(img, 0, 0, w, h);
         canvas.toBlob(blob => {
           if(blob && blob.type === 'image/webp') resolve({ blob, ext: 'webp' });
-          else canvas.toBlob(b2 => resolve({ blob: b2, ext: 'jpg' }), 'image/jpeg', 0.82);
+          else canvas.toBlob(b2 => resolve({ blob: b2, ext: 'jpg' }), 'image/jpeg', 0.8);
         }, 'image/webp', 0.8);
       };
       img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('imagen inválida')); };
