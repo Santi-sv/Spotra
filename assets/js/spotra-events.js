@@ -1,4 +1,5 @@
-/* SPOTRA · Eventos (v9)
+/* SPOTRA · Eventos (v10)
+   - v10 (16/11/2026): pestaña Batallas (la dibuja spotra-battles.js).
    - v9 (20/10/2026): Eventos y Ranking arrancan en la disciplina del rider; Crear evento la trae marcada.
    - v8 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Crear evento, Ver próximos, Ver todos los eventos).
    - v7 (17/10/2026): rediseño — hojas con borde gris, títulos chicos en gris, botón secundario gris.
@@ -296,6 +297,10 @@
     showList();
     if(activeTab === 'upcoming') await renderUpcoming();
     else if(activeTab === 'ranking') await renderRanking();
+    else if(activeTab === 'battles'){
+      if(window.SpotraBattles) await window.SpotraBattles.render(wrap);
+      else wrap.innerHTML = '';
+    }
     else await renderMine();
   }
 
