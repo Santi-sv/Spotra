@@ -1,6 +1,7 @@
 /* SPOTRA · Notificaciones de la campana
    Avisos que crea el servidor: alguien te siguió, le dio me gusta o comentó tu publicación, se sumó a tu sesión.
    Punto rojo con la cantidad sin leer; al abrir la campana se marcan como leídas.
+   16/11/2026 (v4): avisos de Batallas (aceptaron tu batalla / terminó tu batalla); al tocarlos se abre la batalla.
    24/10/2026 (v3): solicitudes para seguir a un menor (Aceptar / Rechazar en la misma campana)
    y aviso "aceptó tu solicitud". */
 (function(){
@@ -31,6 +32,8 @@
     if(n.kind === 'comment') return ({ es: `${who} comentó:`, pt: `${who} comentou:`, en: `${who} commented:` })[L] + snippet;
     if(n.kind === 'spot_approved') return ({ es: `Tu spot <b>${esc(n.ref_text || '')}</b> fue aprobado y ya está en el mapa`, pt: `Seu spot <b>${esc(n.ref_text || '')}</b> foi aprovado e já está no mapa`, en: `Your spot <b>${esc(n.ref_text || '')}</b> was approved and is on the map` })[L];
     if(n.kind === 'session_join') return ({ es: `${who} se sumó a tu sesión en ${esc(n.ref_text || 'tu spot')}`, pt: `${who} entrou na sua sessão em ${esc(n.ref_text || 'seu spot')}`, en: `${who} joined your session at ${esc(n.ref_text || 'your spot')}` })[L];
+    if(n.kind === 'battle_accept') return ({ es: `${who} aceptó tu batalla. Ya se puede votar`, pt: `${who} aceitou sua batalha. Já dá para votar`, en: `${who} accepted your battle. Voting is open` })[L] + snippet;
+    if(n.kind === 'battle_result') return ({ es: `Terminó tu batalla contra ${who}. Mirá el resultado`, pt: `Sua batalha contra ${who} terminou. Veja o resultado`, en: `Your battle against ${who} is over. See the result` })[L] + snippet;
     return who;
   }
   const ICON = {
@@ -40,7 +43,9 @@
     like: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
     comment: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z"/>',
     spot_approved: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
-    session_join: '<path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/>'
+    session_join: '<path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/>',
+    battle_accept: '<path d="M5 4l9 9M14 4l-3 3M4 14l6 6M19 4 8 15M16 14l4 4M14 20l6-6"/>',
+    battle_result: '<path d="M5 4l9 9M14 4l-3 3M4 14l6 6M19 4 8 15M16 14l4 4M14 20l6-6"/>'
   };
 
   function paintDot(){
@@ -118,6 +123,7 @@
       setTimeout(() => { if(window.SpotraForum && window.SpotraForum.openPostById) window.SpotraForum.openPostById(n.ref_id); }, 900);
       return;
     }
+    if((n.kind === 'battle_accept' || n.kind === 'battle_result') && n.ref_id && window.SpotraBattles){ window.SpotraBattles.openById(n.ref_id); return; }
     if((n.kind === 'session_join' || n.kind === 'spot_approved') && window.setRoute) window.setRoute('map');
   });
 
