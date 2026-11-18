@@ -1,6 +1,7 @@
 /* SPOTRA · Notificaciones de la campana
    Avisos que crea el servidor: alguien te siguió, le dio me gusta o comentó tu publicación, se sumó a tu sesión.
    Punto rojo con la cantidad sin leer; al abrir la campana se marcan como leídas.
+   18/11/2026 (v5): avisos del Market (te vendieron algo: confirmalo / calificá la venta); al tocarlos se abre la hoja.
    16/11/2026 (v4): avisos de Batallas (aceptaron tu batalla / terminó tu batalla); al tocarlos se abre la batalla.
    24/10/2026 (v3): solicitudes para seguir a un menor (Aceptar / Rechazar en la misma campana)
    y aviso "aceptó tu solicitud". */
@@ -33,6 +34,8 @@
     if(n.kind === 'spot_approved') return ({ es: `Tu spot <b>${esc(n.ref_text || '')}</b> fue aprobado y ya está en el mapa`, pt: `Seu spot <b>${esc(n.ref_text || '')}</b> foi aprovado e já está no mapa`, en: `Your spot <b>${esc(n.ref_text || '')}</b> was approved and is on the map` })[L];
     if(n.kind === 'session_join') return ({ es: `${who} se sumó a tu sesión en ${esc(n.ref_text || 'tu spot')}`, pt: `${who} entrou na sua sessão em ${esc(n.ref_text || 'seu spot')}`, en: `${who} joined your session at ${esc(n.ref_text || 'your spot')}` })[L];
     if(n.kind === 'battle_accept') return ({ es: `${who} aceptó tu batalla. Ya se puede votar`, pt: `${who} aceitou sua batalha. Já dá para votar`, en: `${who} accepted your battle. Voting is open` })[L] + snippet;
+    if(n.kind === 'market_confirm') return ({ es: `${who} dice que te vendió algo. ¿Lo compraste?`, pt: `${who} diz que te vendeu algo. Você comprou?`, en: `${who} says they sold you something. Did you buy it?` })[L] + snippet;
+    if(n.kind === 'market_rate') return ({ es: `${who} confirmó la compra. Calificalo`, pt: `${who} confirmou a compra. Avalie`, en: `${who} confirmed the purchase. Rate them` })[L] + snippet;
     if(n.kind === 'battle_result') return ({ es: `Terminó tu batalla contra ${who}. Mirá el resultado`, pt: `Sua batalha contra ${who} terminou. Veja o resultado`, en: `Your battle against ${who} is over. See the result` })[L] + snippet;
     return who;
   }
@@ -45,7 +48,9 @@
     spot_approved: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
     session_join: '<path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.4"/>',
     battle_accept: '<path d="M5 4l9 9M14 4l-3 3M4 14l6 6M19 4 8 15M16 14l4 4M14 20l6-6"/>',
-    battle_result: '<path d="M5 4l9 9M14 4l-3 3M4 14l6 6M19 4 8 15M16 14l4 4M14 20l6-6"/>'
+    battle_result: '<path d="M5 4l9 9M14 4l-3 3M4 14l6 6M19 4 8 15M16 14l4 4M14 20l6-6"/>',
+    market_confirm: '<path d="M5 8h14l-1 12H6Z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+    market_rate: '<path d="m12 2.8 2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17.2l-5.7 3.1 1.2-6.4L2.8 9.5l6.4-.8Z"/>'
   };
 
   function paintDot(){
@@ -123,6 +128,7 @@
       setTimeout(() => { if(window.SpotraForum && window.SpotraForum.openPostById) window.SpotraForum.openPostById(n.ref_id); }, 900);
       return;
     }
+    if((n.kind === 'market_confirm' || n.kind === 'market_rate') && n.ref_id && window.SpotraMarketRating){ window.SpotraMarketRating.openSale(n.ref_id); return; }
     if((n.kind === 'battle_accept' || n.kind === 'battle_result') && n.ref_id && window.SpotraBattles){ window.SpotraBattles.openById(n.ref_id); return; }
     if((n.kind === 'session_join' || n.kind === 'spot_approved') && window.setRoute) window.setRoute('map');
   });
