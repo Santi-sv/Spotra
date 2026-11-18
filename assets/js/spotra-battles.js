@@ -1,4 +1,8 @@
-/* SPOTRA · Batallas de riders (v1, 16/11/2026)
+/* SPOTRA · Batallas de riders (v3, 18/11/2026)
+   v3: las batallas viven en el Foro — pestaña "Batallas" (Reto de la semana, En votación, Te desafían, Terminadas)
+       y tarjetas de duelo dentro de "Para vos" (votar sin salir del feed, barra de resultado después de votar).
+       Ya no están en Eventos. Los links /?battle=ID abren el Foro.
+   v2: el admin puede borrar cualquier batalla desde su detalle (admin_delete_battle; pide el panel desbloqueado con Face ID).
    Pestaña "Batallas" dentro de Eventos. 1 contra 1, reto abierto:
    - Un rider crea (disciplina + consigna + video de hasta 20 s) y cualquier otro acepta subiendo su video.
    - Votación de 48 h: un voto por cuenta; los participantes no votan la suya; el conteo se ve después de votar.
@@ -15,6 +19,23 @@
   const DISCS = ['skate', 'bmx', 'rollers', 'scooter'];
   const DISC_LABEL = { skate: 'Skate', bmx: 'BMX', rollers: 'Rollers', scooter: 'Scooter' };
   const MY_DISC = { skate: 'skate', bmx: 'bmx', roller: 'rollers', rollers: 'rollers', scooter: 'scooter' };
+
+  /* Reto de la semana: una consigna por disciplina que cambia cada lunes (sin cambios en la base). */
+  const RETOS = {
+    skate:   [['Mejor kickflip','Melhor kickflip','Best kickflip'],['Línea más larga en la plaza','Linha mais longa na praça','Longest line in the plaza'],['Mejor truco en escalera','Melhor manobra na escada','Best trick down stairs'],['Manual más largo','Manual mais longo','Longest manual'],['Mejor grind en baranda','Melhor grind no corrimão','Best handrail grind'],['Ollie más alto','Ollie mais alto','Highest ollie']],
+    bmx:     [['Truco más alto en rampa','Manobra mais alta na rampa','Highest trick on the ramp'],['Mejor 360','Melhor 360','Best 360'],['Mejor bunny hop','Melhor bunny hop','Best bunny hop'],['Manual más largo','Manual mais longo','Longest manual'],['Mejor grind','Melhor grind','Best grind'],['Línea más larga en el park','Linha mais longa no park','Longest line in the park']],
+    rollers: [['Mejor grind en cajón','Melhor grind no caixote','Best box grind'],['Línea más larga sin parar','Linha mais longa sem parar','Longest line without stopping'],['Mejor salto en rampa','Melhor salto na rampa','Best ramp jump'],['Mejor giro 360','Melhor giro 360','Best 360 spin'],['Mejor truco en escalera','Melhor manobra na escada','Best trick down stairs'],['Mejor slide','Melhor slide','Best slide']],
+    scooter: [['Mejor tailwhip','Melhor tailwhip','Best tailwhip'],['Truco más alto en rampa','Manobra mais alta na rampa','Highest trick on the ramp'],['Mejor grind en baranda','Melhor grind no corrimão','Best handrail grind'],['Línea más larga en el park','Linha mais longa no park','Longest line in the park'],['Mejor bar spin','Melhor bar spin','Best bar spin'],['Mejor salto en escalera','Melhor salto na escada','Best stair jump']]
+  };
+  const WEEK0 = Date.UTC(2026, 0, 5);   /* lunes */
+  function weekStart(){ const n = Math.floor((Date.now() - WEEK0) / 604800000); return { n, at: WEEK0 + n * 604800000 }; }
+  function reto(disc){
+    const list = RETOS[disc] || RETOS.skate;
+    const w = weekStart();
+    const t = list[((w.n % list.length) + list.length) % list.length];
+    const li = { es: 0, pt: 1, en: 2 }[(window.SpotraI18n ? window.SpotraI18n.lang() : 'es')] || 0;
+    return { text: t[li], all: t, since: w.at };
+  }
 
   let uid = null;
   let sb = null;
@@ -85,6 +106,7 @@
     catch(e){ return d.getDate() + '/' + (d.getMonth() + 1); }
   }
   const nameOf = (b, side) => '@' + (b[side + '_name'] || 'rider');
+  const isAdmin = () => document.body.dataset.isAdmin === '1';
   const mine = b => !!uid && (b.creator_id === uid || b.opponent_id === uid);
 
   /* ---------- íconos ---------- */
@@ -197,6 +219,82 @@
 .bt-rules li{display:flex;gap:10px;font-size:13.5px;line-height:1.45;color:#c9cfca}
 .bt-rules li::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--muted);margin-top:7px;flex-shrink:0}
 .bt-rk{width:100%;text-align:left;color:var(--text);font-family:inherit}
+.bt-tab{padding-bottom:96px}
+.bt-tab .bt-bar{padding:12px 16px 0;margin-top:0}
+.bt-sec{display:flex;align-items:center;justify-content:space-between;padding:18px 16px 6px;font-size:16px;font-weight:700}
+.bt-sec span{font-size:13px;color:var(--muted);font-weight:600}
+.bt-hero{position:relative;margin:14px 16px 0;min-height:176px;border-radius:18px;overflow:hidden;background:#0f130f;border:1px solid rgba(255,255,255,.1);display:flex}
+.bt-hero img{position:absolute;right:-6px;bottom:-4px;height:150px;width:auto;pointer-events:none}
+.bt-hero>div{position:relative;flex:1;min-width:0;padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;justify-content:flex-end;padding-right:112px}
+.bt-hero small{font-size:13px;color:#e3e7e3;font-weight:600}
+.bt-hero b{font-family:var(--display);font-size:30px;line-height:.95;text-transform:uppercase;overflow-wrap:anywhere}
+.bt-hero p{margin:0;font-size:12.5px;color:#c9cfca}
+.bt-hero .bt-main{align-self:flex-start;height:44px;font-size:13.5px}
+.bt-rowb{display:flex;align-items:center;gap:12px;width:100%;padding:8px 16px;border:0;background:transparent;color:var(--text);text-align:left;font-family:inherit;min-height:64px}
+.bt-rowb>span:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.bt-rowb b{font-size:15px;overflow-wrap:anywhere}
+.bt-rowb small{font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bt-rowb svg.ch{width:20px;height:20px;color:var(--muted);flex-shrink:0}
+.bt-mini{position:relative;width:84px;height:54px;flex-shrink:0;border-radius:8px;overflow:hidden;background:#141814}
+.bt-mini i{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-style:normal;font-weight:800;font-size:15px;color:#c9cfca;background:#1b201b}
+.bt-mini i img{width:100%;height:100%;object-fit:cover}
+.bt-mini i:first-child{clip-path:polygon(0 0,60% 0,40% 100%,0 100%);padding-right:40%;box-sizing:border-box}
+.bt-mini i:nth-child(2){clip-path:polygon(60% 0,100% 0,100% 100%,40% 100%);padding-left:40%;box-sizing:border-box;background:#232923}
+.bt-mini i:first-child img,.bt-mini i:nth-child(2) img{position:absolute;inset:0}
+.bt-mini svg{position:absolute;inset:0;width:100%;height:100%}
+.bt-car{display:flex;gap:10px;padding:6px 16px 4px;overflow-x:auto;scrollbar-width:none;scroll-snap-type:x mandatory}
+.bt-car::-webkit-scrollbar{display:none}
+.bt-chal{width:158px;flex-shrink:0;scroll-snap-align:start;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);padding:12px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px}
+.bt-chal>span{display:flex;align-items:center;gap:8px;min-width:0}
+.bt-chal>span b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-chal>b{font-size:15px;line-height:1.2;min-height:36px;overflow-wrap:anywhere}
+.bt-chal small{font-size:12px;color:var(--muted)}
+.bt-chal .bt-btn{height:40px;font-size:13.5px}
+.btc{border-top:1px solid rgba(255,255,255,.08);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 0 16px;margin:6px 0;display:flex;flex-direction:column;gap:12px}
+.btc-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 16px}
+.btc-top>span:first-child{display:flex;align-items:center;gap:8px;font-size:13px;color:#c9cfca;font-weight:600}
+.btc-top>span:first-child svg{width:18px;height:18px;color:#ff9a3d}
+.btc-cd{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 11px;border-radius:14px;background:rgba(255,154,61,.14);color:#ffb06b;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.btc-cd:before{content:"";width:7px;height:7px;border-radius:50%;background:#ff9a3d}
+.btc h3{margin:0;padding:0 16px;font-family:var(--display);font-size:30px;line-height:.95;text-transform:uppercase;overflow-wrap:anywhere}
+.btc-duel{position:relative;height:236px;overflow:hidden;background:#0d100d}
+.btc-h{position:absolute;inset:0;border:0;padding:0;background:#141814;cursor:pointer;color:inherit}
+.btc-h.l{clip-path:polygon(0 0,60% 0,40% 100%,0 100%)}
+.btc-h.r{clip-path:polygon(60% 0,100% 0,100% 100%,40% 100%);background:#181d18}
+.btc-h video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.btc-h:after{content:"";position:absolute;inset:0;background:rgba(7,9,7,.18)}
+.btc-h.dim:after{background:rgba(7,9,7,.58)}
+.btc-h.mine{box-shadow:inset 0 0 0 3px var(--green-hot)}
+.btc-play{position:absolute;top:42%;width:40px;height:40px;margin-top:-20px;border-radius:50%;background:rgba(7,9,7,.62);border:1.5px solid rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:1}
+.btc-play svg{width:16px;height:16px}
+.btc-play.l{left:22%;margin-left:-20px}.btc-play.r{right:18%;margin-right:-20px}
+.btc-who{position:absolute;bottom:12px;display:flex;flex-direction:column;gap:6px;pointer-events:none;z-index:1;max-width:44%}
+.btc-who.l{left:14px}.btc-who.r{right:14px;align-items:flex-end;text-align:right}
+.btc-who>span{display:flex;align-items:center;gap:7px;min-width:0}
+.btc-who.r>span{flex-direction:row-reverse}
+.btc-who b{font-size:14px;text-shadow:0 1px 6px rgba(0,0,0,.85);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btc-who .bt-av{border:2px solid var(--bg)}
+.btc-tag{align-self:flex-start;display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;background:var(--green-hot);color:#051006;font-size:11.5px;font-weight:800}
+.btc-who.r .btc-tag{align-self:flex-end}
+.btc-cut{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.btc-vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-11deg);font-family:var(--display);font-size:26px;line-height:1;padding:8px 10px;background:var(--bg);color:var(--text);z-index:2;pointer-events:none}
+.btc-votes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:0 16px}
+.btc-votes .bt-btn{height:48px;font-size:15px}
+.btc-note{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 16px;font-size:13px;color:#a9b1aa}
+.btc-note b{color:var(--text)}
+.btc-note .bt-btn{flex-shrink:0;display:flex;align-items:center;gap:8px}
+.btc-note .bt-btn svg{width:18px;height:18px}
+.btc-bar{padding:0 16px;display:flex;flex-direction:column;gap:8px}
+.btc-bar>div:first-child{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:#a9b1aa;font-variant-numeric:tabular-nums}
+.btc-bar>div:first-child b{font-family:var(--display);font-size:22px;color:#c9cfca}
+.btc-bar>div:first-child b.win{color:var(--green-hot)}
+.btc-track{position:relative;height:12px;border-radius:6px;background:#2a312a;overflow:hidden}
+.btc-track i{position:absolute;top:0;bottom:0;transition:width .5s ease}
+.btc-track i.l{left:0;background:#5d665e}.btc-track i.r{right:0;background:#5d665e}
+.btc-track i.win{background:var(--green-hot)}
+.btc-more{align-self:center;height:36px;border:0;background:transparent;color:#a9b1aa;font:600 13px var(--body)}
+@media (prefers-reduced-motion:reduce){.btc-track i{transition:none}}
+@media (max-width:360px){.btc h3{font-size:26px}.btc-duel{height:210px}.bt-hero b{font-size:26px}}
 @media (max-width:360px){.bt-in{padding-left:14px;padding-right:14px}.bt-h{font-size:24px}.bt-discs button{font-size:12.5px}}
 `;
     document.head.appendChild(s);
@@ -263,7 +361,119 @@
       <div class="es-acts"><button type="button" class="primary-btn" data-bt-create>${esc(T('Crear batalla'))}</button>${any ? `<button type="button" class="ghost-btn" data-bt-disc="all">${esc(T('Ver todas'))}</button>` : ''}</div></div>`;
   }
 
-  /* ---------- lista (dentro de Eventos › Batallas) ---------- */
+  /* ---------- piezas del Foro ---------- */
+  const CUT = '<svg class="btc-cut" aria-hidden="true" viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="60" y1="-2" x2="40" y2="102" stroke="#070907" vector-effect="non-scaling-stroke" style="stroke-width:7px"/></svg>';
+  const CHEV = '<svg class="ch" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg>';
+  const SHARE_I = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M8 8l4-4 4 4M5 13v6h14v-6"/></svg>';
+  const PLAY_I = '<svg aria-hidden="true" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7Z"/></svg>';
+  function closesText(b){
+    const ms = new Date(b.voting_ends_at).getTime() - Date.now();
+    if(!(ms > 0)) return T('Cerrando la votación');
+    const h = Math.floor(ms / 3600000);
+    const x = h >= 1 ? h + ' h' : Math.max(1, Math.round(ms / 60000)) + ' min';
+    return pick({ es: `Cierra en ${x}`, pt: `Fecha em ${x}`, en: `Closes in ${x}` });
+  }
+  function miniAv(b, side){
+    const url = b[side + '_avatar'];
+    const n = String(b[side + '_name'] || 'R').charAt(0).toUpperCase();
+    return `<i>${url ? `<img src="${esc(url)}" alt="" loading="lazy">` : esc(n)}</i>`;
+  }
+  /* Fila compacta (En votación / Terminadas): miniatura partida con las fotos de los dos riders. */
+  function rowHTML(b){
+    const meta = b.status === 'voting'
+      ? closesText(b) + ' · ' + votesText(b.total_votes) + (b.my_vote ? ' · ' + T('Ya votaste') : '')
+      : resultLine(b);
+    return `<button type="button" class="bt-rowb" data-bt-open="${esc(b.id)}">
+      <span class="bt-mini" aria-hidden="true">${miniAv(b, 'creator')}${miniAv(b, 'opponent')}<svg viewBox="0 0 100 100" preserveAspectRatio="none"><line x1="60" y1="-2" x2="40" y2="102" stroke="#070907" vector-effect="non-scaling-stroke" style="stroke-width:4px"/></svg></span>
+      <span><b>${esc(b.prompt)}</b><small>${esc(DISC_LABEL[b.discipline] || '')} · ${esc(meta)}</small></span>${CHEV}</button>`;
+  }
+  /* Tarjeta "Te desafían": batalla abierta de otro rider. */
+  function chalHTML(b){
+    const own = uid && b.creator_id === uid;
+    return `<div class="bt-chal">
+      <span>${avatar(b, 'creator', 'sm')}<b>${esc(nameOf(b, 'creator'))}</b></span>
+      <b>${esc(b.prompt)}</b>
+      <small>${esc(DISC_LABEL[b.discipline] || '')} · ${esc(own ? T('Tu batalla · esperando rival') : T('te desafía'))}</small>
+      <button type="button" class="bt-btn" data-bt-${own ? 'open' : 'take'}="${esc(b.id)}">${esc(T(own ? 'Ver' : 'Aceptar'))}</button></div>`;
+  }
+  function heroHTML(){
+    const disc = activeDisc !== 'all' ? activeDisc : (myDisc() || 'skate');
+    const r = reto(disc);
+    const done = rows.filter(b => b.discipline === disc && r.all.indexOf(b.prompt) !== -1 && new Date(b.created_at).getTime() >= r.since).length;
+    const line = done
+      ? pick({ es: `${done} rider${done === 1 ? '' : 's'} ya lo ${done === 1 ? 'hizo' : 'hicieron'}. Termina el domingo.`, pt: `${done} rider${done === 1 ? '' : 's'} já ${done === 1 ? 'fez' : 'fizeram'}. Termina no domingo.`, en: `${done} rider${done === 1 ? '' : 's'} already did it. Ends Sunday.` })
+      : T('Sé el primero. Termina el domingo.');
+    return `<div class="bt-hero"><img src="assets/Spotri/spotri-rodando-2.webp" alt="" loading="lazy">
+      <div><small>${esc(T('Reto de la semana'))} · ${esc(DISC_LABEL[disc])}</small><b>${esc(r.text)}</b><p>${esc(line)}</p>
+      <button type="button" class="bt-main" data-bt-reto="${esc(disc)}">${esc(T('Aceptar el reto'))}</button></div></div>`;
+  }
+  /* Tarjeta de duelo para "Para vos" (y para el detalle compacto). Los videos no arrancan solos. */
+  function sideHTML2(b, side){
+    const url = videoUrl(b[side + '_video']);
+    const s = side === 'creator' ? 'l' : 'r';
+    const mine = b.my_vote === side, dim = b.my_vote && !mine;
+    return `<button type="button" class="btc-h ${s}${mine ? ' mine' : ''}${dim ? ' dim' : ''}" data-bt-open="${esc(b.id)}" aria-label="${esc(pick({ es: `Ver el clip de ${nameOf(b, side)}`, pt: `Ver o clipe de ${nameOf(b, side)}`, en: `Watch ${nameOf(b, side)}'s clip` }))}">${url ? `<video muted playsinline preload="metadata" disablepictureinpicture src="${esc(url)}#t=0.5"></video>` : ''}</button>`;
+  }
+  function whoHTML(b, side){
+    const s = side === 'creator' ? 'l' : 'r';
+    return `<div class="btc-who ${s}">${b.my_vote === side ? `<span class="btc-tag">${esc(T('Tu voto'))}</span>` : ''}<span>${avatar(b, side, 'sm')}<b>${esc(nameOf(b, side))}</b></span></div>`;
+  }
+  function feedCardHTML(b){
+    const voted = b.creator_votes != null && b.opponent_votes != null;
+    const c = Number(b.creator_votes) || 0, o = Number(b.opponent_votes) || 0, tot = c + o;
+    const pc = tot ? Math.round(c * 100 / tot) : 50, po = tot ? 100 - pc : 50;
+    let foot;
+    if(voted){
+      const lead = c === o ? T('Van empatados.') : pick({ es: `Va ganando ${nameOf(b, c > o ? 'creator' : 'opponent')}.`, pt: `${nameOf(b, c > o ? 'creator' : 'opponent')} está ganhando.`, en: `${nameOf(b, c > o ? 'creator' : 'opponent')} is winning.` });
+      foot = `<div class="btc-bar"><div><span>${esc(nameOf(b, 'creator'))} <b class="${c > o ? 'win' : ''}">${pc}%</b></span><span><b class="${o > c ? 'win' : ''}">${po}%</b> ${esc(nameOf(b, 'opponent'))}</span></div>
+          <div class="btc-track" role="img" aria-label="${esc(nameOf(b, 'creator'))} ${pc}%, ${esc(nameOf(b, 'opponent'))} ${po}%"><i class="l${c > o ? ' win' : ''}" style="width:${pc}%"></i><i class="r${o > c ? ' win' : ''}" style="width:${po}%"></i></div></div>
+        <div class="btc-note"><span><b>${esc(votesText(tot))}</b>. ${esc(lead)}</span><button type="button" class="bt-btn" data-bt-sharec="${esc(b.id)}">${SHARE_I}${esc(T('Compartir'))}</button></div>`;
+    } else {
+      foot = `<div class="btc-votes">
+          <button type="button" class="bt-btn" data-bt-fvote="creator" data-id="${esc(b.id)}">${esc(pick({ es: `Voto a ${nameOf(b, 'creator')}`, pt: `Voto em ${nameOf(b, 'creator')}`, en: `Vote ${nameOf(b, 'creator')}` }))}</button>
+          <button type="button" class="bt-btn" data-bt-fvote="opponent" data-id="${esc(b.id)}">${esc(pick({ es: `Voto a ${nameOf(b, 'opponent')}`, pt: `Voto em ${nameOf(b, 'opponent')}`, en: `Vote ${nameOf(b, 'opponent')}` }))}</button></div>
+        <div class="btc-note"><span><b>${esc(pick({ es: `${b.total_votes || 0} riders`, pt: `${b.total_votes || 0} riders`, en: `${b.total_votes || 0} riders` }))}</b> ${esc(T('ya votaron. El resultado se ve al votar.'))}</span></div>`;
+    }
+    return `<article class="btc" data-btc="${esc(b.id)}" aria-label="${esc(T('Batalla'))}: ${esc(b.prompt)}">
+      <div class="btc-top"><span>${I.vs}${esc(pick({ es: `Batalla de ${DISC_LABEL[b.discipline] || ''}`, pt: `Batalha de ${DISC_LABEL[b.discipline] || ''}`, en: `${DISC_LABEL[b.discipline] || ''} battle` }))}</span><span class="btc-cd">${esc(closesText(b))}</span></div>
+      <h3>${esc(b.prompt)}</h3>
+      <div class="btc-duel">${sideHTML2(b, 'creator')}${sideHTML2(b, 'opponent')}${CUT}
+        <span class="btc-play l">${PLAY_I}</span><span class="btc-play r">${PLAY_I}</span>
+        ${whoHTML(b, 'creator')}${whoHTML(b, 'opponent')}<span class="btc-vs" aria-hidden="true">VS</span></div>
+      ${foot}
+      <button type="button" class="btc-more" data-bt-gotab>${esc(T('Ver todas las batallas'))}</button></article>`;
+  }
+  /* Para el Foro: las batallas en votación que conviene mostrar en "Para vos" (las que no votaste primero). */
+  function feedPicks(){
+    return rows.filter(b => b.status === 'voting' && !mine(b) && new Date(b.voting_ends_at).getTime() > Date.now())
+      .sort((a, b) => (!!a.my_vote - !!b.my_vote) || (new Date(a.voting_ends_at) - new Date(b.voting_ends_at)));
+  }
+  function badgeCount(){ return rows.filter(b => b.status === 'voting' && !b.my_vote && !mine(b)).length; }
+  function paintCardInPlace(id){
+    const b = rows.find(x => x.id === id);
+    document.querySelectorAll(`.btc[data-btc="${CSS.escape(id)}"]`).forEach(el => { if(b) el.outerHTML = feedCardHTML(b); else el.remove(); });
+  }
+  async function voteFromCard(btn){
+    const id = btn.dataset.id, side = btn.dataset.btFvote;
+    const b = rows.find(x => x.id === id);
+    if(!b) return;
+    await loadUid();
+    if(!uid){ toast(T('Iniciá sesión para votar.')); return; }
+    const name = nameOf(b, side);
+    if(!window.confirm(pick({ es: `¿Votar a ${name}? El voto no se puede cambiar.`, pt: `Votar em ${name}? O voto não pode ser alterado.`, en: `Vote for ${name}? You can't change your vote.` }))) return;
+    btn.disabled = true;
+    const { data, error } = await rpc('battle_vote', { p_id: id, p_choice: side });
+    if(error){ btn.disabled = false; toast(errText(error, 'No se pudo votar. Probá de nuevo.')); return; }
+    b.my_vote = side;
+    b.creator_votes = data && data.creator_votes != null ? Number(data.creator_votes) : 0;
+    b.opponent_votes = data && data.opponent_votes != null ? Number(data.opponent_votes) : 0;
+    b.total_votes = b.creator_votes + b.opponent_votes;
+    paintCardInPlace(id);
+    toast(T('Voto enviado.'));
+    window.dispatchEvent(new Event('spotra-battles'));
+  }
+
+  /* ---------- lista (pestaña Batallas del Foro) ---------- */
   function barHTML(){
     const opts = ['all'].concat(DISCS);
     return `<div class="bt-bar"><div class="filter-row">${opts.map(d =>
@@ -276,12 +486,12 @@
     const voting = list.filter(b => b.status === 'voting');
     const open = list.filter(b => b.status === 'open');
     const done = list.filter(b => b.status === 'finished');
-    let html = barHTML();
+    let html = barHTML() + heroHTML();
+    if(voting.length) html += `<div class="bt-sec">${esc(T('En votación'))}<span>${voting.length}</span></div>` + voting.map(rowHTML).join('');
+    if(open.length) html += `<div class="bt-sec">${esc(T('Te desafían'))}</div><div class="bt-car">${open.map(chalHTML).join('')}</div>`;
+    if(done.length) html += `<div class="bt-sec">${esc(T('Terminadas'))}</div>` + done.slice(0, 12).map(rowHTML).join('');
     if(!list.length) html += emptyHTML(activeDisc !== 'all' && rows.length > 0);
-    if(voting.length) html += `<div class="bt-sub">${esc(T('En votación'))}</div>` + voting.map(cardVoting).join('');
-    if(open.length) html += `<div class="bt-sub">${esc(T('Buscan rival'))}</div>` + open.map(cardOpen).join('');
-    if(done.length) html += `<div class="bt-sub">${esc(T('Terminadas'))}</div>` + done.map(cardDone).join('');
-    wrapEl.innerHTML = html;
+    wrapEl.innerHTML = `<div class="bt-tab">${html}</div>`;
   }
   async function load(){
     const { data, error } = await rpc('battles_list', {});
@@ -291,9 +501,9 @@
   }
   async function render(wrap){
     css();
-    wrapEl = wrap || document.getElementById('eventsList');
+    wrapEl = wrap || document.getElementById('feed');
     if(!wrapEl) return;
-    wrapEl.innerHTML = `<div class="meta" style="margin-top:14px">${esc(T('Cargando batallas...'))}</div>`;
+    wrapEl.innerHTML = `<div class="meta" style="margin:14px 16px">${esc(T('Cargando batallas...'))}</div>`;
     await loadUid();
     const ok = await load();
     if(!wrapEl.isConnected) return;
@@ -307,7 +517,10 @@
   async function refresh(){
     const ok = await load();
     if(ok && wrapEl && wrapEl.isConnected && battlesTabActive()) paint();
+    if(ok) window.dispatchEvent(new Event('spotra-battles'));
   }
+  /* Carga para el Foro sin dibujar (tarjetas de "Para vos" y globito de la pestaña). */
+  async function preload(){ css(); await loadUid(); return load(); }
 
   /* ---------- hojas a pantalla completa ---------- */
   function ov(id, extra){
@@ -400,6 +613,7 @@
       h += `<div class="bt-box dash">${I.videoOff}<span>${esc(T('Los videos de esta batalla se borraron al terminar. Queda el resultado.'))}</span></div>`;
       h += `<button type="button" class="bt-main" data-bt-ranking>${esc(T('Ver ranking de Batallas'))}</button>`;
     }
+    if(isAdmin()) h += `<button type="button" class="bt-btn danger" data-bt-admindel>${esc(T('Borrar batalla (admin)'))}</button>`;
     return h;
   }
   function paintDetail(){
@@ -469,6 +683,7 @@
     }
     toast(T('Voto enviado.'));
     refresh();
+    paintCardInPlace(b.id);
   }
   function paintDetailKeepVideos(){
     const el = document.getElementById('btOv');
@@ -492,10 +707,25 @@
     toast(T('Batalla borrada.'));
     refresh();
   }
+  async function adminDelete(btn){
+    const b = current;
+    if(!b || !isAdmin()) return;
+    if(!window.confirm(T('¿Borrar esta batalla para todos? No se puede deshacer.'))) return;
+    if(btn) btn.disabled = true;
+    const { error } = await rpc('admin_delete_battle', { p_id: b.id });
+    if(error){
+      if(btn) btn.disabled = false;
+      toast(/autorizado/i.test(error.message || '') ? T('Desbloqueá el panel admin con Face ID (Seguridad) y probá de nuevo.') : T('No se pudo borrar. Probá de nuevo.'));
+      return;
+    }
+    closeMain();
+    toast(T('Batalla borrada.'));
+    refresh();
+  }
   function share(){
     const b = current;
     if(!b) return;
-    const url = location.origin + '/?battle=' + encodeURIComponent(b.id) + '#events';
+    const url = location.origin + '/?battle=' + encodeURIComponent(b.id) + '#community';
     const text = b.status === 'open'
       ? pick({ es: `Batalla en SPOTRA: "${b.prompt}". ¿La aceptás?`, pt: `Batalha no SPOTRA: "${b.prompt}". Você aceita?`, en: `Battle on SPOTRA: "${b.prompt}". Will you take it?` })
       : pick({ es: `Batalla en SPOTRA: "${b.prompt}". Entrá y votá.`, pt: `Batalha no SPOTRA: "${b.prompt}". Entre e vote.`, en: `Battle on SPOTRA: "${b.prompt}". Come and vote.` });
@@ -619,10 +849,11 @@
     el.classList.add('open');
     lockScroll();
   }
-  async function openCreate(){
+  async function openCreate(pre){
     css();
     if(!(await canPlay())) return;
-    form = { mode: 'create', battle: null, disc: myDisc() || (activeDisc !== 'all' ? activeDisc : 'skate'), file: null, url: '', dur: 0, busy: '', prompt: '' };
+    pre = pre && typeof pre === 'object' ? pre : {};
+    form = { mode: 'create', battle: null, disc: pre.disc || myDisc() || (activeDisc !== 'all' ? activeDisc : 'skate'), file: null, url: '', dur: 0, busy: '', prompt: pre.prompt || '' };
     paintForm();
   }
   async function openAccept(){
@@ -702,15 +933,18 @@
 
   /* ---------- dónde estoy ---------- */
   function battlesTabActive(){
-    const v = document.querySelector('.view.active[data-view="events"]');
-    const tabs = document.getElementById('eventsTabs');
-    if(!v || !tabs || tabs.style.display === 'none') return false;
-    return !!tabs.querySelector('button.active[data-ev-tab="battles"]');
+    if(!document.querySelector('.view.active[data-view="community"]')) return false;
+    return !!document.querySelector('#fxTabs [data-fx-tab="battles"].on');
   }
   function goToTab(){
-    if(window.setRoute) window.setRoute('events');
-    const tab = document.querySelector('#eventsTabs [data-ev-tab="battles"]');
-    if(tab && !tab.classList.contains('active')) tab.click();
+    if(window.setRoute) window.setRoute('community');
+    let n = 0;
+    const go = () => {
+      const tab = document.querySelector('#fxTabs [data-fx-tab="battles"]');
+      if(tab){ if(!tab.classList.contains('on')) tab.click(); return; }
+      if(++n < 20) setTimeout(go, 150);
+    };
+    go();
   }
 
   /* ---------- clicks ---------- */
@@ -730,6 +964,11 @@
     if((el = t.closest('[data-bt-disc]'))){ activeDisc = el.dataset.btDisc; paint(); return; }
     if(t.closest('[data-bt-reload]')){ render(wrapEl); return; }
     if(t.closest('[data-bt-create]')){ openCreate(); return; }
+    if((el = t.closest('[data-bt-reto]'))){ const d = el.dataset.btReto; openCreate({ disc: d, prompt: reto(d).text }); return; }
+    if((el = t.closest('[data-bt-take]'))){ const b = rows.find(x => x.id === el.dataset.btTake); if(b){ current = b; openAccept(); } return; }
+    if((el = t.closest('[data-bt-fvote]'))){ voteFromCard(el); return; }
+    if((el = t.closest('[data-bt-sharec]'))){ const b = rows.find(x => x.id === el.dataset.btSharec); if(b){ current = b; share(); current = null; } return; }
+    if(t.closest('[data-bt-gotab]')){ goToTab(); return; }
     if(t.closest('[data-bt-ranking]')){ openRanking(); return; }
     if((el = t.closest('[data-bt-rank]'))){ rankDisc = el.dataset.btRank; openRanking(); return; }
     if((el = t.closest('[data-bt-open]'))){ openById(el.dataset.btOpen); return; }
@@ -738,6 +977,7 @@
     if(t.closest('[data-bt-share]')){ share(); return; }
     if((el = t.closest('[data-bt-vote]'))){ vote(el.dataset.btVote, el); return; }
     if((el = t.closest('[data-bt-cancel]'))){ cancelBattle(el); return; }
+    if((el = t.closest('[data-bt-admindel]'))){ adminDelete(el); return; }
     if(t.closest('[data-bt-accept]')){ openAccept(); return; }
     if((el = t.closest('[data-bt-fdisc]'))){ if(form && !form.busy){ const inp = document.getElementById('btPrompt'); if(inp) form.prompt = inp.value; form.disc = el.dataset.btFdisc; paintForm(); } return; }
     if(t.closest('[data-bt-pick]')){ const inp = document.getElementById('btFile'); if(inp && form && !form.busy){ inp.value = ''; inp.click(); } return; }
@@ -780,6 +1020,10 @@
 
   window.SpotraBattles = {
     render,
+    preload,
+    feedPicks,
+    feedCardHTML,
+    badgeCount,
     openById: id => { goToTab(); return openById(id); },
     openCreate,
     openRanking
