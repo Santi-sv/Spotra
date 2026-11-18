@@ -1,6 +1,7 @@
 /* SPOTRA · Seguridad de la comunidad
    - Fecha de nacimiento: se pide una vez a cada rider (privada, no se puede cambiar después).
-   - Reportar: posts, comentarios, productos y sesiones. El admin los ve en su panel.
+   - Reportar: posts, comentarios, productos, sesiones y batallas. El admin los ve en su panel.
+   - v4 (16/11/2026): batallas — título "Batalla" en el reporte; el admin la ve y la borra (admin_delete_battle).
    - Bloquear: oculta todo lo que publica esa persona, solo para quien bloquea.
    Reglas en seguridad.sql. */
 (function(){
@@ -9,7 +10,7 @@
     ['spam', 'Spam o publicidad'], ['acoso', 'Acoso o insultos'], ['inapropiado', 'Contenido inapropiado'],
     ['estafa', 'Estafa o engaño'], ['peligroso', 'Algo peligroso'], ['otro', 'Otro motivo']
   ];
-  const TYPE_LABEL = { post: 'Publicación del foro', comment: 'Comentario', listing: 'Producto del market', session: 'Sesión', user: 'Usuario' };
+  const TYPE_LABEL = { post: 'Publicación del foro', comment: 'Comentario', listing: 'Producto del market', session: 'Sesión', user: 'Usuario', battle: 'Batalla' };
   const TABLE = { post: 'posts', comment: 'post_comments', listing: 'listings', session: 'sessions' };
   let uid = null;
   let blocked = new Map();
@@ -188,7 +189,8 @@
           <small>${esc(REASON[r.reason] || r.reason)} · ${new Date(r.created_at).toLocaleString('es')}</small>
           ${r.details ? `<p>${esc(r.details)}</p>` : ''}</div>
           <div class="rep-actions">
-            ${TABLE[r.target_type] ? `<button type="button" class="no-btn" data-rep-delete="${esc(r.id)}" data-rep-type="${esc(r.target_type)}" data-rep-target="${esc(r.target_id)}">Eliminar contenido</button>` : ''}
+            ${r.target_type === 'battle' ? `<button type="button" class="ghost-btn" data-rep-view="${esc(r.target_id)}">Ver batalla</button>` : ''}
+            ${TABLE[r.target_type] || r.target_type === 'battle' ? `<button type="button" class="no-btn" data-rep-delete="${esc(r.id)}" data-rep-type="${esc(r.target_type)}" data-rep-target="${esc(r.target_id)}">Eliminar contenido</button>` : ''}
             <button type="button" class="ghost-btn" data-rep-dismiss="${esc(r.id)}">Descartar</button>
           </div></div>`).join('')
         : '<div class="meta" style="margin-bottom:14px">No hay reportes abiertos.</div>');
@@ -199,8 +201,10 @@
     if(!c) return;
     if(status === 'resolved'){
       if(!confirm('¿Eliminar el contenido reportado? No se puede deshacer.')) return;
-      const { error } = await c.from(TABLE[type]).delete().eq('id', targetId);
-      if(error){ say('No se pudo eliminar: ' + error.message); return; }
+      const { error } = type === 'battle'
+        ? await c.rpc('admin_delete_battle', { p_id: targetId })
+        : await c.from(TABLE[type]).delete().eq('id', targetId);
+      if(error){ say(/autorizado/i.test(error.message || '') ? 'Desbloqueá el panel con Face ID (Seguridad) y probá de nuevo.' : 'No se pudo eliminar: ' + error.message); return; }
     }
     const { error } = await c.from('reports').update({ status }).eq('id', id);
     if(error){ say('No se pudo actualizar el reporte.'); return; }
@@ -223,6 +227,7 @@
     if(t.closest('[data-open-modal="blocked"]')){ setTimeout(renderBlockedList, 0); return; }
     if((el = t.closest('[data-unblock]'))){ e.preventDefault(); unblock(el.dataset.unblock); return; }
     if((el = t.closest('[data-rep-delete]'))){ e.preventDefault(); adminResolve(el.dataset.repDelete, 'resolved', el.dataset.repType, el.dataset.repTarget); return; }
+    if((el = t.closest('[data-rep-view]'))){ e.preventDefault(); if(window.SpotraBattles) window.SpotraBattles.openById(el.dataset.repView); return; }
     if((el = t.closest('[data-rep-dismiss]'))){ e.preventDefault(); adminResolve(el.dataset.repDismiss, 'dismissed'); return; }
     if(t.closest('[data-route="admin-approvals"]')) setTimeout(renderAdminReports, 300);
   }, true);
