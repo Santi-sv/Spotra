@@ -1,4 +1,5 @@
-/* SPOTRA · Batallas de riders (v3, 18/11/2026)
+/* SPOTRA · Batallas de riders (v4, 18/11/2026)
+   v4: arreglo — "Iniciá sesión para participar" aparecía aunque estuvieras dentro. Ahora se lee la sesión del teléfono.
    v3: las batallas viven en el Foro — pestaña "Batallas" (Reto de la semana, En votación, Te desafían, Terminadas)
        y tarjetas de duelo dentro de "Para vos" (votar sin salir del feed, barra de resultado después de votar).
        Ya no están en Eventos. Los links /?battle=ID abren el Foro.
@@ -61,8 +62,19 @@
     try { sb = B() && B().getClient ? await B().getClient() : null; } catch(e){ sb = null; }
     return sb;
   }
+  /* v4: primero la sesión guardada en el teléfono (no usa internet); si no hay, se pregunta al servidor.
+     Antes solo se preguntaba al servidor y, si esa consulta fallaba, la app creía que no habías entrado. */
   async function loadUid(){
-    try { uid = B() && B().getUserId ? await B().getUserId() : null; } catch(e){ uid = null; }
+    let id = null;
+    try {
+      const c = await db();
+      if(c && c.auth && c.auth.getSession){
+        const { data } = await c.auth.getSession();
+        id = data && data.session && data.session.user ? data.session.user.id : null;
+      }
+    } catch(e){ id = null; }
+    if(!id){ try { id = B() && B().getUserId ? await B().getUserId() : null; } catch(e){ id = null; } }
+    uid = id;
     return uid;
   }
   async function rpc(name, args){
