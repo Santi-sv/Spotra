@@ -1,4 +1,5 @@
-/* SPOTRA · Market C2C (v11, estilo Facebook Marketplace)
+/* SPOTRA · Market C2C (v12, estilo Facebook Marketplace)
+   - v12 (18/11/2026): en tu propio producto, botón "Marcar como vendido" arriba (donde los demás ven el WhatsApp).
    - v11 (18/11/2026): "Ver perfil" del vendedor abre su perfil de Market (calificaciones, ventas, productos);
      "Marcar vendido" pregunta a quién se lo vendiste (lo arma spotra-market-rating.js).
    - v10 (18/11/2026): en tu propio producto dice "Es tu publicación" (con "Ver en mi perfil") en vez de "Ver perfil",
@@ -428,7 +429,7 @@
           <h2 class="mk-dtitle">${esc(l.title)}</h2>
           <div class="mk-meta">${[l.city, d != null ? fmtKm(d) : '', ago(l.createdAt)].filter(Boolean).map(esc).join(' · ')}</div>
           <div class="ev-chips" style="margin-top:10px"><span class="ev-chip on">${esc(t(CAT_LABEL[l.category] || l.category))}</span><span class="ev-chip">${esc(t(COND_LABEL[l.condition] || l.condition))}</span>${l.sold ? `<span class="ev-chip off">${esc(t('Vendido'))}</span>` : ''}</div>
-          ${own ? '' : wa ? `<a class="primary-btn mk-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa}<span>${esc(t('Contactar por WhatsApp'))}</span></a>` : (!num && !l.sold ? `<button type="button" class="primary-btn mk-wa" data-route="login">${ICON.wa}<span>${esc(t('Iniciá sesión para contactar'))}</span></button>` : '')}
+          ${own ? (!l.sold && l.status === 'approved' ? `<button type="button" class="primary-btn mk-wa" data-ml-sold="${esc(l.id)}">${ICON.tag}<span>${esc(({ es: 'Marcar como vendido', pt: 'Marcar como vendido', en: 'Mark as sold' })[lang()])}</span></button>` : '') : wa ? `<a class="primary-btn mk-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa}<span>${esc(t('Contactar por WhatsApp'))}</span></a>` : (!num && !l.sold ? `<button type="button" class="primary-btn mk-wa" data-route="login">${ICON.wa}<span>${esc(t('Iniciá sesión para contactar'))}</span></button>` : '')}
           <div class="mk-actions">
             <button type="button" class="mk-act${saved.has(l.id) ? ' on' : ''}" data-mk-save="${esc(l.id)}">${ICON.heart}<span>${esc(t('Guardar'))}</span></button>
             <button type="button" class="mk-act" data-mk-share>${ICON.share}<span>${esc(t('Compartir'))}</span></button>
