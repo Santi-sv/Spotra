@@ -1,4 +1,7 @@
-/* SPOTRA · Foro (v9)
+/* SPOTRA · Foro (v11)
+   - v11 (18/11/2026): pestaña "Batallas" (la dibuja spotra-battles.js) con globito de batallas sin votar;
+     tarjetas de duelo dentro de "Para vos"; me gusta con SPOTRI (la cara de SPOTRI reemplaza al corazón,
+     sale una ronda de corazones y después vuelve el corazón rojo; con "reducir movimiento" no se anima).
    - v9 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Crear publicación, Ver Para vos, Usar mi ubicación).
    - Posts reales con foto opcional, publicados al instante.
    - Likes y comentarios reales. El autor (o el admin) puede eliminar posts y comentarios.
@@ -67,8 +70,13 @@
   }
 
   function tabsHTML(){
-    return [['foryou', 'Para vos'], ['following', 'Siguiendo'], ['near', 'Cerca']]
-      .map(([k, l]) => `<button type="button" data-fx-tab="${k}" class="${feedTab === k ? 'on' : ''}">${esc(TT(l))}</button>`).join('');
+    const SB = window.SpotraBattles;
+    const tabs = [['foryou', 'Para vos'], ['following', 'Siguiendo'], ['near', 'Cerca']];
+    if(SB) tabs.push(['battles', 'Batallas']);
+    return tabs.map(([k, l]) => {
+      const n = k === 'battles' && feedTab !== 'battles' && SB.badgeCount ? SB.badgeCount() : 0;
+      return `<button type="button" data-fx-tab="${k}" class="${feedTab === k ? 'on' : ''}">${esc(TT(l))}${n ? `<span class="fx-badge" aria-label="${n}">${n > 9 ? '9+' : n}</span>` : ''}</button>`;
+    }).join('');
   }
 
   // fila tipo historias: "Publicar" + spots con riders andando ahora o sesiones pronto
@@ -199,7 +207,14 @@
     const feed = document.getElementById('feed');
     if(!feed) return;
     const tabs = document.getElementById('fxTabs'); if(tabs) tabs.innerHTML = tabsHTML();
-    const tiles = document.getElementById('fxTiles'); if(tiles) tiles.innerHTML = tilesHTML();
+    const tiles = document.getElementById('fxTiles');
+    if(feedTab === 'battles'){
+      if(tiles){ tiles.innerHTML = ''; tiles.style.display = 'none'; }
+      const sideB = document.getElementById('igSide'); if(sideB) sideB.innerHTML = sideHTML();
+      if(window.SpotraBattles) window.SpotraBattles.render(feed); else feed.innerHTML = '';
+      return;
+    }
+    if(tiles){ tiles.style.display = ''; tiles.innerHTML = tilesHTML(); }
     const side = document.getElementById('igSide'); if(side) side.innerHTML = sideHTML();
     let list = cache.slice();
     /* 19/10/2026: pantalla vacía común (ícono + título + texto + botón) */
@@ -218,13 +233,19 @@
     }
     list.sort((a, b) => (b.pinned - a.pinned) || ((b.createdAt || 0) - (a.createdAt || 0)));
     const tickets = activity.filter(a => a.kind !== 'live' || a.n >= 2).slice(0, 10);
+    const duels = window.SpotraBattles && window.SpotraBattles.feedPicks ? window.SpotraBattles.feedPicks().slice(0, 2) : [];
+    if(!list.length && !tickets.length && duels.length){ feed.innerHTML = duels.map(b => window.SpotraBattles.feedCardHTML(b)).join(''); return; }
     if(!list.length && !tickets.length){ feed.innerHTML = empty('Todavía no hay publicaciones', 'Sé el primero: contá dónde patinás hoy.', F_ICON.cmt, NEW_POST); return; }
     const out = [];
     let t = 0;
+    let d = 0;
     list.forEach((p, i) => {
       out.push(postHTML(p));
-      if((i % 3 === 1) && t < tickets.length) out.push(ticketHTML(tickets[t++]));
+      /* una batalla después de la 2.ª publicación y otra después de la 6.ª */
+      if((i === 1 || i === 5) && d < duels.length) out.push(window.SpotraBattles.feedCardHTML(duels[d++]));
+      else if((i % 3 === 1) && t < tickets.length) out.push(ticketHTML(tickets[t++]));
     });
+    while(d < duels.length && d < 1) out.push(window.SpotraBattles.feedCardHTML(duels[d++]));
     while(t < tickets.length && t < 4) out.push(ticketHTML(tickets[t++]));
     feed.innerHTML = out.join('');
   }
@@ -232,7 +253,8 @@
   async function renderFeed(){
     if(!feedShell() || !B()) return;
     await refreshIdentity();
-    const [posts] = await Promise.all([B().listPosts({ limit: 60 }), loadExtras(), loadSuggestions()]);
+    const SB = window.SpotraBattles;
+    const [posts] = await Promise.all([B().listPosts({ limit: 60 }), loadExtras(), loadSuggestions(), SB && SB.preload ? SB.preload().catch(() => false) : null]);
     cache = posts;
     if(feedTab === 'following') await loadFollowing();
     paintFeed();
@@ -423,6 +445,59 @@
     renderFeed();
   }
 
+  /* ================= Me gusta con SPOTRI ================= */
+  const LIKE_FACE = 'assets/Spotri/spotri-cara.webp';
+  let faceLoaded = false;
+  function likeCss(){
+    if(document.getElementById('likeFxCss')) return;
+    const st = document.createElement('style');
+    st.id = 'likeFxCss';
+    st.textContent = `
+.fx-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;margin-left:6px;padding:0 5px;box-sizing:border-box;border-radius:9px;background:#ff9a3d;color:#160a00;font-size:11px;font-weight:800;vertical-align:1px}
+[data-post-like]{position:relative}
+.lk-fx{position:absolute;left:-2px;top:50%;width:30px;height:30px;margin-top:-15px;pointer-events:none}
+.lk-face{position:absolute;inset:0;border-radius:50%;overflow:hidden;background:#141814;animation:lkFace 2.3s ease forwards}
+.lk-face img{width:100%;height:100%;object-fit:cover;display:block}
+.lk-p{position:absolute;left:50%;top:50%;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;opacity:0;animation:lkP .9s ease-out forwards;animation-delay:.08s}
+.lk-p svg{width:9px!important;height:9px!important;fill:#ff3040;stroke:none!important}
+[data-post-like].lk-go>svg{animation:lkHeart 2.3s ease forwards}
+[data-post-like].lk-go>span{display:inline-block;animation:lkNum .3s ease}
+@keyframes lkFace{0%{opacity:0;transform:scale(.3)}10%{opacity:1;transform:scale(1.18)}16%{transform:scale(1)}84%{opacity:1;transform:scale(1)}92%,100%{opacity:0;transform:scale(.5)}}
+@keyframes lkP{0%{opacity:0;transform:translate(0,0) scale(.4)}25%{opacity:1;transform:translate(var(--x),var(--y)) scale(1)}100%{opacity:0;transform:translate(calc(var(--x)*1.5),calc(var(--y)*1.5)) scale(.7)}}
+@keyframes lkHeart{0%{transform:scale(1)}5%{transform:scale(.75);opacity:.5}7%,86%{opacity:0;transform:scale(.6)}93%{opacity:1;transform:scale(1.18)}100%{opacity:1;transform:scale(1)}}
+@keyframes lkNum{0%{transform:translateY(60%);opacity:0}100%{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.lk-fx{display:none}[data-post-like].lk-go>svg,[data-post-like].lk-go>span{animation:none}}`;
+    document.head.appendChild(st);
+  }
+  function stopLikeFx(btn){
+    btn.classList.remove('lk-go');
+    btn.querySelectorAll('.lk-fx').forEach(x => x.remove());
+    if(btn._lkT){ clearTimeout(btn._lkT); btn._lkT = null; }
+  }
+  function likeFx(btn){
+    likeCss();
+    stopLikeFx(btn);
+    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if(!faceLoaded){ faceLoaded = true; const im = new Image(); im.src = LIKE_FACE; }
+    const heart = '<svg viewBox="0 0 24 24"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.6 4.5 7.1 4.5c2 0 3.6 1.1 4.9 2.8 1.3-1.7 2.9-2.8 4.9-2.8 3.5 0 5.7 3.5 4.4 6.8-1.8 4.6-9.3 9.2-9.3 9.2Z"/></svg>';
+    let parts = '';
+    for(let i = 0; i < 10; i++){
+      const a = (i * 36 - 90) * Math.PI / 180;
+      parts += `<span class="lk-p" style="--x:${(Math.cos(a) * 22).toFixed(1)}px;--y:${(Math.sin(a) * 22).toFixed(1)}px">${heart}</span>`;
+    }
+    const fx = document.createElement('span');
+    fx.className = 'lk-fx';
+    fx.setAttribute('aria-hidden', 'true');
+    fx.innerHTML = `<span class="lk-face"><img src="${LIKE_FACE}" alt=""></span>${parts}`;
+    btn.appendChild(fx);
+    void btn.offsetWidth;
+    btn.classList.add('lk-go');
+    btn._lkT = setTimeout(() => stopLikeFx(btn), 2400);
+  }
+  likeCss();
+  /* el globito de Batallas se actualiza cuando se vota o se carga la lista */
+  window.addEventListener('spotra-battles', () => { const tabs = document.getElementById('fxTabs'); if(tabs) tabs.innerHTML = tabsHTML(); });
+
   /* ================= Wiring ================= */
   document.addEventListener('click', async e => {
     const like = e.target.closest('[data-post-like]');
@@ -437,6 +512,7 @@
       like.classList.toggle('liked', p.likedByMe);
       const span = like.querySelector('span');
       if(span) span.textContent = p.likes;
+      if(p.likedByMe) likeFx(like); else stopLikeFx(like);
       const res = await B().togglePostLike(id, was);
       if(!res.ok){
         p.likedByMe = was;
