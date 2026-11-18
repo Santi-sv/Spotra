@@ -1,4 +1,8 @@
-/* SPOTRA · Market C2C (v8, estilo Facebook Marketplace)
+/* SPOTRA · Market C2C (v11, estilo Facebook Marketplace)
+   - v11 (18/11/2026): "Ver perfil" del vendedor abre su perfil de Market (calificaciones, ventas, productos);
+     "Marcar vendido" pregunta a quién se lo vendiste (lo arma spotra-market-rating.js).
+   - v10 (18/11/2026): en tu propio producto dice "Es tu publicación" (con "Ver en mi perfil") en vez de "Ver perfil",
+     sin botón de WhatsApp ni "Reportar publicación".
    - v8 (20/10/2026): las categorías de la disciplina del rider van primero; Publicar producto la trae elegida.
    - v7 (19/10/2026): pantallas vacías con ícono, título, texto y botón (Publicar producto, Ver todo, Explorar el Market).
    - v6 (15/10/2026): sin sesión no se ve el WhatsApp del vendedor; el botón invita a iniciar sesión.
@@ -120,7 +124,9 @@
     return ({ es: `hace ${dd} ${dd === 1 ? 'día' : 'días'}`, pt: `há ${dd} ${dd === 1 ? 'dia' : 'dias'}`, en: `${dd} ${dd === 1 ? 'day' : 'days'} ago` })[L];
   }
   async function db(){ return B() && B().getClient ? await B().getClient() : null; }
-  async function uid(){ try { return await B().getUserId(); } catch(e){ return null; } }
+  let meCache = null;   /* v10: tu id, para saber si un producto es tuyo sin esperar */
+  async function uid(){ try { meCache = await B().getUserId(); return meCache; } catch(e){ return null; } }
+  window.addEventListener('spotra-user', () => { meCache = null; });
 
   /* ================= Estructura ================= */
   function shell(){
@@ -386,6 +392,17 @@
   }
 
   /* ================= Detalle ================= */
+  /* v10: bloque del vendedor. Si el producto es tuyo no tiene sentido "Ver perfil" ni "Reportar". */
+  function sellerBlock(l, own){
+    const initial = esc(String(l.username || 'R').charAt(0).toUpperCase());
+    if(own){
+      const L = lang();
+      return `<div class="mk-seller mk-mine"><span class="mk-sav" style="flex-shrink:0">${initial}</span><span><b>${esc(({ es: 'Es tu publicación', pt: 'É o seu anúncio', en: 'This is your listing' })[L])}</b><small>@${esc(l.username)}</small></span>
+        <button type="button" class="ghost-btn" data-route="profile" style="margin-left:auto;flex-shrink:0">${esc(({ es: 'Ver en mi perfil', pt: 'Ver no meu perfil', en: 'See on my profile' })[L])}</button></div>`;
+    }
+    return `<button type="button" class="mk-seller" ${window.SpotraMarketRating ? 'data-mp-open' : 'data-rider'}="${esc(l.sellerId)}"><span class="mk-sav">${initial}</span><span><b>@${esc(l.username)}</b><small>${esc(t('Ver perfil'))}</small></span></button>
+          <button type="button" class="report-link" data-report="listing" data-report-id="${esc(l.id)}" data-report-user="${esc(l.sellerId)}" data-report-name="${esc(l.username)}">${ICON.flag}${esc(t('Reportar publicación'))}</button>`;
+  }
   function openDetail(id){
     const l = byId.get(id);
     if(!l){ toast(t('No se pudo abrir la publicación.')); return; }
@@ -399,7 +416,7 @@
     const msg = ({ es: `¡Hola! Vi tu publicación "${l.title}" en SPOTRA. ¿Sigue disponible?`, pt: `Olá! Vi seu anúncio "${l.title}" no SPOTRA. Ainda está disponível?`, en: `Hi! I saw your listing "${l.title}" on SPOTRA. Is it still available?` })[lang()];
     const wa = num && !l.sold ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}` : '';
     const photos = l.photos.length ? l.photos : [''];
-    const initial = esc(String(l.username || 'R').charAt(0).toUpperCase());
+    const own = !!meCache && meCache === l.sellerId;
     main.innerHTML = `<button type="button" class="mk-back" data-mk-back>${ICON.back}<span>${esc(t('Volver al market'))}</span></button>
       <div class="mk-detail">
         <div class="mk-gallery-wrap">
@@ -411,7 +428,7 @@
           <h2 class="mk-dtitle">${esc(l.title)}</h2>
           <div class="mk-meta">${[l.city, d != null ? fmtKm(d) : '', ago(l.createdAt)].filter(Boolean).map(esc).join(' · ')}</div>
           <div class="ev-chips" style="margin-top:10px"><span class="ev-chip on">${esc(t(CAT_LABEL[l.category] || l.category))}</span><span class="ev-chip">${esc(t(COND_LABEL[l.condition] || l.condition))}</span>${l.sold ? `<span class="ev-chip off">${esc(t('Vendido'))}</span>` : ''}</div>
-          ${wa ? `<a class="primary-btn mk-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa}<span>${esc(t('Contactar por WhatsApp'))}</span></a>` : (!num && !l.sold ? `<button type="button" class="primary-btn mk-wa" data-route="login">${ICON.wa}<span>${esc(t('Iniciá sesión para contactar'))}</span></button>` : '')}
+          ${own ? '' : wa ? `<a class="primary-btn mk-wa" href="${esc(wa)}" target="_blank" rel="noopener">${ICON.wa}<span>${esc(t('Contactar por WhatsApp'))}</span></a>` : (!num && !l.sold ? `<button type="button" class="primary-btn mk-wa" data-route="login">${ICON.wa}<span>${esc(t('Iniciá sesión para contactar'))}</span></button>` : '')}
           <div class="mk-actions">
             <button type="button" class="mk-act${saved.has(l.id) ? ' on' : ''}" data-mk-save="${esc(l.id)}">${ICON.heart}<span>${esc(t('Guardar'))}</span></button>
             <button type="button" class="mk-act" data-mk-share>${ICON.share}<span>${esc(t('Compartir'))}</span></button>
@@ -419,10 +436,11 @@
           <label class="mk-colsel">${ICON.folder}<select data-mk-col="${esc(l.id)}"><option value="">${esc(t(saved.has(l.id) ? 'Guardado sin colección' : 'Guardar en una colección...'))}</option>${cols.map(c => `<option value="${esc(c.id)}" ${savedCol.get(l.id) === c.id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}<option value="__new">+ ${esc(t('Nueva colección'))}</option></select></label>
           ${l.description ? `<div class="mk-label">${esc(t('Descripción'))}</div><p class="mk-desc">${esc(l.description)}</p>` : ''}
           <div class="mk-label">${esc(t('Vendedor'))}</div>
-          <button type="button" class="mk-seller" data-rider="${esc(l.sellerId)}"><span class="mk-sav">${initial}</span><span><b>@${esc(l.username)}</b><small>${esc(t('Ver perfil'))}</small></span></button>
-          <button type="button" class="report-link" data-report="listing" data-report-id="${esc(l.id)}" data-report-user="${esc(l.sellerId)}" data-report-name="${esc(l.username)}">${ICON.flag}${esc(t('Reportar publicación'))}</button>
+          ${sellerBlock(l, own)}
         </div>
       </div>`;
+    /* si todavía no sabíamos quién sos, se averigua y se redibuja si el producto es tuyo */
+    if(!meCache) uid().then(me => { if(me && me === l.sellerId && current === l) openDetail(l.id); });
     const g = $('mkGallery');
     if(g) g.addEventListener('scroll', () => {
       const i = Math.round(g.scrollLeft / Math.max(1, g.clientWidth));
@@ -637,6 +655,11 @@
       return;
     }
     if((b = el.closest('[data-ml-rmphoto]'))){ photoFiles.splice(parseInt(b.dataset.mlRmphoto, 10), 1); renderPhotoPreviews(); return; }
+    if((b = el.closest('[data-ml-sold]')) && window.SpotraMarketRating){
+      const id = b.dataset.mlSold;
+      const l = byId.get(id) || (await B().listMyListings()).find(x => x.id === id);
+      if(l){ window.SpotraMarketRating.sell(l, () => { cache = []; renderMine(); }); return; }
+    }
     if((b = el.closest('[data-ml-sold]'))){
       if(!window.confirm(t('¿Marcar como vendido? Deja de aparecer en el market.'))) return;
       const res = await B().markListingSold(b.dataset.mlSold);
