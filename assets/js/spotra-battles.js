@@ -1,4 +1,7 @@
-/* SPOTRA · Batallas de riders (v4, 18/11/2026)
+/* SPOTRA · Batallas de riders (v5, 18/11/2026)
+   v5: SPOTRI caído cuando no cargan las batallas y con trofeo en el ranking vacío;
+       pantalla sin batallas nueva ("La pista está libre": SPOTRI te espera + tu lugar libre + 3 pasos + reto);
+       datos para los cuadros al entrar (challenges, voteCandidate, retoFor, adultState).
    v4: arreglo — "Iniciá sesión para participar" aparecía aunque estuvieras dentro. Ahora se lee la sesión del teléfono.
    v3: las batallas viven en el Foro — pestaña "Batallas" (Reto de la semana, En votación, Te desafían, Terminadas)
        y tarjetas de duelo dentro de "Para vos" (votar sin salir del feed, barra de resultado después de votar).
@@ -308,6 +311,30 @@
 @media (prefers-reduced-motion:reduce){.btc-track i{transition:none}}
 @media (max-width:360px){.btc h3{font-size:26px}.btc-duel{height:210px}.bt-hero b{font-size:26px}}
 @media (max-width:360px){.bt-in{padding-left:14px;padding-right:14px}.bt-h{font-size:24px}.bt-discs button{font-size:12.5px}}
+.bt-pose{display:block;height:150px;width:auto;margin:0 auto 8px}
+.bt-free{margin:12px 16px 24px;border-radius:20px;border:1px solid #1f251f;background:#0d110d;overflow:hidden}
+.bt-free-duel{position:relative;height:214px;background:#0a0d0a}
+.bt-free-l{position:absolute;inset:0;clip-path:polygon(0 0,60% 0,40% 100%,0 100%);background:#131a12}
+.bt-free-l img{position:absolute;left:22px;bottom:-6px;height:206px;width:auto;pointer-events:none}
+.bt-free-duel .btc-cut{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.bt-free-slot{position:absolute;right:26px;top:50%;transform:translateY(-58%);width:112px;height:132px;border-radius:16px;border:2px dashed #3a443a;background:rgba(116,255,58,.04);color:var(--green-hot);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;font:700 13px var(--body);cursor:pointer}
+.bt-free-slot svg{width:26px;height:26px}
+.bt-free-slot span{color:#f5f7f4}
+.bt-free-vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-11deg);font-family:var(--display);font-weight:700;font-size:32px;line-height:1.1;color:#070907;background:var(--green-hot);padding:2px 10px 0;border-radius:6px;pointer-events:none}
+.bt-free-tag{position:absolute;bottom:12px;font-size:12.5px;font-weight:700;background:rgba(7,9,7,.8);padding:5px 10px;border-radius:999px;pointer-events:none}
+.bt-free-tag.l{left:14px}.bt-free-tag.r{right:14px;color:#ffb878}
+.bt-free-slot,.bt-free-vs,.bt-free-tag{z-index:2}
+.bt-free-in{padding:18px;display:flex;flex-direction:column;gap:14px}
+.bt-free-in h3{margin:0;font-family:var(--display);font-size:28px;line-height:.98;text-transform:uppercase}
+.bt-free-in p{margin:8px 0 0;font-size:14.5px;line-height:1.45;color:#c9cfca}
+.bt-steps{display:flex;gap:8px;margin:0;padding:0;list-style:none}
+.bt-steps li{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;font-size:12.5px;line-height:1.25;color:#c9cfca;font-weight:600}
+.bt-steps li span{width:40px;height:40px;border-radius:12px;background:#151a15;border:1px solid #252b25;color:var(--green-hot);display:flex;align-items:center;justify-content:center}
+.bt-steps li svg{width:20px;height:20px}
+.bt-free-in .bt-main{height:50px;width:100%;font-size:16px}
+.bt-free-in .bt-ghost2{height:44px;margin-top:-6px;border-radius:14px;border:1px solid #2a312a;background:transparent;color:#f5f7f4;font:700 14px var(--body);padding:0 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt-free-in .bt-alllink{height:40px;margin-top:-8px;border:0;background:transparent;color:#a9b1aa;font:600 13px var(--body)}
+@media (max-width:360px){.bt-free-tag{font-size:11.5px;padding:4px 8px}.bt-free-duel{height:190px}.bt-free-l img{height:180px;left:12px}.bt-free-slot{right:14px;width:96px;height:118px}.bt-free-in h3{font-size:25px}}
 `;
     document.head.appendChild(s);
   }
@@ -367,10 +394,40 @@
       <div class="bt-meta"><span class="bt-chip">${esc(resultLine(b))}</span></div>
     </button>`;
   }
-  function emptyHTML(any){
-    return `<div class="empty-state bt-empty"><span class="es-ic">${I.vs}</span><b>${esc(T(any ? 'No hay batallas de esta disciplina' : 'Todavía no hay batallas'))}</b>
-      <p>${esc(T('Subí un video corto, poné la consigna y desafiá a otro rider. El público vota.'))}</p>
-      <div class="es-acts"><button type="button" class="primary-btn" data-bt-create>${esc(T('Crear batalla'))}</button>${any ? `<button type="button" class="ghost-btn" data-bt-disc="all">${esc(T('Ver todas'))}</button>` : ''}</div></div>`;
+  /* v5: "La pista está libre" — reemplaza al cartel vacío cuando no hay ninguna batalla para mostrar */
+  const ST_I = {
+    vid: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="13" height="12" rx="2"/><path d="m16 10 5-3v10l-5-3"/></svg>',
+    usr: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><path d="M17 8v6M14 11h6"/></svg>',
+    clk: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>',
+    plus: '<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>'
+  };
+  function freeHTML(any){
+    const disc = activeDisc !== 'all' ? activeDisc : (myDisc() || 'skate');
+    const r = reto(disc);
+    const dl = activeDisc !== 'all' ? DISC_LABEL[activeDisc] : '';
+    const line = dl
+      ? pick({ es: `Nadie abrió una batalla de ${dl}. Subí un clip de hasta 20 segundos y que el público decida.`, pt: `Ninguém abriu uma batalha de ${dl}. Envie um clipe de até 20 segundos e deixe o público decidir.`, en: `Nobody has opened a ${dl} battle. Upload a clip of up to 20 seconds and let the crowd decide.` })
+      : pick({ es: 'Nadie abrió una batalla todavía. Subí un clip de hasta 20 segundos y que el público decida.', pt: 'Ninguém abriu uma batalha ainda. Envie um clipe de até 20 segundos e deixe o público decidir.', en: 'Nobody has opened a battle yet. Upload a clip of up to 20 seconds and let the crowd decide.' });
+    return `<section class="bt-free" aria-label="${esc(pick({ es: 'Sin batallas', pt: 'Sem batalhas', en: 'No battles' }))}">
+      <div class="bt-free-duel">
+        <div class="bt-free-l"><img src="assets/Spotri/spotri-rodando-2.webp" alt="${esc(pick({ es: 'SPOTRI con su skate, esperando rival', pt: 'SPOTRI com seu skate, esperando um rival', en: 'SPOTRI with his skateboard, waiting for a rival' }))}" loading="lazy"></div>
+        ${CUT}
+        <button type="button" class="bt-free-slot" data-bt-create>${ST_I.plus}<span>${esc(pick({ es: 'Tu clip', pt: 'Seu clipe', en: 'Your clip' }))}</span></button>
+        <span class="bt-free-vs" aria-hidden="true">VS</span>
+        <span class="bt-free-tag l">${esc(pick({ es: 'SPOTRI te espera', pt: 'SPOTRI te espera', en: 'SPOTRI is waiting' }))}</span>
+        <span class="bt-free-tag r">${esc(pick({ es: 'Lugar libre', pt: 'Vaga livre', en: 'Open spot' }))}</span>
+      </div>
+      <div class="bt-free-in">
+        <div><h3>${esc(pick({ es: 'La pista está libre', pt: 'A pista está livre', en: 'The park is empty' }))}</h3><p>${esc(line)}</p></div>
+        <ol class="bt-steps">
+          <li><span>${ST_I.vid}</span>${esc(pick({ es: 'Subís tu clip', pt: 'Você envia seu clipe', en: 'You upload a clip' }))}</li>
+          <li><span>${ST_I.usr}</span>${esc(pick({ es: 'Otro rider acepta', pt: 'Outro rider aceita', en: 'Another rider accepts' }))}</li>
+          <li><span>${ST_I.clk}</span>${esc(pick({ es: '48 h de votos', pt: '48 h de votos', en: '48 h of voting' }))}</li>
+        </ol>
+        <button type="button" class="bt-main" data-bt-create>${esc(T('Crear batalla'))}</button>
+        <button type="button" class="bt-ghost2" data-bt-reto="${esc(disc)}">${esc(pick({ es: 'Usar el reto: ', pt: 'Usar o desafio: ', en: 'Use the challenge: ' }) + r.text)}</button>
+        ${any ? `<button type="button" class="bt-alllink" data-bt-disc="all">${esc(pick({ es: 'Ver todas las disciplinas', pt: 'Ver todas as modalidades', en: 'See all disciplines' }))}</button>` : ''}
+      </div></section>`;
   }
 
   /* ---------- piezas del Foro ---------- */
@@ -498,11 +555,11 @@
     const voting = list.filter(b => b.status === 'voting');
     const open = list.filter(b => b.status === 'open');
     const done = list.filter(b => b.status === 'finished');
+    if(!list.length){ wrapEl.innerHTML = `<div class="bt-tab">${barHTML()}${freeHTML(rows.length > 0)}</div>`; return; }
     let html = barHTML() + heroHTML();
     if(voting.length) html += `<div class="bt-sec">${esc(T('En votación'))}<span>${voting.length}</span></div>` + voting.map(rowHTML).join('');
     if(open.length) html += `<div class="bt-sec">${esc(T('Te desafían'))}</div><div class="bt-car">${open.map(chalHTML).join('')}</div>`;
     if(done.length) html += `<div class="bt-sec">${esc(T('Terminadas'))}</div>` + done.slice(0, 12).map(rowHTML).join('');
-    if(!list.length) html += emptyHTML(activeDisc !== 'all' && rows.length > 0);
     wrapEl.innerHTML = `<div class="bt-tab">${html}</div>`;
   }
   async function load(){
@@ -520,7 +577,7 @@
     const ok = await load();
     if(!wrapEl.isConnected) return;
     if(!ok){
-      wrapEl.innerHTML = `<div class="empty-state bt-empty"><span class="es-ic">${I.vs}</span><b>${esc(T('No pudimos cargar las batallas'))}</b><div class="es-acts"><button type="button" class="ghost-btn" data-bt-reload>${esc(T('Reintentar'))}</button></div></div>`;
+      wrapEl.innerHTML = `<div class="empty-state bt-empty"><img class="bt-pose" src="assets/Spotri/spotri-caido.webp" alt="" loading="lazy"><b>${esc(T('No pudimos cargar las batallas'))}</b><div class="es-acts"><button type="button" class="ghost-btn" data-bt-reload>${esc(T('Reintentar'))}</button></div></div>`;
       return;
     }
     paint();
@@ -774,7 +831,7 @@
     const list = !error && Array.isArray(data) ? data : [];
     if(error){ box.innerHTML = `<div class="meta">${esc(T('No pudimos cargar el ranking.'))}</div>`; return; }
     if(!list.length){
-      box.innerHTML = `<div class="empty-state bt-empty"><span class="es-ic">${I.trophy}</span><b>${esc(T('Todavía no hay puntos de Batallas'))}</b><p>${esc(T('Ganá una batalla y aparecé acá.'))}</p></div>`;
+      box.innerHTML = `<div class="empty-state bt-empty"><img class="bt-pose" src="assets/Spotri/spotri-trofeo.webp" alt="" loading="lazy"><b>${esc(T('Todavía no hay puntos de Batallas'))}</b><p>${esc(T('Ganá una batalla y aparecé acá.'))}</p></div>`;
       return;
     }
     box.innerHTML = list.map((r, i) => {
@@ -1038,6 +1095,15 @@
     badgeCount,
     openById: id => { goToTab(); return openById(id); },
     openCreate,
-    openRanking
+    openRanking,
+    /* v5: datos para los cuadros al entrar */
+    load: async () => { await loadUid(); return load(); },
+    whoami: () => loadUid(),
+    adultState: async () => { await loadUid(); return uid ? adultState() : 'nouser'; },
+    challenges: () => rows.filter(b => b.status === 'open' && !mine(b) && Date.now() - new Date(b.created_at).getTime() < 7 * 864e5)
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at)),
+    voteCandidate: () => feedPicks().filter(b => !b.my_vote)[0] || null,
+    retoFor: disc => { const d = DISCS.indexOf(disc) !== -1 ? disc : (myDisc() || 'skate'); const r = reto(d); const mineThisWeek = rows.some(b => b.creator_id === uid && b.discipline === d && r.all.indexOf(b.prompt) !== -1 && new Date(b.created_at).getTime() >= r.since); return { disc: d, label: DISC_LABEL[d], text: r.text, done: rows.filter(b => b.discipline === d && r.all.indexOf(b.prompt) !== -1 && new Date(b.created_at).getTime() >= r.since).length, mineThisWeek }; },
+    discLabel: d => DISC_LABEL[d] || ''
   };
 })();

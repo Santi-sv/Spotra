@@ -1,4 +1,5 @@
-/* SPOTRA · Foro (v11)
+/* SPOTRA · Foro (v12)
+   - v12 (18/11/2026): fin de "Para vos" ("Ya viste lo nuevo") con las sesiones de hoy y SPOTRI; el feed no es infinito.
    - v11 (18/11/2026): pestaña "Batallas" (la dibuja spotra-battles.js) con globito de batallas sin votar;
      tarjetas de duelo dentro de "Para vos"; me gusta con SPOTRI (la cara de SPOTRI reemplaza al corazón,
      sale una ronda de corazones y después vuelve el corazón rojo; con "reducir movimiento" no se anima).
@@ -247,7 +248,41 @@
     });
     while(d < duels.length && d < 1) out.push(window.SpotraBattles.feedCardHTML(duels[d++]));
     while(t < tickets.length && t < 4) out.push(ticketHTML(tickets[t++]));
+    out.push(endHTML());
     feed.innerHTML = out.join('');
+  }
+
+  /* v12: fin de "Para vos". Sesiones de hoy (o en vivo) sacadas de la actividad real; si no hay, solo los botones. */
+  function todaySessions(){
+    const now = Date.now(), d = new Date(), y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+    const isToday = t => { const x = new Date(t); return x.getFullYear() === y && x.getMonth() === m && x.getDate() === day; };
+    const seen = new Set();
+    return activity
+      .filter(a => (a.kind === 'live' && a.n >= 1) || (a.kind === 'session' && a.starts_at && isToday(a.starts_at) && new Date(a.starts_at).getTime() > now - 3600000))
+      .sort((a, b) => (a.kind === 'live' ? 0 : new Date(a.starts_at).getTime()) - (b.kind === 'live' ? 0 : new Date(b.starts_at).getTime()))
+      .filter(a => { if(seen.has(a.place_id)) return false; seen.add(a.place_id); return true; })
+      .slice(0, 3);
+  }
+  function endHTML(){
+    const L = LG();
+    const ses = todaySessions();
+    const rows = ses.map(a => {
+      const when = a.kind === 'live' ? ({ es: 'Ahora', pt: 'Agora', en: 'Now' })[L]
+        : String(new Date(a.starts_at).getHours()).padStart(2, '0') + ':' + String(new Date(a.starts_at).getMinutes()).padStart(2, '0');
+      const n = Number(a.n) || 0;
+      const who = n ? (n === 1 ? ({ es: '1 rider', pt: '1 rider', en: '1 rider' })[L] : ({ es: `${n} riders`, pt: `${n} riders`, en: `${n} riders` })[L]) : ({ es: 'Sesión abierta', pt: 'Sessão aberta', en: 'Open session' })[L];
+      return `<li><button type="button" class="fx-end-ses${a.kind === 'live' ? ' live' : ''}" data-fx-place="${esc(a.place_id)}"><span class="fx-end-t">${esc(when)}</span><span class="fx-end-p"><b>${esc(a.place_name || '')}</b><small>${esc(who)}</small></span></button></li>`;
+    }).join('');
+    const sub = ses.length ? ({ es: '¿Salís a rodar? Hoy hay sesiones cerca.', pt: 'Bora andar? Hoje tem sessões perto.', en: 'Going out to ride? There are sessions today.' })[L]
+      : ({ es: '¿Salís a rodar? Mirá el mapa o armá una sesión en tu spot.', pt: 'Bora andar? Veja o mapa ou crie uma sessão no seu spot.', en: 'Going out to ride? Check the map or start a session at your spot.' })[L];
+    return `<section class="fx-end" aria-label="${esc(({ es: 'Fin de las publicaciones', pt: 'Fim das publicações', en: 'End of posts' })[L])}">
+      <img class="fx-end-img" src="assets/Spotri/spotri-parado.webp" alt="" loading="lazy">
+      <span class="fx-end-k">${esc(({ es: 'Estás al día', pt: 'Você está em dia', en: 'You are all caught up' })[L])}</span>
+      <h3>${esc(({ es: 'Ya viste lo nuevo', pt: 'Você já viu as novidades', en: 'You have seen what is new' })[L])}</h3>
+      <p>${esc(sub)}</p>
+      ${rows ? `<ul>${rows}</ul>` : ''}
+      <div class="fx-end-btns"><button type="button" class="fx-end-main" data-fx-go="map">${esc(({ es: 'Ver el mapa', pt: 'Ver o mapa', en: 'See the map' })[L])}</button><button type="button" class="fx-end-sec" data-fx-tab="battles">${esc(({ es: 'Ir a Batallas', pt: 'Ir para Batalhas', en: 'Go to Battles' })[L])}</button></div>
+    </section>`;
   }
 
   async function renderFeed(){
@@ -289,6 +324,7 @@
       paintFeed();
       return;
     }
+    if((b = t.closest('[data-fx-go]'))){ if(window.setRoute) window.setRoute(b.dataset.fxGo); return; }
     if((b = t.closest('[data-fx-place]')) && !t.closest('.fx-bar')){ e.preventDefault(); goPlace(b.dataset.fxPlace); return; }
     if((b = t.closest('[data-fx-event]'))){
       const id = b.dataset.fxEvent;
@@ -466,6 +502,23 @@
 @keyframes lkP{0%{opacity:0;transform:translate(0,0) scale(.4)}25%{opacity:1;transform:translate(var(--x),var(--y)) scale(1)}100%{opacity:0;transform:translate(calc(var(--x)*1.5),calc(var(--y)*1.5)) scale(.7)}}
 @keyframes lkHeart{0%{transform:scale(1)}5%{transform:scale(.75);opacity:.5}7%,86%{opacity:0;transform:scale(.6)}93%{opacity:1;transform:scale(1.18)}100%{opacity:1;transform:scale(1)}}
 @keyframes lkNum{0%{transform:translateY(60%);opacity:0}100%{transform:none;opacity:1}}
+.fx-end{position:relative;margin:132px 16px 104px;border-radius:22px;border:1px solid #1f251f;background:#0d110d;padding:22px 18px 18px;color:#f5f7f4}
+.fx-end-img{position:absolute;right:6px;top:-112px;height:196px;width:auto;pointer-events:none}
+.fx-end-k{font-size:13px;font-weight:800;color:var(--green-hot,#74ff3a)}
+.fx-end h3{margin:8px 0 0;max-width:62%;font-family:var(--display);font-size:32px;line-height:.95;text-transform:uppercase}
+.fx-end p{margin:8px 0 0;font-size:15px;line-height:1.45;color:#c9cfca}
+.fx-end ul{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column;gap:8px}
+.fx-end-ses{width:100%;display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 12px;border-radius:14px;background:#121712;border:1px solid #252b25;color:#f5f7f4;text-align:left;font:inherit;cursor:pointer}
+.fx-end-t{width:48px;flex-shrink:0;text-align:center;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.fx-end-ses.live .fx-end-t{color:#ff9a3d}
+.fx-end-p{flex:1;min-width:0}
+.fx-end-p b{display:block;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fx-end-p small{font-size:13px;color:#aab2ab}
+.fx-end-btns{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fx-end-btns button{height:48px;border-radius:14px;font:800 15px var(--body);cursor:pointer}
+.fx-end-main{border:0;background:var(--green-hot,#74ff3a);color:#071006}
+.fx-end-sec{border:1px solid #2a312a;background:transparent;color:#f5f7f4}
+@media (max-width:360px){.fx-end h3{font-size:27px}.fx-end-img{height:170px;top:-96px}.fx-end-btns button{font-size:14px}}
 @media (prefers-reduced-motion:reduce){.lk-fx{display:none}[data-post-like].lk-go>svg,[data-post-like].lk-go>span{animation:none}}`;
     document.head.appendChild(st);
   }

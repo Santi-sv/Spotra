@@ -1,4 +1,4 @@
-/* SPOTRA · mapa de Google (v25, 18/10/2026: más liviano — pines en caché, solo se redibuja lo que cambia, sin desenfoques; v24 17/10/2026: rediseño — mapa claro propio, pines con color por categoría,
+/* SPOTRA · mapa de Google (v27, 18/11/2026: tu ubicación con SPOTRI según tu disciplina cuando acercás el mapa; de lejos sigue el punto verde · v25, 18/10/2026: más liviano — pines en caché, solo se redibuja lo que cambia, sin desenfoques; v24 17/10/2026: rediseño — mapa claro propio, pines con color por categoría,
    puntos de lejos, nombres de cerca, grupos con anillo de colores y pines que laten si hay gente) */
 (function(){
   const cfg = () => (window.SpotraBackend && window.SpotraBackend.config) || window.SPOTRA_CONFIG || {};
@@ -711,6 +711,7 @@
     canvas.closest('.map-stage')?.classList.add('google-live');
     initialized = true;
     map.addListener('click', () => { closeList(); if(isMobile()) closeDetail(); });
+    map.addListener('zoom_changed', syncUserMarker);
     // al cruzar los niveles de zoom, los pines pasan de punto a pin y aparecen/desaparecen los nombres
     let lastLevel = -1;
     map.addListener('idle', () => {
@@ -739,6 +740,81 @@
     };
   }
 
+  /* v27: tu ubicación con SPOTRI. De cerca (zoom 15 o más) se ve SPOTRI andando en lo tuyo (skate, BMX,
+     roller o scooter); de lejos, el punto verde de siempre, para no tapar otros pines.
+     Si la imagen de tu disciplina todavía no está subida, se usa SPOTRI en skate. */
+  const ZOOM_RIDER = 15;
+  const RIDER_IMG = { skate: 'spotri-rodando-2.webp', bmx: 'spotri-bmx.webp', roller: 'spotri-roller.webp', scooter: 'spotri-scooter.webp' };
+  const RIDER_FALLBACK = 'spotri-rodando-2.webp';
+  let rider = null;
+  function riderSrc(){
+    const d = window.SpotraDiscipline && window.SpotraDiscipline.get ? window.SpotraDiscipline.get() : null;
+    return 'assets/Spotri/' + (RIDER_IMG[d] || RIDER_FALLBACK);
+  }
+  function riderCss(){
+    if(document.getElementById('mapRiderCss')) return;
+    const st = document.createElement('style');
+    st.id = 'mapRiderCss';
+    st.textContent = `
+.map-rider{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none;animation:mrIn .3s ease-out}
+.mr-base{position:absolute;left:-24px;top:-9px;width:48px;height:18px;box-sizing:border-box;border-radius:50%;border:2.5px solid #2ee84d;background:rgba(46,232,77,.28);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.mr-ring{position:absolute;left:-24px;top:-9px;width:48px;height:18px;box-sizing:border-box;border-radius:50%;border:2px solid #2ee84d;animation:mrPulse 2s ease-out infinite}
+.mr-img{position:absolute;bottom:-3px;left:0;height:72px;width:auto;max-width:none;max-height:none;transform:translateX(-50%);transform-origin:50% 100%;filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1px #fff) drop-shadow(0 4px 4px rgba(0,0,0,.45));animation:mrRide 1.3s ease-in-out infinite alternate}
+.map-rider.big .mr-img{height:92px}
+.map-rider.big .mr-base,.map-rider.big .mr-ring{left:-30px;width:60px;height:22px;top:-11px}
+@keyframes mrIn{from{opacity:0;transform:scale(.6)}to{opacity:1}}
+@keyframes mrRide{from{transform:translateX(-50%) translateY(0)}to{transform:translateX(-50%) translateY(-2px)}}
+@keyframes mrPulse{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.9);opacity:0}}
+@media (prefers-reduced-motion:reduce){.map-rider,.mr-img,.mr-ring{animation:none}}`;
+    document.head.appendChild(st);
+  }
+  function makeRider(){
+    riderCss();
+    class Rider extends google.maps.OverlayView {
+      constructor(){ super(); this.pos = null; this.el = null; }
+      onAdd(){
+        const el = document.createElement('div');
+        el.className = 'map-rider';
+        el.setAttribute('aria-hidden', 'true');
+        el.innerHTML = '<span class="mr-ring"></span><span class="mr-base"></span><img class="mr-img" alt="">';
+        const img = el.querySelector('img');
+        img.addEventListener('error', () => { const fb = 'assets/Spotri/' + RIDER_FALLBACK; if(!img.src.endsWith(RIDER_FALLBACK)) img.src = fb; });
+        img.src = riderSrc();
+        this.el = el;
+        this.size();
+        this.getPanes().overlayLayer.appendChild(el);   /* debajo de los pines: SPOTRI no tapa ningún spot */
+      }
+      draw(){
+        if(!this.el || !this.pos) return;
+        const p = this.getProjection().fromLatLngToDivPixel(this.pos);
+        if(!p) return;
+        this.el.style.left = Math.round(p.x) + 'px';
+        this.el.style.top = Math.round(p.y) + 'px';
+      }
+      onRemove(){ if(this.el){ this.el.remove(); this.el = null; } }
+      setPos(ll){ this.pos = new google.maps.LatLng(ll.lat, ll.lng); this.draw(); }
+      size(){ if(this.el) this.el.classList.toggle('big', (map.getZoom() || 0) >= 17); }
+      refreshImg(){ const img = this.el && this.el.querySelector('img'); if(img && !img.src.endsWith(riderSrc().split('/').pop())) img.src = riderSrc(); }
+    }
+    return new Rider();
+  }
+  /* muestra SPOTRI o el punto según el zoom */
+  function syncUserMarker(){
+    if(!map || !userLocation || !userMarker) return;
+    const near = (map.getZoom() || 0) >= ZOOM_RIDER;
+    if(near){
+      if(!rider) rider = makeRider();
+      rider.setPos(userLocation);
+      if(rider.getMap() !== map) rider.setMap(map);
+      rider.size();
+      userMarker.setVisible(false);
+    } else {
+      if(rider && rider.getMap()) rider.setMap(null);
+      userMarker.setVisible(true);
+    }
+  }
+  window.addEventListener('spotra-discipline', () => { if(rider) rider.refreshImg(); });
+
   function locateMe(btn, quiet){
     if(!navigator.geolocation){
       if(window.toast) window.toast('Tu dispositivo no permite ubicación.');
@@ -759,6 +835,7 @@
       userLocation = ll;
       map.panTo(ll);
       map.setZoom(quiet ? 13 : 15);
+      syncUserMarker();
       if(currentDetail) updateDetail(currentDetail);
       const list = document.getElementById('mapListSheet');
       if(list && list.classList.contains('open')) renderList();
